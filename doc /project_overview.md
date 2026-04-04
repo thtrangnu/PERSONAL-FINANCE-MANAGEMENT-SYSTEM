@@ -1,5 +1,3 @@
-# 01_project_overview.md
-
 # Project Overview — Personal Finance Management System
 
 ## 1. Tên đề tài
