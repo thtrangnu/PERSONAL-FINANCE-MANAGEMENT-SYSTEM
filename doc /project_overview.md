@@ -43,7 +43,7 @@ Hệ thống cần giải quyết được các nhu cầu cốt lõi sau:
 
 2. **Quản lý thu nhập và chi tiêu**
    - Người dùng có thể thêm, sửa, xóa, xem các khoản income/expense.
-   - Có thể phân loại chi tiêu theo category.
+   - Có thể phân loại cả thu nhập và chi tiêu theo category.
    - Có thể gắn khoản thu/chi với bank account cụ thể.
 
 3. **Theo dõi tài khoản ngân hàng / ví**
@@ -97,10 +97,11 @@ Các chức năng thuộc phạm vi chính thức của dự án gồm:
 - Gắn category cho expense.
 - Lọc theo category, thời gian, bank account.
 
-#### D. Quản lý danh mục chi tiêu
+#### D. Quản lý danh mục thu nhập và chi tiêu
 - Tạo category cá nhân.
 - Sửa category.
 - Kích hoạt/vô hiệu hóa category.
+- Chọn loại category cho income / expense / both.
 - Gắn màu, biểu tượng, mô tả.
 
 #### E. Quản lý tài khoản ngân hàng / ví tiền
@@ -110,7 +111,7 @@ Các chức năng thuộc phạm vi chính thức của dự án gồm:
 - Theo dõi lịch sử giao dịch liên quan.
 
 #### F. Quản lý ngân sách
-- Tạo ngân sách tháng.
+- Tạo ngân sách tổng theo tháng.
 - Tạo ngân sách theo category.
 - Theo dõi mức đã dùng, còn lại, % sử dụng.
 - Sinh cảnh báo khi sắp/vượt ngưỡng.

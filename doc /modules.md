@@ -85,20 +85,21 @@ Quản lý các khoản thu nhập của người dùng.
 - Xóa income.
 - Xem danh sách income.
 - Lọc theo thời gian.
-- Lọc theo nguồn thu.
+- Lọc theo category.
 - Lọc theo bank account.
 
 ## Dữ liệu chính
-- Income
+- Incomes
+- Categories
 - Có liên quan đến Users
 - Có thể liên quan BankAccounts
 
 ## Thuộc tính chính của income
 - user_id
+- category_id
 - title
 - amount
 - income_date
-- source_type
 - bank_account_id
 - description
 - note
@@ -108,7 +109,7 @@ Quản lý các khoản thu nhập của người dùng.
 ## Luồng nghiệp vụ chính
 1. User tạo income.
 2. Hệ thống validate dữ liệu.
-3. Ghi bản ghi vào bảng income.
+3. Ghi bản ghi vào bảng incomes.
 4. Nếu income gắn với bank account thì tăng balance.
 5. Giao dịch xuất hiện trong dashboard/reports.
 
@@ -140,7 +141,7 @@ Quản lý các khoản chi tiêu của người dùng.
 ## Dữ liệu chính
 - Expenses
 - Users
-- ExpenseCategories
+- Categories
 - BankAccounts
 
 ## Thuộc tính chính của expense
@@ -179,7 +180,7 @@ Quản lý các khoản chi tiêu của người dùng.
 # 3.4. categories
 
 ## Mục đích
-Quản lý danh mục phân loại chi tiêu.
+Quản lý danh mục dùng cho cả thu nhập và chi tiêu.
 
 ## Chức năng chính
 - Tạo category cá nhân.
@@ -187,13 +188,15 @@ Quản lý danh mục phân loại chi tiêu.
 - Vô hiệu hóa category.
 - Xem danh sách category.
 - Hỗ trợ category hệ thống mặc định.
+- Phân loại category theo income / expense / both.
 
 ## Dữ liệu chính
-- ExpenseCategories
+- Categories
 
 ## Thuộc tính chính
 - user_id (nullable nếu là default/system category)
 - category_name
+- category_type
 - description
 - color
 - icon
@@ -203,7 +206,7 @@ Quản lý danh mục phân loại chi tiêu.
 - updated_at
 
 ## Vai trò trong hệ thống
-- Giúp chuẩn hóa phân loại chi tiêu.
+- Giúp chuẩn hóa phân loại income và expense.
 - Là đầu vào cho reports.
 - Là nền cho category budget.
 
@@ -269,7 +272,7 @@ Theo dõi nơi giữ tiền của người dùng: tài khoản ngân hàng, ví 
 Quản lý kế hoạch chi tiêu và hạn mức ngân sách.
 
 ## Chức năng chính
-- Tạo monthly budget.
+- Tạo overall budget theo tháng.
 - Tạo category budget.
 - Chỉnh sửa budget.
 - Đóng budget.
@@ -282,7 +285,7 @@ Quản lý kế hoạch chi tiêu và hạn mức ngân sách.
 ## Thuộc tính chính
 - user_id
 - budget_name
-- budget_scope (monthly/category)
+- budget_scope (overall/category)
 - category_id (nullable)
 - period_month
 - period_year
@@ -293,7 +296,7 @@ Quản lý kế hoạch chi tiêu và hạn mức ngân sách.
 - updated_at
 
 ## Luồng nghiệp vụ chính
-1. User tạo budget tháng hoặc budget theo category.
+1. User tạo budget tổng theo tháng hoặc budget theo category.
 2. Mỗi expense mới phát sinh sẽ được so với budget liên quan.
 3. Nếu usage >= warning threshold thì sinh alert cảnh báo.
 4. Nếu usage > limit thì sinh alert vượt ngân sách.
@@ -449,7 +452,7 @@ Sinh các báo cáo phục vụ theo dõi và phân tích.
 - Báo cáo biểu đồ.
 
 ## Dữ liệu lấy từ
-- income
+- incomes
 - expenses
 - categories
 - bank_accounts
@@ -484,7 +487,7 @@ Xuất dữ liệu và báo cáo ra file để lưu trữ hoặc chia sẻ.
 
 ## Dữ liệu lấy từ
 - reports
-- income
+- incomes
 - expenses
 - budgets
 
@@ -513,7 +516,7 @@ Cung cấp cái nhìn tổng quan nhanh nhất về tình hình tài chính hi�
 
 ## Dữ liệu lấy từ
 - bank_accounts
-- income
+- incomes
 - expenses
 - budgets
 - alerts
@@ -593,7 +596,7 @@ Các module để giai đoạn 2 hoặc làm nếu còn thời gian:
 | Module nghiệp vụ | Django app gợi ý |
 |---|---|
 | accounts | accounts |
-| income | income |
+| income | incomes |
 | expenses | expenses |
 | categories | categories |
 | bank_accounts | bank_accounts |

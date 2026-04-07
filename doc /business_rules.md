@@ -55,19 +55,22 @@ Nếu không chốt business rules ngay từ đầu, hệ thống sẽ rất d�
 
 # 3.2. Rules về category
 
-### BR-06 — Mỗi expense phải thuộc một category
-- Expense phải có `category_id` hợp lệ.
-- Điều này giúp tổng hợp báo cáo và budget theo category.
+### BR-06 — Mỗi income/expense phải thuộc một category hợp lệ
+- Income và expense đều phải có `category_id` hợp lệ.
+- Điều này giúp tổng hợp báo cáo nhất quán theo category.
 
 ### BR-07 — Category chỉ được dùng nếu đang active
-- Nếu category bị vô hiệu hóa, user không được dùng nó cho expense mới.
+- Nếu category bị vô hiệu hóa, user không được dùng nó cho income/expense mới.
 - Tuy nhiên lịch sử cũ vẫn giữ nguyên.
 
 ### BR-08 — Category có thể là category cá nhân hoặc category hệ thống
 - Category hệ thống có thể dùng chung.
 - Category cá nhân chỉ thuộc một user.
+- Category còn phải có `category_type` phù hợp với giao dịch:
+  - income chỉ dùng category type `income` hoặc `both`,
+  - expense chỉ dùng category type `expense` hoặc `both`.
 
-### BR-09 — Không xóa cứng category nếu đang được expense tham chiếu
+### BR-09 — Không xóa cứng category nếu đang được income/expense/budget tham chiếu
 - Nên dùng `is_active = false` thay vì xóa.
 - Mục tiêu là bảo toàn lịch sử dữ liệu.
 
@@ -144,8 +147,8 @@ Trong project này có thể ưu tiên:
 
 # 3.5. Rules về budget
 
-### BR-21 — Budget có thể theo toàn tháng hoặc theo category
-- `budget_scope = monthly` nghĩa là hạn mức cho toàn bộ chi tiêu tháng.
+### BR-21 — Budget có thể là budget tổng hoặc budget theo category
+- `budget_scope = overall` nghĩa là hạn mức cho toàn bộ chi tiêu tháng.
 - `budget_scope = category` nghĩa là hạn mức chỉ áp dụng cho một category cụ thể.
 
 ### BR-22 — Budget phải gắn với chu kỳ thời gian rõ ràng
@@ -155,7 +158,7 @@ Trong project này có thể ưu tiên:
 ### BR-23 — Budget category bắt buộc phải có category_id
 - Nếu scope là category mà không có category_id thì budget không hợp lệ.
 
-### BR-24 — Budget monthly không bắt buộc category_id
+### BR-24 — Budget overall không bắt buộc category_id
 - Vì nó quản lý tổng chi tiêu toàn tháng.
 
 ### BR-25 — Spending limit phải lớn hơn 0
@@ -179,7 +182,7 @@ Các thao tác ảnh hưởng usage:
 
 ### BR-29 — Một user không nên có 2 budget active trùng logic trong cùng kỳ
 Ví dụ không nên có:
-- hai monthly budget cùng tháng 05/2026 cùng active,
+- hai overall budget cùng tháng 05/2026 cùng active,
 - hoặc hai category budget cùng category ăn uống cho cùng tháng 05/2026 cùng active.
 
 Có thể enforce bằng unique rule nghiệp vụ.
@@ -208,6 +211,11 @@ Gợi ý:
 ### BR-33 — Alert có thể ở trạng thái read/unread
 - Mặc định alert mới là unread.
 - User có thể đánh dấu đã đọc.
+
+### BR-33A — Mỗi alert chỉ nên tham chiếu một đối tượng liên quan
+- Alert loại budget chỉ nên dùng `related_budget_id`.
+- Alert loại debt chỉ nên dùng `related_debt_id`.
+- Một alert không nên đồng thời tham chiếu nhiều đối tượng.
 
 ---
 
@@ -254,6 +262,11 @@ Các trạng thái cơ bản:
 
 ### BR-44 — Giao dịch cá nhân không tự động trở thành giao dịch chia sẻ
 - User phải chủ động đánh dấu giao dịch là shared hoặc tạo bản ghi liên kết chia sẻ.
+
+### BR-44A — Shared transaction chỉ được tham chiếu một loại giao dịch gốc
+- Chỉ một trong hai `expense_id` hoặc `income_id` được phép có giá trị.
+- Không được để cả hai cùng có giá trị.
+- Không được để cả hai cùng null.
 
 ---
 

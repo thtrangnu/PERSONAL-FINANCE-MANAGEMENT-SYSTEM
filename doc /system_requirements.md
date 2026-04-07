@@ -13,7 +13,7 @@ Tài liệu này mô tả chi tiết các yêu cầu chức năng và phi chức
 Hệ thống là một ứng dụng web hỗ trợ người dùng cá nhân quản lý tài chính hằng ngày, gồm:
 - quản lý hồ sơ cá nhân,
 - ghi nhận thu nhập và chi tiêu,
-- quản lý danh mục chi tiêu,
+- quản lý danh mục thu nhập và chi tiêu,
 - theo dõi tài khoản ngân hàng,
 - lập ngân sách,
 - nhận cảnh báo,
@@ -124,12 +124,13 @@ User phải tạo được khoản thu nhập.
 - title / description
 - amount
 - income_date
-- source_type (salary, gift, freelance, investment, other)
+- category
 - bank_account (optional)
 - note
 
 **Xử lý:**
 - Validate amount > 0.
+- Validate category hợp lệ cho income (`income` hoặc `both`).
 - Nếu có bank account, cập nhật số dư tăng tương ứng.
 - Ghi log giao dịch.
 
@@ -165,7 +166,7 @@ User phải xem được danh sách income của chính mình.
 - theo ngày
 - theo tháng
 - theo năm
-- theo source type
+- theo category
 - theo bank account
 
 **Sắp xếp:**
@@ -239,11 +240,12 @@ User phải xem được danh sách expenses của chính mình.
 
 # 4.4. Nhóm yêu cầu quản lý category
 
-### FR-15 — Create Expense Category
-User phải tạo được category phục vụ phân loại chi tiêu.
+### FR-15 — Create Category
+User phải tạo được category phục vụ phân loại thu nhập và chi tiêu.
 
 **Thuộc tính:**
 - category_name
+- category_type (income / expense / both)
 - color
 - icon
 - description
@@ -254,7 +256,7 @@ User phải tạo được category phục vụ phân loại chi tiêu.
 
 ---
 
-### FR-16 — Update Expense Category
+### FR-16 — Update Category
 User phải sửa được category do mình sở hữu hoặc category được phép sửa.
 
 **Ưu tiên:** Cao.
@@ -272,7 +274,7 @@ User/Admin phải có thể vô hiệu hóa category thay vì xóa cứng.
 ---
 
 ### FR-18 — View Categories
-User phải xem được danh sách category đang hoạt động.
+User phải xem được danh sách category đang hoạt động theo phạm vi được phép sử dụng.
 
 **Ưu tiên:** Cao.
 
@@ -322,14 +324,14 @@ User phải xem được danh sách income/expense liên quan đến từng bank
 
 # 4.6. Nhóm yêu cầu quản lý budgets
 
-### FR-23 — Create Monthly Budget
-User phải tạo được budget cho một tháng cụ thể.
+### FR-23 — Create Overall Budget
+User phải tạo được budget tổng cho một tháng cụ thể.
 
 **Thuộc tính:**
 - budget_name
 - period_month
 - period_year
-- total_limit
+- spending_limit
 - warning_percent
 
 **Ưu tiên:** Cao.
@@ -383,10 +385,10 @@ Hệ thống phải tạo cảnh báo khi:
 - mức dùng vượt ngân sách (100%+).
 
 **Loại alert:**
-- warning
-- exceeded
-- overdue (đối với debt)
-- info
+- budget_warning
+- budget_exceeded
+- debt_overdue
+- system_info
 
 **Ưu tiên:** Cao.
 
