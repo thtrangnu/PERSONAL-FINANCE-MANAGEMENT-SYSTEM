@@ -123,11 +123,11 @@ VALUES
 INSERT INTO alerts
 (alert_id, user_id, alert_type, severity, title, message, related_budget_id, related_expense_id, related_debt_id, is_read, created_at)
 VALUES
-(1, 2, 'budget_warning', 'warning', 'Cảnh báo ngân sách ăn uống', 'Chi tiêu ăn uống của bạn đã vượt 80% ngân sách tháng 4.', 2, 9, NULL, 0, '2026-04-09 18:05:00'),
-(2, 2, 'budget_exceeded', 'critical', 'Vượt ngân sách di chuyển', 'Bạn đã vượt ngân sách di chuyển sau giao dịch gần nhất.', 3, 11, NULL, 0, '2026-04-11 18:35:00'),
-(3, 3, 'budget_warning', 'warning', 'Cảnh báo ngân sách sức khỏe', 'Ngân sách sức khỏe tháng 4 đã gần chạm giới hạn.', 5, 15, NULL, 1, '2026-04-04 10:45:00'),
-(4, 4, 'budget_warning', 'warning', 'Cảnh báo ngân sách học tập', 'Chi tiêu học tập của bạn đã vượt 80% hạn mức.', 6, 23, NULL, 0, '2026-04-05 11:25:00'),
-(5, 4, 'budget_exceeded', 'critical', 'Vượt ngân sách tổng', 'Tổng chi tiêu tháng 4 của bạn đã vượt ngân sách tổng.', 7, 25, NULL, 0, '2026-04-10 09:35:00'),
+(1, 2, 'budget_warning', 'warning', 'Cảnh báo ngân sách ăn uống', 'Chi tiêu ăn uống của bạn đã vượt 80% ngân sách tháng 4.', 2, NULL, NULL, 0, '2026-04-09 18:05:00'),
+(2, 2, 'budget_exceeded', 'critical', 'Vượt ngân sách di chuyển', 'Bạn đã vượt ngân sách di chuyển sau giao dịch gần nhất.', 3, NULL, NULL, 0, '2026-04-11 18:35:00'),
+(3, 3, 'budget_warning', 'warning', 'Cảnh báo ngân sách sức khỏe', 'Ngân sách sức khỏe tháng 4 đã gần chạm giới hạn.', 5, NULL, NULL, 1, '2026-04-04 10:45:00'),
+(4, 4, 'budget_warning', 'warning', 'Cảnh báo ngân sách học tập', 'Chi tiêu học tập của bạn đã vượt 80% hạn mức.', 6, NULL, NULL, 0, '2026-04-05 11:25:00'),
+(5, 4, 'budget_exceeded', 'critical', 'Vượt ngân sách tổng', 'Tổng chi tiêu tháng 4 của bạn đã vượt ngân sách tổng.', 7, NULL, NULL, 0, '2026-04-10 09:35:00'),
 (6, 2, 'debt_overdue', 'critical', 'Khoản nợ quá hạn', 'Khoản nợ với Lan Hương đã quá hạn thanh toán.', NULL, NULL, 3, 0, '2026-04-16 09:10:00'),
 (7, 5, 'system_info', 'info', 'Báo cáo tháng đã sẵn sàng', 'Bạn có thể xem và xuất báo cáo tài chính tháng 4.', NULL, NULL, NULL, 1, '2026-04-21 08:00:00');
 
