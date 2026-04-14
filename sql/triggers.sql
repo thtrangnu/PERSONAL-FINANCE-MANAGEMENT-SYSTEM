@@ -1,4 +1,4 @@
--- Personal Finance Management System (PFMS)
+-- NUFI
 -- Triggers for business rule validation and derived balance/status updates
 -- Run after sql/schema.sql.
 

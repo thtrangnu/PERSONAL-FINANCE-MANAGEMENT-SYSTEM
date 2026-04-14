@@ -1,4 +1,4 @@
--- Personal Finance Management System (PFMS)
+-- NUFI
 -- Additional/index deployment script for MySQL 8.x
 -- Run after sql/schema.sql.
 --

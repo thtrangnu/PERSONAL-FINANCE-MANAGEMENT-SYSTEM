@@ -1,4 +1,4 @@
--- Personal Finance Management System (PFMS)
+-- NUFI
 -- Stored procedures for transaction creation and monthly summary
 -- Run after sql/schema.sql, sql/functions.sql, and sql/triggers.sql.
 

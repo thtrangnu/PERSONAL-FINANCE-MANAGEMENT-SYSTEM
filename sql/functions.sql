@@ -1,4 +1,4 @@
--- Personal Finance Management System (PFMS)
+-- NUFI
 -- Scalar functions for budget and debt calculations
 -- Run after sql/schema.sql.
 

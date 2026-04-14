@@ -1,4 +1,4 @@
--- Personal Finance Management System (PFMS)
+-- NUFI
 -- MySQL 8.x schema
 -- This file uses plural table names consistently.
 -- Cross-column business rules that are awkward in MySQL CHECK/FK combinations

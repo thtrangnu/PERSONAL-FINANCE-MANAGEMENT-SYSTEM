@@ -1,4 +1,4 @@
--- Personal Finance Management System (PFMS)
+-- NUFI
 -- Views for reporting and dashboard queries
 -- Run after sql/schema.sql.
 
