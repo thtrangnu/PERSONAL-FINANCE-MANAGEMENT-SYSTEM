@@ -1,7 +1,7 @@
 # Relational Schema Design
 
 ## 1. Mục đích tài liệu
-Tài liệu này mô tả lược đồ quan hệ logic của hệ thống **Personal Finance Management System (PFMS)**, bao gồm:
+Tài liệu này mô tả lược đồ quan hệ logic của hệ thống **NUFI**, bao gồm:
 - danh sách bảng,
 - ý nghĩa từng bảng,
 - các cột và kiểu dữ liệu,

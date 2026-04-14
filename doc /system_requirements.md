@@ -1,7 +1,7 @@
 # System Requirements — Personal Finance Management System
 
 ## 1. Mục đích tài liệu
-Tài liệu này mô tả chi tiết các yêu cầu chức năng và phi chức năng của hệ thống **Personal Finance Management System (PFMS)**. Mục tiêu là giúp nhóm thống nhất:
+Tài liệu này mô tả chi tiết các yêu cầu chức năng và phi chức năng của hệ thống **NUFI**. Mục tiêu là giúp nhóm thống nhất:
 - hệ thống cần làm gì,
 - mức độ ưu tiên của từng chức năng,
 - phạm vi MVP và phạm vi mở rộng,

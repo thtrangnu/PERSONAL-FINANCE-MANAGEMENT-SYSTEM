@@ -9,7 +9,7 @@ Tên gợi ý cho sản phẩm:
 - **Personal Finance Tracker**
 
 Trong tài liệu này, hệ thống sẽ được gọi thống nhất là:
-**Personal Finance Management System (PFMS)**.
+**NUFI**.
 
 ---
 
@@ -23,7 +23,7 @@ Trong thực tế, rất nhiều người dùng cá nhân gặp khó khăn khi q
 - Không có báo cáo trực quan để đánh giá thói quen tài chính.
 - Việc tổng hợp dữ liệu thủ công bằng Excel dễ sai sót, mất thời gian và khó mở rộng.
 
-Từ bài toán đó, hệ thống PFMS được xây dựng nhằm cung cấp một nền tảng giúp người dùng:
+Từ bài toán đó, hệ thống NUFI được xây dựng nhằm cung cấp một nền tảng giúp người dùng:
 - quản lý hồ sơ cá nhân,
 - ghi nhận thu nhập và chi tiêu,
 - theo dõi số dư tài khoản,
@@ -427,6 +427,6 @@ Dự án được xem là thành công khi đạt các tiêu chí sau:
 ---
 
 ## 14. Kết luận
-PFMS là một đề tài có phạm vi rõ, gần với bài toán thực tế, và phù hợp để triển khai thành một hệ thống web quản lý tài chính cá nhân hoàn chỉnh. Với stack đã chốt gồm **Django + MySQL + Docker + Airflow + AWS**, nhóm có thể xây dựng một sản phẩm vừa đáp ứng yêu cầu môn học về cơ sở dữ liệu, vừa thể hiện năng lực thiết kế hệ thống phần mềm hiện đại.
+NUFI là một đề tài có phạm vi rõ, gần với bài toán thực tế, và phù hợp để triển khai thành một hệ thống web quản lý tài chính cá nhân hoàn chỉnh. Với stack đã chốt gồm **Django + MySQL + Docker + Airflow + AWS**, nhóm có thể xây dựng một sản phẩm vừa đáp ứng yêu cầu môn học về cơ sở dữ liệu, vừa thể hiện năng lực thiết kế hệ thống phần mềm hiện đại.
 
 Trong giai đoạn đầu, dự án sẽ tập trung vào các chức năng lõi như profile, income, expenses, categories, bank accounts, budgets và reports. Sau khi lõi đã ổn định, nhóm sẽ mở rộng sang debt tracking, sharing groups, export và cloud sync.
