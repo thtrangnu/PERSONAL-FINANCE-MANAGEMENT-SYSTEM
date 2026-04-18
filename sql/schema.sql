@@ -3,6 +3,16 @@
 -- This file uses plural table names consistently.
 -- Cross-column business rules that are awkward in MySQL CHECK/FK combinations
 -- should be enforced in Django, stored procedures, or triggers.
+--
+-- IMPORTANT:
+-- This schema rebuilds the database from scratch because it uses DROP DATABASE.
+-- If you already have data and only need to fix the sharing invitation status,
+-- do NOT run this whole file. Run this patch instead:
+--
+-- ALTER TABLE `pfms`.`group_members`
+-- MODIFY `status`
+-- ENUM('pending', 'active', 'left', 'removed')
+-- NOT NULL DEFAULT 'active';
 
 SET NAMES utf8mb4;
 
@@ -343,7 +353,7 @@ CREATE TABLE `group_members` (
   `user_id` BIGINT UNSIGNED NOT NULL,
   `member_role` ENUM('owner', 'member') NOT NULL DEFAULT 'member',
   `joined_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `status` ENUM('active', 'left', 'removed') NOT NULL DEFAULT 'active',
+  `status` ENUM('pending', 'active', 'left', 'removed') NOT NULL DEFAULT 'active',
   PRIMARY KEY (`group_member_id`),
   CONSTRAINT `fk_group_members_group`
     FOREIGN KEY (`group_id`) REFERENCES `groups` (`group_id`)
@@ -360,6 +370,12 @@ CREATE TABLE `group_members` (
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci
   COMMENT='Membership of users in financial sharing groups';
+
+-- Rule for group members:
+-- 1. status = 'pending' means the user has been invited but has not confirmed yet.
+-- 2. Only status = 'active' members can view or share group transactions.
+-- 3. status = 'left' means the user left the group voluntarily.
+-- 4. status = 'removed' means the invitation was declined or the member was removed.
 
 -- Rule for triggers/backend:
 -- 1. Exactly one of expense_id or income_id should be non-NULL.
