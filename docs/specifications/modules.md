@@ -342,7 +342,7 @@ Thông báo cho người dùng khi có sự kiện cần chú ý.
 
 ## Nguồn sinh alert
 - budget checks khi thêm/sửa expense
-- job định kỳ từ Airflow
+- job định kỳ từ Django command hoặc Kubernetes CronJob
 - debt overdue checker
 
 ## Phụ thuộc

@@ -133,7 +133,7 @@ Các chức năng thuộc phạm vi chính thức của dự án gồm:
 - Backend: Django.
 - Database: MySQL.
 - Container hóa bằng Docker.
-- Airflow cho các tác vụ nền / đồng bộ / backup / tổng hợp định kỳ.
+- Django management commands và Kubernetes CronJob cho tác vụ định kỳ / backup / tổng hợp.
 - Kubernetes + Helm cho triển khai và vận hành.
 - Cloudflare Tunnel để public bản demo ra Internet khi cần.
 
@@ -229,25 +229,14 @@ Vai trò trong dự án:
 Lý do chọn:
 - Môi trường chạy đồng nhất cho cả nhóm.
 - Giảm lỗi “chạy được trên máy này nhưng không chạy trên máy kia”.
-- Dễ đóng gói Django + MySQL + Airflow.
+- Dễ đóng gói Django + MySQL và các thành phần chạy nền liên quan.
 
 Vai trò trong dự án:
 - Container hóa backend.
 - Container hóa database.
-- Container hóa Airflow nếu cần.
+- Tạo môi trường chạy đồng nhất cho các command định kỳ khi cần.
 
-### 7.4. Airflow
-Lý do chọn:
-- Phù hợp các tác vụ định kỳ và workflow tự động.
-- Có thể dùng cho backup, tổng hợp báo cáo định kỳ, sync cloud, gửi alert nền.
-
-Vai trò trong dự án:
-- Chạy job hằng ngày/hằng tháng.
-- Tạo snapshot, backup dữ liệu.
-- Tổng hợp báo cáo định kỳ.
-- Kiểm tra budget threshold và sinh alert tự động.
-
-### 7.5. Kubernetes và Helm
+### 7.4. Kubernetes và Helm
 Lý do chọn:
 - Phù hợp để đóng gói và triển khai hệ thống theo kiểu production-like.
 - Dễ quản lý cấu hình theo môi trường.
@@ -258,7 +247,7 @@ Vai trò trong dự án:
 - Helm: quản lý deployment, secret, configmap, cronjob và monitoring theo chart.
 - Persistent volume hoặc storage cục bộ: lưu backup, file export và media khi cần.
 
-### 7.6. Cloudflare Tunnel
+### 7.5. Cloudflare Tunnel
 Lý do chọn:
 - Phù hợp để public nhanh bản demo đang chạy local hoặc trên Kubernetes.
 - Không cần mở port router hoặc dựng hạ tầng public riêng.
@@ -330,8 +319,8 @@ Kiến trúc đề xuất:
 - Có view/procedure/function/trigger.
 
 **Scheduler / background jobs**
-- Airflow.
-- Chạy backup, sync, alert checks, monthly summary jobs.
+- Django management commands.
+- Kubernetes CronJob để chạy backup, alert checks, smoke test và tổng hợp định kỳ.
 
 **Infrastructure**
 - Docker Compose cho local.
@@ -428,7 +417,7 @@ Dự án được xem là thành công khi đạt các tiêu chí sau:
 ### 13.3. Về kỹ thuật
 - Chạy được bằng Docker.
 - Có thể kết nối MySQL ổn định.
-- Có Airflow cho ít nhất một số job nền.
+- Có cơ chế job định kỳ bằng Django management commands và Kubernetes CronJob.
 - Có hướng triển khai lên Kubernetes/Helm.
 
 ### 13.4. Về trình bày đồ án

@@ -703,7 +703,7 @@ Project được xem là đạt mức MVP nếu:
 ### 8.3. Deployment acceptance criteria
 1. Ứng dụng chạy bằng Docker.
 2. Kết nối MySQL thành công.
-3. Có mô tả Airflow job hoặc demo được ít nhất một DAG.
+3. Có mô tả job định kỳ hoặc demo được ít nhất một CronJob / scheduled task.
 4. Có phương án backup/recovery.
 
 ---

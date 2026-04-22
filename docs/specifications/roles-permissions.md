@@ -296,7 +296,7 @@ Admin được phép:
 Admin được phép:
 - xem authentication logs,
 - xem error logs,
-- xem job logs từ Airflow,
+- xem log của các job định kỳ,
 - theo dõi backup/recovery,
 - kiểm tra tác vụ hệ thống.
 
