@@ -593,6 +593,83 @@ Sau khi Grafana mở ở `3000`, bạn có thể:
 
 Dashboard này lấy dữ liệu trực tiếp từ Prometheus thông qua `ServiceMonitor` và `PrometheusRule` đã cấu hình trong Helm chart của dự án.
 
+### Vai Trò Của Từng Thành Phần Monitoring
+
+#### Prometheus
+
+Prometheus là thành phần thu thập và lưu trữ metrics của hệ thống.
+
+Trong dự án này, Prometheus có nhiệm vụ:
+
+- scrape metrics từ ứng dụng NUFI qua endpoint `/metrics`
+- lưu dữ liệu chuỗi thời gian để phục vụ query và biểu đồ
+- đánh giá các `PrometheusRule`
+- phát hiện các tình huống như:
+  - app `DOWN`
+  - scrape lỗi
+  - chỉ số nghiệp vụ vượt ngưỡng
+  - CPU hoặc RAM cao
+
+Prometheus phù hợp nhất khi bạn cần:
+
+- kiểm tra target có đang `UP` không
+- query nhanh bằng `PromQL`
+- xác minh dữ liệu monitoring của ứng dụng
+
+#### Grafana
+
+Grafana là thành phần hiển thị dữ liệu monitoring theo dạng trực quan.
+
+Trong dự án này, Grafana có nhiệm vụ:
+
+- kết nối Prometheus làm data source
+- hiển thị dashboard cho NUFI
+- trực quan hóa các metric như:
+  - trạng thái ứng dụng
+  - số lượng thu nhập / chi tiêu / ngân sách / cảnh báo
+  - CPU / RAM
+  - các biểu đồ xu hướng theo thời gian
+
+Grafana phù hợp nhất khi bạn cần:
+
+- xem nhanh tình trạng hệ thống
+- trình bày dashboard khi demo
+- theo dõi biến động dữ liệu mà không cần viết query nhiều
+
+#### Alertmanager
+
+Alertmanager là thành phần tiếp nhận và điều phối cảnh báo từ Prometheus.
+
+Trong dự án này, Alertmanager có nhiệm vụ:
+
+- nhận các alert đang firing từ Prometheus
+- group alert lại để giảm spam
+- deduplicate các alert trùng nhau
+- áp dụng rule inhibit giữa `warning` và `critical`
+- cung cấp API để `scripts/alert_watcher.py` đọc và bật thông báo trên máy local
+
+Alertmanager phù hợp nhất khi bạn cần:
+
+- kiểm tra hệ thống đang có alert nào
+- xem luồng cảnh báo vận hành
+- nối alert từ cluster về máy local để demo
+
+#### Luồng hoạt động chung
+
+Ba thành phần trên phối hợp với nhau theo luồng:
+
+1. Ứng dụng NUFI expose `/metrics`
+2. Prometheus scrape metrics từ ứng dụng
+3. Prometheus đánh giá rule và phát hiện bất thường
+4. Alertmanager nhận và quản lý cảnh báo
+5. Grafana đọc dữ liệu từ Prometheus để hiển thị dashboard
+
+Nói ngắn gọn:
+
+- `Prometheus`: thu thập và phân tích số liệu
+- `Grafana`: hiển thị số liệu cho người dùng
+- `Alertmanager`: quản lý và điều phối cảnh báo
+
 ## Public Demo Bằng Cloudflare Tunnel
 
 Khi cần chia sẻ nhanh web ra Internet để demo, có thể dùng `Cloudflare Tunnel`. Trong dự án này, Cloudflare chỉ đóng vai trò mở đường public tạm thời cho bản đang chạy trên máy local hoặc Kubernetes, không phải nền tảng deploy chính.
