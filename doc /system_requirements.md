@@ -521,7 +521,7 @@ User phải tạo được nhóm chia sẻ tài chính.
 ---
 
 ### FR-41 — Invite / Add Group Members
-Group owner phải thêm thành viên được.
+Group owner phải gửi lời mời thành viên được. Người được mời phải xác nhận đồng ý trước khi trở thành thành viên chính thức của nhóm.
 
 **Ưu tiên:** Giai đoạn 2.
 

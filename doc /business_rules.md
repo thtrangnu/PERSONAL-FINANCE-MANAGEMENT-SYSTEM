@@ -260,6 +260,11 @@ Các trạng thái cơ bản:
 ### BR-43 — Chỉ owner/admin nhóm mới được quản lý thành viên
 - Thêm/xóa thành viên phải có quyền rõ.
 
+### BR-43A — Thành viên được mời phải xác nhận trước khi vào nhóm
+- Khi owner mời một user vào nhóm, hệ thống tạo trạng thái `pending`.
+- User được mời phải chọn đồng ý hoặc từ chối.
+- Chỉ thành viên có trạng thái `active` mới được xem và chia sẻ giao dịch trong nhóm.
+
 ### BR-44 — Giao dịch cá nhân không tự động trở thành giao dịch chia sẻ
 - User phải chủ động đánh dấu giao dịch là shared hoặc tạo bản ghi liên kết chia sẻ.
 

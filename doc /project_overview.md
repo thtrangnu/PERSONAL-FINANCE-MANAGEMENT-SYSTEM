@@ -134,7 +134,8 @@ Các chức năng thuộc phạm vi chính thức của dự án gồm:
 - Database: MySQL.
 - Container hóa bằng Docker.
 - Airflow cho các tác vụ nền / đồng bộ / backup / tổng hợp định kỳ.
-- AWS cho triển khai cloud.
+- Kubernetes + Helm cho triển khai và vận hành.
+- Cloudflare Tunnel để public bản demo ra Internet khi cần.
 
 ---
 
@@ -246,16 +247,27 @@ Vai trò trong dự án:
 - Tổng hợp báo cáo định kỳ.
 - Kiểm tra budget threshold và sinh alert tự động.
 
-### 7.5. AWS
+### 7.5. Kubernetes và Helm
 Lý do chọn:
-- Có thể triển khai thật trên cloud.
-- Phù hợp nếu muốn demo production-like.
-- Có thể kết hợp EC2, RDS, S3.
+- Phù hợp để đóng gói và triển khai hệ thống theo kiểu production-like.
+- Dễ quản lý cấu hình theo môi trường.
+- Dễ gắn monitoring, scheduled jobs và backup định kỳ.
 
 Vai trò trong dự án:
-- EC2: host ứng dụng Django/Airflow.
-- RDS hoặc MySQL tự host: lưu trữ DB.
-- S3: lưu backup, file export.
+- Kubernetes: chạy ứng dụng Django/Gunicorn theo pod và service.
+- Helm: quản lý deployment, secret, configmap, cronjob và monitoring theo chart.
+- Persistent volume hoặc storage cục bộ: lưu backup, file export và media khi cần.
+
+### 7.6. Cloudflare Tunnel
+Lý do chọn:
+- Phù hợp để public nhanh bản demo đang chạy local hoặc trên Kubernetes.
+- Không cần mở port router hoặc dựng hạ tầng public riêng.
+- Tiện cho việc chia sẻ link demo trong giai đoạn phát triển và báo cáo.
+
+Vai trò trong dự án:
+- Tạo URL public tạm thời trỏ vào bản NUFI đang chạy trên cổng local.
+- Hỗ trợ demo giao diện và chức năng từ Internet mà không làm thay đổi kiến trúc deploy chính.
+- Có thể mở rộng sang `named tunnel` nếu cần domain cố định.
 
 ---
 
@@ -323,7 +335,8 @@ Kiến trúc đề xuất:
 
 **Infrastructure**
 - Docker Compose cho local.
-- AWS cho triển khai cloud.
+- Kubernetes + Helm cho triển khai và vận hành.
+- Cloudflare Tunnel để public bản demo khi cần chia sẻ từ Internet.
 
 ---
 
@@ -416,7 +429,7 @@ Dự án được xem là thành công khi đạt các tiêu chí sau:
 - Chạy được bằng Docker.
 - Có thể kết nối MySQL ổn định.
 - Có Airflow cho ít nhất một số job nền.
-- Có hướng triển khai lên AWS.
+- Có hướng triển khai lên Kubernetes/Helm.
 
 ### 13.4. Về trình bày đồ án
 - Tài liệu rõ ràng.
@@ -427,6 +440,6 @@ Dự án được xem là thành công khi đạt các tiêu chí sau:
 ---
 
 ## 14. Kết luận
-NUFI là một đề tài có phạm vi rõ, gần với bài toán thực tế, và phù hợp để triển khai thành một hệ thống web quản lý tài chính cá nhân hoàn chỉnh. Với stack đã chốt gồm **Django + MySQL + Docker + Airflow + AWS**, nhóm có thể xây dựng một sản phẩm vừa đáp ứng yêu cầu môn học về cơ sở dữ liệu, vừa thể hiện năng lực thiết kế hệ thống phần mềm hiện đại.
+NUFI là một đề tài có phạm vi rõ, gần với bài toán thực tế, và phù hợp để triển khai thành một hệ thống web quản lý tài chính cá nhân hoàn chỉnh. Với stack đã chốt gồm **Django + MySQL + Docker + Kubernetes + Helm + Cloudflare Tunnel**, nhóm có thể xây dựng một sản phẩm vừa đáp ứng yêu cầu môn học về cơ sở dữ liệu, vừa thể hiện năng lực thiết kế hệ thống phần mềm hiện đại.
 
 Trong giai đoạn đầu, dự án sẽ tập trung vào các chức năng lõi như profile, income, expenses, categories, bank accounts, budgets và reports. Sau khi lõi đã ổn định, nhóm sẽ mở rộng sang debt tracking, sharing groups, export và cloud sync.

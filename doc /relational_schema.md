@@ -485,7 +485,7 @@ Lưu thành viên của từng nhóm.
 | user_id | BIGINT UNSIGNED | No | FK | Thành viên |
 | member_role | ENUM('owner','member') | No |  | Vai trò trong nhóm |
 | joined_at | DATETIME | No |  | Ngày tham gia |
-| status | ENUM('active','left','removed') | No |  | Trạng thái |
+| status | ENUM('pending','active','left','removed') | No |  | Trạng thái |
 
 ## Khóa ngoại
 - `group_id` → `groups.group_id`
