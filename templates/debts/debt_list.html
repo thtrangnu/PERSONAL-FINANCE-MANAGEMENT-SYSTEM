@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Nợ{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Theo dõi nợ</span>
+        <h1>Vay nợ</h1>
+        <p class="hero-copy">Theo dõi khoản mình nợ hoặc khoản người khác nợ mình, ngày đến hạn và số còn lại.</p>
+      </div>
+      <a class="button" href="{% url 'debt_create' %}">Thêm khoản nợ</a>
+    </div>
+
+    <div class="overview-cards">
+      <article>
+        <span>Tổng nợ gốc</span>
+        <strong>{{ total_debt }}</strong>
+        <p>Tất cả khoản đang ghi nhận.</p>
+      </article>
+      <article>
+        <span>Đã trả / đã nhận</span>
+        <strong>{{ total_paid }}</strong>
+        <p>Tổng tiền đã thanh toán.</p>
+      </article>
+      <article>
+        <span>Còn lại</span>
+        <strong>{{ total_remaining }}</strong>
+        <p>Số tiền vẫn cần theo dõi.</p>
+      </article>
+    </div>
+
+    <section class="management-panel">
+      <div class="visual-heading">
+        <h2>Danh sách khoản nợ</h2>
+      </div>
+      {% if debts %}
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Khoản nợ</th>
+                <th>Loại</th>
+                <th>Gốc</th>
+                <th>Còn lại</th>
+                <th>Hạn trả</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for debt in debts %}
+                <tr>
+                  <td>
+                    <strong>{{ debt.counterparty_name }}</strong>
+                    {% if debt.description %}<p>{{ debt.description }}</p>{% endif %}
+                  </td>
+                  <td>{{ debt.get_debt_type_display }}</td>
+                  <td>{{ debt.formatted_original }}</td>
+                  <td>{{ debt.formatted_remaining }}</td>
+                  <td>{{ debt.due_date|date:"d/m/Y"|default:"Chưa đặt" }}</td>
+                  <td><span class="status-pill {% if debt.status == 'paid' %}muted{% endif %}">{{ debt.get_status_display }}</span></td>
+                  <td>
+                    <div class="table-actions">
+                      <a href="{% url 'debt_detail' debt.debt_id %}">Chi tiết</a>
+                      {% if debt.can_add_payment %}
+                        <a href="{% url 'debt_payment_create' debt.debt_id %}">Thanh toán</a>
+                      {% else %}
+                        <span class="muted-action">Đã hoàn tất</span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <strong>Chưa có khoản nợ</strong>
+          <p>Thêm khoản nợ đầu tiên để NUFI giúp bạn nhớ hạn và số còn lại.</p>
+        </div>
+      {% endif %}
+    </section>
+  </section>
+{% endblock %}

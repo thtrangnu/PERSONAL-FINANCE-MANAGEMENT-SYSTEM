@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="card form-shell">
+    <span class="eyebrow">Ngân sách</span>
+    <h1>{{ page_title }}</h1>
+    <p class="hero-copy">Chọn ngân sách tổng cho cả tháng hoặc ngân sách riêng cho một danh mục chi tiêu.</p>
+
+    <form class="form model-form" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="form-grid">
+        {% for field in form %}
+          {% if field.name == 'status' %}
+            <div class="profile-field profile-field-wide form-status-field">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              <div class="status-choice-group" data-status-choice-group>
+                <button type="button" class="status-choice" data-status-choice="active">
+                  <span>Đang dùng</span>
+                  <small>Tính vào theo dõi ngân sách</small>
+                </button>
+                <button type="button" class="status-choice" data-status-choice="inactive">
+                  <span>Tạm tắt</span>
+                  <small>Giữ lại nhưng chưa theo dõi</small>
+                </button>
+                <button type="button" class="status-choice" data-status-choice="closed">
+                  <span>Đã đóng</span>
+                  <small>Kết thúc ngân sách này</small>
+                </button>
+              </div>
+              {{ field.errors }}
+            </div>
+          {% else %}
+            <div class="profile-field">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {{ field.errors }}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="form-actions">
+        <button type="submit">{{ submit_label }}</button>
+        <a class="button ghost" href="{% url 'budget_list' %}">Quay lại</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

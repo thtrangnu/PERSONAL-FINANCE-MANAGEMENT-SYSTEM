@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | {{ group.group_name }}{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Nhóm chia sẻ</span>
+        <h1>{{ group.group_name }}</h1>
+        <p class="hero-copy">{{ group.description|default:"Các giao dịch được chia sẻ trong nhóm sẽ hiện tại đây." }}</p>
+      </div>
+      <div class="form-actions">
+        {% if is_owner %}
+          <a class="button secondary" href="{% url 'sharing_member_add' group.group_id %}">Thêm thành viên</a>
+        {% endif %}
+        <a class="button" href="{% url 'shared_transaction_create' group.group_id %}">Chia sẻ giao dịch</a>
+        <a class="button ghost" href="{% url 'sharing_group_list' %}">Quay lại</a>
+      </div>
+    </div>
+
+    <div class="account-transaction-grid">
+      <section class="management-panel">
+        <div class="visual-heading">
+          <h2>Thành viên</h2>
+        </div>
+        <div class="tag-list">
+          {% for member in members %}
+            <span>{{ member.user.full_name|default:member.user.username }} - {{ member.get_member_role_display }}</span>
+          {% endfor %}
+        </div>
+        {% if is_owner and pending_members %}
+          <div class="pending-member-box">
+            <strong>Đang chờ xác nhận</strong>
+            <div class="tag-list">
+              {% for member in pending_members %}
+                <span>{{ member.user.full_name|default:member.user.username }} - chờ phản hồi</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="management-panel">
+        <div class="visual-heading">
+          <h2>Giao dịch đã chia sẻ</h2>
+        </div>
+        {% if transactions %}
+          <div class="transaction-list">
+            {% for item in transactions %}
+              <article class="transaction-item">
+                <div>
+                  {% if item.expense %}
+                    <strong>{{ item.expense.description|default:"Khoản chi" }}</strong>
+                    <p>{{ item.expense.category.category_name }} <span>{{ item.shared_by_user.username }}</span></p>
+                  {% else %}
+                    <strong>{{ item.income.title }}</strong>
+                    <p>{{ item.income.category.category_name }} <span>{{ item.shared_by_user.username }}</span></p>
+                  {% endif %}
+                  {% if item.note %}<p>{{ item.note }}</p>{% endif %}
+                </div>
+                {% if item.expense %}
+                  <span class="transaction-amount is-expense">- {{ item.expense.amount }}</span>
+                {% else %}
+                  <span class="transaction-amount is-income">+ {{ item.income.amount }}</span>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <strong>Chưa có giao dịch chia sẻ</strong>
+            <p>Chia sẻ một khoản thu hoặc khoản chi để nhóm cùng xem.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </section>
+{% endblock %}

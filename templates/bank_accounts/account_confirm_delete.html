@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Xóa tài khoản{% endblock %}
+
+{% block content %}
+  <section class="card confirm-shell">
+    <span class="eyebrow">Xác nhận</span>
+    <h1>Xóa tài khoản?</h1>
+    <p>
+      Tài khoản <strong>{{ account.account_name }}</strong> sẽ được ngừng theo dõi.
+      Các giao dịch cũ sau này vẫn được giữ lại để không làm sai số liệu.
+    </p>
+
+    <form class="form-actions" method="post">
+      {% csrf_token %}
+      <button class="danger" type="submit">Xóa tài khoản</button>
+      <a class="button ghost" href="{% url 'bank_account_list' %}">Hủy</a>
+    </form>
+  </section>
+{% endblock %}

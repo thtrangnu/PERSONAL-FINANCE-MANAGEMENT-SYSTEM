@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Xóa chi tiêu{% endblock %}
+
+{% block content %}
+  <section class="card confirm-shell">
+    <span class="eyebrow">Xác nhận</span>
+    <h1>Xóa khoản chi?</h1>
+    <p>
+      Khoản chi này sẽ được xóa khỏi danh sách.
+      Nếu khoản này đã trừ vào tài khoản, số dư sẽ được cộng lại.
+    </p>
+    <form class="form-actions" method="post">
+      {% csrf_token %}
+      <button class="danger" type="submit">Xóa khoản chi</button>
+      <a class="button ghost" href="{% url 'expense_list' %}">Hủy</a>
+    </form>
+  </section>
+{% endblock %}

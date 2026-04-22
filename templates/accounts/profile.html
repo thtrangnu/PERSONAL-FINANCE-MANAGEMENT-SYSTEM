@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Hồ sơ{% endblock %}
+
+{% block content %}
+  <section class="card profile-shell">
+    <div class="profile-header">
+      <form
+        class="profile-avatar-form"
+        method="post"
+        enctype="multipart/form-data"
+        action="{% url 'profile_avatar_upload' %}"
+        data-avatar-form
+      >
+        {% csrf_token %}
+        <input
+          id="id_avatar_auto"
+          class="profile-avatar-input"
+          type="file"
+          name="avatar"
+          accept="image/png,image/jpeg,image/webp"
+          data-avatar-input
+        >
+        <label class="profile-avatar" for="id_avatar_auto" tabindex="0" data-profile-avatar>
+          {% if profile.avatar_url %}
+            <img src="{{ profile.avatar_url }}" alt="Ảnh đại diện của {{ profile.full_name }}">
+          {% else %}
+            <span data-avatar-initial>{{ profile.full_name|default:request.user.username|first|upper }}</span>
+          {% endif %}
+          <span class="profile-avatar-action" data-avatar-status>Tải ảnh lên</span>
+        </label>
+      </form>
+      <div>
+        <span class="eyebrow">Hồ sơ NUFI</span>
+        <h1>Hồ sơ cá nhân</h1>
+        <p>
+          Tài khoản đăng nhập: <strong>{{ request.user.username }}</strong>.
+          Bạn có thể cập nhật thông tin cá nhân, bấm vào ảnh đại diện để đổi ảnh.
+        </p>
+      </div>
+    </div>
+
+    <form class="form profile-form" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="profile-fields">
+        <div class="profile-field">
+          <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+          {{ form.first_name }}
+          {{ form.first_name.errors }}
+        </div>
+        <div class="profile-field">
+          <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+          {{ form.last_name }}
+          {{ form.last_name.errors }}
+        </div>
+        <div class="profile-field">
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {{ form.email.errors }}
+        </div>
+        <div class="profile-field">
+          <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+          {{ form.full_name }}
+          {{ form.full_name.errors }}
+        </div>
+        <div class="profile-field">
+          <label for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}</label>
+          {{ form.phone_number }}
+          {{ form.phone_number.errors }}
+        </div>
+        <div class="profile-field profile-field-wide">
+          <label for="{{ form.timezone_search.id_for_label }}">{{ form.timezone_search.label }}</label>
+          <div class="timezone-picker" data-timezone-picker>
+            {{ form.timezone }}
+            <div class="timezone-input-wrap">
+              {{ form.timezone_search }}
+              <button
+                type="button"
+                class="timezone-toggle"
+                aria-label="Mở danh sách múi giờ"
+                aria-expanded="false"
+                data-timezone-toggle
+              >Chọn</button>
+            </div>
+            <div class="timezone-list" data-timezone-list hidden>
+              {% for option in form.timezone_suggestions %}
+                <button
+                  type="button"
+                  class="timezone-option"
+                  data-timezone-option
+                  data-label="{{ option.label }}"
+                  data-value="{{ option.value }}"
+                  data-search="{{ option.search }}"
+                >
+                  <strong>{{ option.label }}</strong>
+                  <span>{{ option.value }}</span>
+                </button>
+              {% endfor %}
+            </div>
+            <div class="timezone-result-count" data-timezone-count aria-live="polite"></div>
+          </div>
+          {% if form.timezone_search.help_text %}
+            <small>{{ form.timezone_search.help_text }}</small>
+          {% endif %}
+          {{ form.timezone_search.errors }}
+        </div>
+      </div>
+
+      <button type="submit">Lưu hồ sơ</button>
+    </form>
+  </section>
+
+  <script>
+    (() => {
+      const avatarForm = document.querySelector('[data-avatar-form]');
+      const avatarInput = avatarForm?.querySelector('[data-avatar-input]');
+      const statusText = avatarForm?.querySelector('[data-avatar-status]');
+      const avatarFrame = avatarForm?.querySelector('[data-profile-avatar]');
+      const navAvatar = document.querySelector('[data-nav-avatar]');
+      if (!avatarForm || !avatarInput || !statusText || !avatarFrame) return;
+
+      const withCacheBuster = (url) => {
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}v=${Date.now()}`;
+      };
+
+      const setAvatarImage = (url, displayName, initial) => {
+        const imageUrl = withCacheBuster(url);
+        let profileImage = avatarFrame.querySelector('img');
+        const fallback = avatarFrame.querySelector('[data-avatar-initial]');
+        if (!profileImage) {
+          profileImage = document.createElement('img');
+          profileImage.alt = `Ảnh đại diện của ${displayName}`;
+          avatarFrame.insertBefore(profileImage, statusText);
+        }
+        profileImage.src = imageUrl;
+        if (fallback) fallback.remove();
+
+        if (navAvatar) {
+          navAvatar.innerHTML = '';
+          const navImage = document.createElement('img');
+          navImage.src = imageUrl;
+          navImage.alt = `Ảnh đại diện của ${displayName}`;
+          navAvatar.appendChild(navImage);
+        }
+      };
+
+      avatarInput.addEventListener('change', async () => {
+        const avatar = avatarInput.files?.[0];
+        if (!avatar) return;
+
+        avatarForm.classList.remove('is-error');
+        avatarForm.classList.add('is-saving');
+        statusText.textContent = 'Đang tải...';
+
+        try {
+          const response = await fetch(avatarForm.action, {
+            method: 'POST',
+            body: new FormData(avatarForm),
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+          const payload = await response.json();
+          if (!response.ok || !payload.ok) {
+            throw new Error(payload.error || 'Không thể lưu ảnh đại diện.');
+          }
+          setAvatarImage(payload.avatar_url, payload.display_name, payload.initial);
+          statusText.textContent = 'Tải ảnh lên';
+        } catch (error) {
+          avatarForm.classList.add('is-error');
+          statusText.textContent = error.message || 'Không thể tải ảnh';
+        } finally {
+          avatarForm.classList.remove('is-saving');
+          avatarInput.value = '';
+        }
+      });
+    })();
+
+    (() => {
+      const picker = document.querySelector('[data-timezone-picker]');
+      const searchInput = picker?.querySelector('[data-timezone-search]');
+      const hiddenInput = picker?.querySelector('[data-timezone-value]');
+      const toggleButton = picker?.querySelector('[data-timezone-toggle]');
+      const optionList = picker?.querySelector('[data-timezone-list]');
+      const resultCount = picker?.querySelector('[data-timezone-count]');
+      const options = Array.from(picker?.querySelectorAll('[data-timezone-option]') || []);
+      if (!picker || !searchInput || !hiddenInput || !toggleButton || !optionList || !resultCount || !options.length) return;
+
+      const normalize = (value) => value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+      const valueByLabel = new Map(options.map((option) => [
+        normalize(option.dataset.label),
+        option.dataset.value,
+      ]));
+
+      const openList = () => {
+        optionList.hidden = false;
+        toggleButton.setAttribute('aria-expanded', 'true');
+      };
+
+      const closeList = () => {
+        optionList.hidden = true;
+        toggleButton.setAttribute('aria-expanded', 'false');
+      };
+
+      const filterOptions = () => {
+        const query = normalize(searchInput.value);
+        let visibleCount = 0;
+        options.forEach((option) => {
+          const matched = !query || normalize(option.dataset.search).includes(query);
+          option.hidden = !matched;
+          if (matched) visibleCount += 1;
+        });
+        openList();
+        optionList.classList.toggle('is-empty', visibleCount === 0);
+        resultCount.textContent = query
+          ? `Còn ${visibleCount} lựa chọn phù hợp.`
+          : `Có ${options.length} lựa chọn múi giờ.`;
+      };
+
+      const selectOption = (option) => {
+        searchInput.value = option.dataset.label;
+        hiddenInput.value = option.dataset.value;
+        options.forEach((item) => item.classList.remove('is-selected'));
+        option.classList.add('is-selected');
+        closeList();
+      };
+
+      const syncTimezone = () => {
+        const selectedTimezone = valueByLabel.get(normalize(searchInput.value));
+        if (selectedTimezone) {
+          hiddenInput.value = selectedTimezone;
+        }
+        filterOptions();
+      };
+
+      toggleButton.addEventListener('click', () => {
+        if (optionList.hidden) {
+          filterOptions();
+          searchInput.focus();
+          return;
+        }
+        closeList();
+      });
+      options.forEach((option) => {
+        option.addEventListener('click', () => selectOption(option));
+      });
+      searchInput.addEventListener('input', syncTimezone);
+      searchInput.addEventListener('change', syncTimezone);
+      searchInput.addEventListener('focus', filterOptions);
+      document.addEventListener('click', (event) => {
+        if (!picker.contains(event.target)) {
+          closeList();
+        }
+      });
+    })();
+  </script>
+{% endblock %}

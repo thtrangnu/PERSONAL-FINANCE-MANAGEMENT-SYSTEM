@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Cảnh báo{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Cảnh báo</span>
+        <h1>Nhắc nhở tài chính</h1>
+        <p class="hero-copy">Các cảnh báo được tạo tự động khi chi tiêu chạm hoặc vượt ngân sách.</p>
+      </div>
+      <div class="status-pill">{{ unread_count }} chưa đọc</div>
+    </div>
+
+    <div class="filter-bar">
+      <a class="button {% if show == 'all' %}secondary{% else %}ghost{% endif %}" href="{% url 'alert_list' %}">Tất cả</a>
+      <a class="button {% if show == 'unread' %}secondary{% else %}ghost{% endif %}" href="{% url 'alert_list' %}?show=unread">Chưa đọc</a>
+    </div>
+
+    <section class="management-panel">
+      {% if pending_invitations %}
+        <div class="invitation-list">
+          <div class="visual-heading">
+            <h2>Lời mời tham gia nhóm</h2>
+            <p>Xác nhận để nhóm xuất hiện trong khu vực chia sẻ của bạn.</p>
+          </div>
+          {% for invitation in pending_invitations %}
+            <article class="invitation-card">
+              <div>
+                <strong>{{ invitation.group.group_name }}</strong>
+                <p>{{ invitation.group.owner_user.full_name|default:invitation.group.owner_user.username }} mời bạn tham gia nhóm này.</p>
+              </div>
+              <div class="invitation-actions">
+                <form method="post" action="{% url 'sharing_invitation_accept' invitation.group_member_id %}">
+                  {% csrf_token %}
+                  <button type="submit">Đồng ý</button>
+                </form>
+                <form method="post" action="{% url 'sharing_invitation_decline' invitation.group_member_id %}">
+                  {% csrf_token %}
+                  <button class="button ghost" type="submit">Từ chối</button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if alerts %}
+        <div class="alert-list">
+          {% for alert in alerts %}
+            <article class="alert-item {% if not alert.is_read %}is-unread{% endif %}">
+              <div>
+                <span class="status-pill">{{ alert.get_severity_display }}</span>
+                <h2>{{ alert.title }}</h2>
+                <p>{{ alert.message }}</p>
+                <small>{{ alert.created_at|date:"d/m/Y H:i" }}</small>
+              </div>
+              {% if not alert.is_read %}
+                <form method="post" action="{% url 'alert_mark_read' alert.alert_id %}">
+                  {% csrf_token %}
+                  <button type="submit">Đã đọc</button>
+                </form>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% elif not pending_invitations %}
+        <div class="empty-state">
+          <strong>Chưa có cảnh báo</strong>
+          <p>Khi chi tiêu sắp vượt ngân sách, NUFI sẽ hiển thị nhắc nhở tại đây.</p>
+        </div>
+      {% endif %}
+    </section>
+  </section>
+{% endblock %}

@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | {{ account.account_name }}{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Chi tiết tài khoản</span>
+        <h1>{{ account.account_name }}</h1>
+        <p class="hero-copy">
+          Xem riêng các khoản tiền đi vào và đi ra từ tài khoản này để biết tài khoản đang được dùng như thế nào.
+        </p>
+      </div>
+      <div class="form-actions">
+        <a class="button ghost" href="{% url 'bank_account_list' %}">Quay lại</a>
+        <a class="button secondary" href="{% url 'bank_account_update' account.bank_account_id %}">Sửa tài khoản</a>
+      </div>
+    </div>
+
+    <div class="overview-cards">
+      <article>
+        <span>Số dư hiện tại</span>
+        <strong>{{ current_balance }}</strong>
+        <p>Số tiền đang ghi nhận trong tài khoản.</p>
+      </article>
+      <article>
+        <span>Tổng thu</span>
+        <strong>{{ total_income }}</strong>
+        <p>Tổng tiền đã nhận qua tài khoản này.</p>
+      </article>
+      <article>
+        <span>Tổng chi</span>
+        <strong>{{ total_expense }}</strong>
+        <p>Tổng tiền đã chi từ tài khoản này.</p>
+      </article>
+      <article>
+        <span>Chênh lệch thu - chi</span>
+        <strong>{{ net_flow }}</strong>
+        <p>Số thu trừ số chi đã ghi nhận.</p>
+      </article>
+    </div>
+
+    <div class="transaction-insights" aria-label="Tài khoản này thu chi cho những gì">
+      <section class="chart-card transaction-chart-card">
+        <div class="visual-heading">
+          <h2>Thu vào từ đâu</h2>
+          <p>Nhìn nhanh các nhóm tiền đã cộng vào tài khoản này.</p>
+        </div>
+        {% if income_breakdown %}
+          <div class="donut-layout transaction-donut-layout">
+            <svg class="donut-chart" viewBox="0 0 140 140" aria-label="Thu vào theo danh mục">
+              <circle class="donut-base" cx="70" cy="70" r="48"></circle>
+              {% for item in income_breakdown %}
+                {% if item.percent > 0 %}
+                  <path
+                    class="pie-segment {{ item.class_name }}"
+                    d="{{ item.path_d }}"
+                    data-breakdown-segment
+                    data-breakdown-detail-target="accountIncomeBreakdownDetail"
+                    data-label="{{ item.label }}"
+                    data-value="{{ item.value }}"
+                    data-percent="{{ item.percent_label }}"
+                    role="button"
+                    tabindex="0"
+                  ></path>
+                {% endif %}
+              {% endfor %}
+              <circle class="pie-hole" cx="70" cy="70" r="28"></circle>
+            </svg>
+            <div class="chart-detail" id="accountIncomeBreakdownDetail">
+              <span data-breakdown-detail-label>Tổng thu</span>
+              <strong data-breakdown-detail-value>{{ total_income }}</strong>
+              <p data-breakdown-detail-note>Bấm vào từng phần màu để xem nhóm tiền vào.</p>
+            </div>
+          </div>
+          <div class="chart-legend">
+            {% for item in income_breakdown %}
+              <button
+                type="button"
+                class="legend-item {{ item.class_name }}"
+                data-breakdown-segment
+                data-breakdown-detail-target="accountIncomeBreakdownDetail"
+                data-label="{{ item.label }}"
+                data-value="{{ item.value }}"
+                data-percent="{{ item.percent_label }}"
+              >
+                <span></span>{{ item.label }}
+              </button>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="chart-empty">
+            <strong>Chưa có khoản thu</strong>
+            <p>Khi có tiền vào, phần này sẽ tự chia theo danh mục.</p>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="chart-card transaction-chart-card">
+        <div class="visual-heading">
+          <h2>Chi ra cho gì</h2>
+          <p>Nhìn nhanh các nhóm tiền đã trừ khỏi tài khoản này.</p>
+        </div>
+        {% if expense_breakdown %}
+          <div class="donut-layout transaction-donut-layout">
+            <svg class="donut-chart" viewBox="0 0 140 140" aria-label="Chi ra theo danh mục">
+              <circle class="donut-base" cx="70" cy="70" r="48"></circle>
+              {% for item in expense_breakdown %}
+                {% if item.percent > 0 %}
+                  <path
+                    class="pie-segment {{ item.class_name }}"
+                    d="{{ item.path_d }}"
+                    data-breakdown-segment
+                    data-breakdown-detail-target="accountExpenseBreakdownDetail"
+                    data-label="{{ item.label }}"
+                    data-value="{{ item.value }}"
+                    data-percent="{{ item.percent_label }}"
+                    role="button"
+                    tabindex="0"
+                  ></path>
+                {% endif %}
+              {% endfor %}
+              <circle class="pie-hole" cx="70" cy="70" r="28"></circle>
+            </svg>
+            <div class="chart-detail" id="accountExpenseBreakdownDetail">
+              <span data-breakdown-detail-label>Tổng chi</span>
+              <strong data-breakdown-detail-value>{{ total_expense }}</strong>
+              <p data-breakdown-detail-note>Bấm vào từng phần màu để xem nhóm tiền ra.</p>
+            </div>
+          </div>
+          <div class="chart-legend">
+            {% for item in expense_breakdown %}
+              <button
+                type="button"
+                class="legend-item {{ item.class_name }}"
+                data-breakdown-segment
+                data-breakdown-detail-target="accountExpenseBreakdownDetail"
+                data-label="{{ item.label }}"
+                data-value="{{ item.value }}"
+                data-percent="{{ item.percent_label }}"
+              >
+                <span></span>{{ item.label }}
+              </button>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="chart-empty">
+            <strong>Chưa có khoản chi</strong>
+            <p>Khi có tiền ra, phần này sẽ tự chia theo danh mục.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+
+    <div class="account-transaction-grid">
+      <section class="management-panel transaction-column income-column">
+        <div class="visual-heading">
+          <h2>Thu vào</h2>
+          <p>Các khoản tiền đã cộng vào tài khoản này.</p>
+        </div>
+
+        {% if incomes %}
+          <div class="transaction-list">
+            {% for income in incomes %}
+              <article class="transaction-item">
+                <div>
+                  <strong>{{ income.title }}</strong>
+                  <p>
+                    {{ income.category.category_name }}
+                    <span>{{ income.income_date|date:"d/m/Y" }}</span>
+                  </p>
+                </div>
+                <span class="transaction-amount is-income">+ {{ income.formatted_amount }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <strong>Chưa có khoản thu</strong>
+            <p>Khi bạn thêm thu nhập vào tài khoản này, danh sách sẽ hiện ở đây.</p>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="management-panel transaction-column expense-column">
+        <div class="visual-heading">
+          <h2>Chi ra</h2>
+          <p>Các khoản tiền đã trừ khỏi tài khoản này.</p>
+        </div>
+
+        {% if expenses %}
+          <div class="transaction-list">
+            {% for expense in expenses %}
+              <article class="transaction-item">
+                <div>
+                  <strong>
+                    {% if expense.description %}
+                      {{ expense.description }}
+                    {% else %}
+                      Khoản chi
+                    {% endif %}
+                  </strong>
+                  <p>
+                    {{ expense.category.category_name }}
+                    <span>{{ expense.expense_date|date:"d/m/Y" }}</span>
+                  </p>
+                </div>
+                <span class="transaction-amount is-expense">- {{ expense.formatted_amount }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <strong>Chưa có khoản chi</strong>
+            <p>Khi bạn thêm chi tiêu từ tài khoản này, danh sách sẽ hiện ở đây.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </section>
+{% endblock %}

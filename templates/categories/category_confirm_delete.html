@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Xóa danh mục{% endblock %}
+
+{% block content %}
+  <section class="card confirm-shell">
+    <span class="eyebrow">Xác nhận</span>
+    <h1>Xóa danh mục?</h1>
+    <p>
+      Danh mục <strong>{{ category.category_name }}</strong> sẽ được ngừng sử dụng.
+      Dữ liệu cũ vẫn được giữ lại để không ảnh hưởng báo cáo sau này.
+    </p>
+
+    <form class="form-actions" method="post">
+      {% csrf_token %}
+      <button class="danger" type="submit">Xóa danh mục</button>
+      <a class="button ghost" href="{% url 'category_list' %}">Hủy</a>
+    </form>
+  </section>
+{% endblock %}

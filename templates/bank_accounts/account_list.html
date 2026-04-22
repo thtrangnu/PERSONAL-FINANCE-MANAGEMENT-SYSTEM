@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Tài khoản tiền{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Tài khoản tiền</span>
+        <h1>Quản lý tài khoản</h1>
+        <p class="hero-copy">
+          Theo dõi ngân hàng, ví điện tử và tiền mặt để biết tổng số tiền hiện có trong các tài khoản đang dùng.
+        </p>
+      </div>
+      <a class="button" href="{% url 'bank_account_create' %}">Thêm tài khoản</a>
+    </div>
+
+    <div class="overview-cards">
+      <article>
+        <span>Tổng số dư</span>
+        <strong data-total-balance>{{ total_balance }}</strong>
+        <p>Tính trên các tài khoản đang sử dụng.</p>
+      </article>
+      <article>
+        <span>Tài khoản đang dùng</span>
+        <strong data-active-account-count>{{ active_account_count }}</strong>
+        <p>Ngân hàng, ví điện tử hoặc tiền mặt.</p>
+      </article>
+    </div>
+
+    <section class="management-panel">
+      <div class="visual-heading">
+        <h2>Danh sách tài khoản</h2>
+        <p>Sửa thông tin khi đổi tên ví, cập nhật số dư hoặc ngừng theo dõi tài khoản cũ.</p>
+      </div>
+      {% if accounts %}
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Tài khoản</th>
+                <th>Loại</th>
+                <th>Số dư hiện tại</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for account in accounts %}
+                <tr>
+                  <td>
+                    <a class="account-link" href="{% url 'bank_account_detail' account.bank_account_id %}">
+                      <strong>{{ account.account_name }}</strong>
+                      <span>Xem thu/chi</span>
+                    </a>
+                    {% if account.provider_name %}
+                      <p>{{ account.provider_name }}</p>
+                    {% endif %}
+                  </td>
+                  <td>{{ account.get_account_type_display }}</td>
+                  <td>{{ account.formatted_current_balance }}</td>
+                  <td>
+                    <form
+                      class="status-toggle-form"
+                      method="post"
+                      action="{% url 'bank_account_toggle_status' account.bank_account_id %}"
+                      data-status-toggle-form
+                      data-on-label="Đang dùng"
+                      data-off-label="Đã tắt"
+                      data-on-title="Bấm để tắt tài khoản"
+                      data-off-title="Bấm để bật lại tài khoản"
+                    >
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                      <button
+                        class="status-toggle {% if account.is_active %}is-on{% endif %}"
+                        type="submit"
+                        aria-pressed="{% if account.is_active %}true{% else %}false{% endif %}"
+                        title="{% if account.is_active %}Bấm để tắt tài khoản{% else %}Bấm để bật lại tài khoản{% endif %}"
+                      >
+                        <span class="status-toggle-knob" aria-hidden="true"></span>
+                        <span data-status-toggle-label>{% if account.is_active %}Đang dùng{% else %}Đã tắt{% endif %}</span>
+                      </button>
+                    </form>
+                  </td>
+                  <td>
+                    <div class="table-actions">
+                      <a href="{% url 'bank_account_detail' account.bank_account_id %}">Chi tiết</a>
+                      <a href="{% url 'bank_account_update' account.bank_account_id %}">Sửa</a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <strong>Chưa có tài khoản tiền</strong>
+          <p>Thêm tài khoản ngân hàng, ví điện tử hoặc tiền mặt để NUFI tính tổng số dư cho bạn.</p>
+        </div>
+      {% endif %}
+    </section>
+  </section>
+{% endblock %}

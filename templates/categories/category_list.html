@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Danh mục{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Danh mục</span>
+        <h1>Quản lý danh mục</h1>
+        <p class="hero-copy">
+          Tạo các nhóm thu nhập và chi tiêu để sau này nhập giao dịch nhanh hơn, dễ xem báo cáo hơn.
+        </p>
+      </div>
+      <a class="button" href="{% url 'category_create' %}">Thêm danh mục</a>
+    </div>
+
+    <div class="management-grid">
+      <section class="management-panel">
+        <div class="visual-heading">
+          <h2>Danh mục của bạn</h2>
+          <p>Những danh mục này có thể sửa hoặc ngừng sử dụng khi không cần nữa.</p>
+        </div>
+        {% if user_categories %}
+          <div class="table-wrap">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Tên danh mục</th>
+                  <th>Loại</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for category in user_categories %}
+                  <tr>
+                    <td>
+                      <strong>{{ category.category_name }}</strong>
+                      {% if category.description %}
+                        <p>{{ category.description }}</p>
+                      {% endif %}
+                    </td>
+                    <td>{{ category.get_category_type_display }}</td>
+                    <td>
+                      <form
+                        class="status-toggle-form"
+                        method="post"
+                        action="{% url 'category_toggle_status' category.category_id %}"
+                        data-status-toggle-form
+                        data-on-label="Đang dùng"
+                        data-off-label="Đã tắt"
+                        data-on-title="Bấm để tắt danh mục"
+                        data-off-title="Bấm để bật lại danh mục"
+                      >
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button
+                          class="status-toggle {% if category.is_active %}is-on{% endif %}"
+                          type="submit"
+                          aria-pressed="{% if category.is_active %}true{% else %}false{% endif %}"
+                          title="{% if category.is_active %}Bấm để tắt danh mục{% else %}Bấm để bật lại danh mục{% endif %}"
+                        >
+                          <span class="status-toggle-knob" aria-hidden="true"></span>
+                          <span data-status-toggle-label>{% if category.is_active %}Đang dùng{% else %}Đã tắt{% endif %}</span>
+                        </button>
+                      </form>
+                    </td>
+                    <td>
+                      <div class="table-actions">
+                        <a href="{% url 'category_update' category.category_id %}">Sửa</a>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <strong>Chưa có danh mục cá nhân</strong>
+            <p>Bắt đầu bằng vài danh mục quen thuộc như Ăn uống, Di chuyển, Lương hoặc Freelance.</p>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="management-panel">
+        <div class="visual-heading">
+          <h2>Danh mục gợi ý</h2>
+          <p>Danh mục mặc định của hệ thống, dùng làm nền cho giao dịch sau này.</p>
+        </div>
+        {% if default_categories %}
+          <div class="tag-list">
+            {% for category in default_categories %}
+              <span>{{ category.category_name }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <strong>Chưa có danh mục mặc định</strong>
+            <p>Bạn vẫn có thể tự tạo danh mục riêng phía trên.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </section>
+{% endblock %}

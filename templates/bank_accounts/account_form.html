@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="card form-shell">
+    <span class="eyebrow">Tài khoản tiền</span>
+    <h1>{{ page_title }}</h1>
+    <p class="hero-copy">
+      {% if form_intro %}
+        {{ form_intro }}
+      {% else %}
+        Thêm nơi giữ tiền của bạn để dashboard tính số dư và chuẩn bị cho bước nhập giao dịch.
+      {% endif %}
+    </p>
+
+    <form class="form model-form" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="form-grid">
+        {% for field in form %}
+          {% if field.name == 'is_active' %}
+            <div class="profile-field profile-field-wide form-status-field">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              <label class="form-switch-control" for="{{ field.id_for_label }}" data-form-switch-control>
+                {{ field }}
+                <span class="status-toggle" data-form-switch-visual aria-hidden="true">
+                  <span class="status-toggle-knob"></span>
+                  <span data-form-switch-label>Đang dùng</span>
+                </span>
+                <span class="form-switch-copy">Bật khi đây là nơi giữ tiền bạn vẫn muốn theo dõi trên hệ thống.</span>
+              </label>
+              {{ field.errors }}
+            </div>
+          {% else %}
+            <div class="profile-field {% if field.name == 'note' %}profile-field-wide{% endif %}">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+              {% endif %}
+              {{ field.errors }}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit">{{ submit_label }}</button>
+        <a class="button ghost" href="{% url 'bank_account_list' %}">Quay lại</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

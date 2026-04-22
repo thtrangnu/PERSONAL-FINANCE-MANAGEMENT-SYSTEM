@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Chia sẻ{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Chia sẻ nhóm</span>
+        <h1>Nhóm tài chính</h1>
+        <p class="hero-copy">Tạo nhóm để chia sẻ giao dịch với gia đình, bạn bè hoặc nhóm đi chung.</p>
+      </div>
+      <a class="button" href="{% url 'sharing_group_create' %}">Tạo nhóm</a>
+    </div>
+
+    <section class="management-panel">
+      {% if pending_invitations %}
+        <div class="invitation-list">
+          <div class="visual-heading">
+            <h2>Lời mời đang chờ bạn xác nhận</h2>
+            <p>Chỉ khi bạn đồng ý, nhóm mới xuất hiện trong danh sách của bạn.</p>
+          </div>
+          {% for invitation in pending_invitations %}
+            <article class="invitation-card">
+              <div>
+                <strong>{{ invitation.group.group_name }}</strong>
+                <p>{{ invitation.group.owner_user.full_name|default:invitation.group.owner_user.username }} mời bạn tham gia nhóm này.</p>
+              </div>
+              <div class="invitation-actions">
+                <form method="post" action="{% url 'sharing_invitation_accept' invitation.group_member_id %}">
+                  {% csrf_token %}
+                  <button type="submit">Đồng ý</button>
+                </form>
+                <form method="post" action="{% url 'sharing_invitation_decline' invitation.group_member_id %}">
+                  {% csrf_token %}
+                  <button class="button ghost" type="submit">Từ chối</button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if groups %}
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Nhóm</th>
+                <th>Mô tả</th>
+                <th>Chủ nhóm</th>
+                <th>Thành viên</th>
+                <th>Ngày tạo</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for group in groups %}
+                <tr>
+                  <td>
+                    <strong>{{ group.group_name }}</strong>
+                  </td>
+                  <td>{{ group.description|default:"Nhóm chia sẻ giao dịch" }}</td>
+                  <td>{{ group.owner_user.full_name|default:group.owner_user.username }}</td>
+                  <td>{{ group.active_member_count }}</td>
+                  <td>{{ group.created_at|date:"d/m/Y" }}</td>
+                  <td><span class="status-pill {% if group.status != 'active' %}muted{% endif %}">{{ group.get_status_display }}</span></td>
+                  <td>
+                    <div class="table-actions">
+                      <a href="{% url 'sharing_group_detail' group.group_id %}">Mở nhóm</a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <strong>Chưa có nhóm</strong>
+          <p>Tạo nhóm đầu tiên hoặc chờ lời mời được xác nhận để bắt đầu chia sẻ giao dịch.</p>
+        </div>
+      {% endif %}
+    </section>
+  </section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="card form-shell">
+    <span class="eyebrow">Danh mục</span>
+    <h1>{{ page_title }}</h1>
+    <p class="hero-copy">Đặt tên dễ hiểu để khi nhập giao dịch bạn có thể chọn nhanh, không phải nghĩ lại nhiều lần.</p>
+
+    <form class="form model-form" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="form-grid">
+        {% for field in form %}
+          {% if field.name == 'is_active' %}
+            <div class="profile-field profile-field-wide form-status-field">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              <label class="form-switch-control" for="{{ field.id_for_label }}" data-form-switch-control>
+                {{ field }}
+                <span class="status-toggle" data-form-switch-visual aria-hidden="true">
+                  <span class="status-toggle-knob"></span>
+                  <span data-form-switch-label>Đang dùng</span>
+                </span>
+                <span class="form-switch-copy">Bật khi bạn muốn danh mục này xuất hiện trong lúc nhập giao dịch.</span>
+              </label>
+              {{ field.errors }}
+            </div>
+          {% else %}
+            <div class="profile-field {% if field.name == 'description' %}profile-field-wide{% endif %}">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+              {% endif %}
+              {{ field.errors }}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit">{{ submit_label }}</button>
+        <a class="button ghost" href="{% url 'category_list' %}">Quay lại</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Tạo tài khoản{% endblock %}
+
+{% block content %}
+  <section class="card auth-card">
+    <h1>Tạo tài khoản</h1>
+    <div class="auth-actions">
+      <a class="button google" href="{% url 'google_login_start' %}">Đăng ký bằng Google</a>
+      <div class="divider">hoặc</div>
+    </div>
+    <form class="form" method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Đăng ký</button>
+    </form>
+    <p>Đã có tài khoản? <a href="{% url 'login' %}">Đăng nhập</a>.</p>
+  </section>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Báo cáo</span>
+        <h1>{{ page_title }}</h1>
+        <p class="hero-copy">{{ page_intro }}</p>
+      </div>
+      {% if export_excel_url_name %}
+        <div class="form-actions">
+          <a class="button secondary" href="{% url export_excel_url_name %}{% if export_query_string %}?{{ export_query_string }}{% else %}?year={{ selected_year }}{% if show_month_filter %}&month={{ selected_month }}{% endif %}{% if selected_flow %}&flow={{ selected_flow }}{% endif %}{% endif %}">Xuất Excel</a>
+          {% if export_pdf_url_name %}
+            <a class="button ghost" href="{% url export_pdf_url_name %}{% if export_query_string %}?{{ export_query_string }}{% else %}?year={{ selected_year }}{% if show_month_filter %}&month={{ selected_month }}{% endif %}{% if selected_flow %}&flow={{ selected_flow }}{% endif %}{% endif %}">Xuất PDF</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="report-tabs">
+      <a class="{% if active_report == 'overview' %}is-active{% endif %}" href="{% url 'report_overview' %}">Tổng quan</a>
+      <a class="{% if active_report == 'monthly' %}is-active{% endif %}" href="{% url 'report_monthly' %}">Theo tháng</a>
+      <a class="{% if active_report == 'yearly' %}is-active{% endif %}" href="{% url 'report_yearly' %}">Theo năm</a>
+      <a class="{% if active_report == 'categories' %}is-active{% endif %}" href="{% url 'report_categories' %}">Theo danh mục</a>
+      <a class="{% if active_report == 'trends' %}is-active{% endif %}" href="{% url 'report_trends' %}">Xu hướng</a>
+    </div>
+
+    <form class="filter-bar" method="get">
+      {% if show_date_range_filter %}
+        <input type="date" name="start_date" value="{{ selected_start_date|date:'Y-m-d' }}" aria-label="Từ ngày">
+        <input type="date" name="end_date" value="{{ selected_end_date|date:'Y-m-d' }}" aria-label="Đến ngày">
+      {% else %}
+        <select name="year" aria-label="Năm">
+          {% for year in years %}
+            <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>Năm {{ year }}</option>
+          {% endfor %}
+        </select>
+        {% if show_month_filter %}
+          <select name="month" aria-label="Tháng">
+            {% for month in months %}
+              <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>Tháng {{ month }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
+      {% endif %}
+      {% if flow_options %}
+        <select name="flow" aria-label="Loại dòng tiền">
+          {% for option in flow_options %}
+            <option value="{{ option.value }}" {% if selected_flow == option.value %}selected{% endif %}>{{ option.label }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
+      <button type="submit">Xem báo cáo</button>
+    </form>
+
+    <div class="dashboard-visuals" aria-label="Báo cáo trực quan">
+      <section class="chart-card report-chart-card">
+        <div class="visual-heading">
+          <h2>{{ page_title }}</h2>
+          <p>Dữ liệu bên trái được vẽ thành biểu đồ, bảng bên phải giúp đối chiếu số liệu khi demo.</p>
+        </div>
+        <div class="report-chart-frame">
+          <canvas id="reportChart" height="220"></canvas>
+        </div>
+      </section>
+
+      <section class="summary-table-card">
+        <div class="visual-heading">
+          <h2>{{ table_title }}</h2>
+        </div>
+        {% if summary_rows %}
+          <div class="table-wrap">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Nội dung</th>
+                  <th>Giá trị</th>
+                  <th>Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in summary_rows %}
+                  <tr>
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.value }}</td>
+                    <td>{{ row.note|default:"Theo bộ lọc hiện tại" }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <strong>Chưa có dữ liệu</strong>
+            <p>Thêm thu nhập hoặc chi tiêu để báo cáo có số liệu trực quan hơn.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </section>
+
+  {{ chart_data|json_script:"report-chart-data" }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    (() => {
+      const canvas = document.getElementById('reportChart');
+      const dataNode = document.getElementById('report-chart-data');
+      if (!canvas || !dataNode || !window.Chart) {
+        return;
+      }
+
+      const chartData = JSON.parse(dataNode.textContent);
+      new Chart(canvas, {
+        type: chartData.type,
+        data: {
+          labels: chartData.labels,
+          datasets: chartData.datasets,
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+          },
+          scales: chartData.type === 'doughnut' ? {} : {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    })();
+  </script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Chọn tên đăng nhập{% endblock %}
+
+{% block content %}
+  <section class="card auth-card">
+    <h1>Chọn tên đăng nhập</h1>
+    <form class="form" method="post" action="{% url 'socialaccount_signup' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      {{ redirect_field }}
+      <button type="submit">Tiếp tục</button>
+    </form>
+  </section>
+{% endblock %}

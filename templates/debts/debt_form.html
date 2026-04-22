@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="card form-shell">
+    <span class="eyebrow">Theo dõi nợ</span>
+    <h1>{{ page_title }}</h1>
+    <p class="hero-copy">Ghi khoản nợ một lần, sau đó mỗi lần trả hoặc nhận tiền thì thêm một lần thanh toán.</p>
+    <form class="form model-form" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="form-grid">
+        {% for field in form %}
+          <div class="profile-field {% if field.name == 'note' %}profile-field-wide{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="form-actions">
+        <button type="submit">{{ submit_label }}</button>
+        <a class="button ghost" href="{% url 'debt_list' %}">Quay lại</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

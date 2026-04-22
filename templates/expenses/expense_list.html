@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Chi tiêu{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Chi tiêu</span>
+        <h1>Quản lý tiền ra</h1>
+        <p class="hero-copy">Ghi lại các khoản chi và theo dõi ngân sách tự động sau mỗi giao dịch.</p>
+      </div>
+      <div class="form-actions">
+        <a class="button secondary" href="{% url 'export_expense_history_excel' %}?start_date={{ filters.start_date }}&end_date={{ filters.end_date }}&category={{ filters.category }}&bank_account={{ filters.bank_account }}">Xuất Excel</a>
+        <a class="button" href="{% url 'expense_create' %}">Thêm chi tiêu</a>
+      </div>
+    </div>
+
+    <div class="overview-cards">
+      <article>
+        <span>Tổng tiền ra</span>
+        <strong>{{ total_expense }}</strong>
+        <p>Tính theo bộ lọc hiện tại.</p>
+      </article>
+    </div>
+
+    <form class="filter-bar" method="get">
+      <input type="date" name="start_date" value="{{ filters.start_date }}" aria-label="Từ ngày">
+      <input type="date" name="end_date" value="{{ filters.end_date }}" aria-label="Đến ngày">
+      <select name="category" aria-label="Danh mục">
+        <option value="">Tất cả danh mục</option>
+        {% for category in categories %}
+          <option value="{{ category.category_id }}" {% if filters.category == category.category_id|stringformat:"s" %}selected{% endif %}>
+            {{ category.category_name }}
+          </option>
+        {% endfor %}
+      </select>
+      <select name="bank_account" aria-label="Tài khoản">
+        <option value="">Tất cả tài khoản</option>
+        {% for account in bank_accounts %}
+          <option value="{{ account.bank_account_id }}" {% if filters.bank_account == account.bank_account_id|stringformat:"s" %}selected{% endif %}>
+            {{ account.account_name }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit">Lọc</button>
+      <a class="button ghost" href="{% url 'expense_list' %}">Xóa lọc</a>
+    </form>
+
+    <div class="transaction-insights" aria-label="Cơ cấu tiền ra">
+      <section class="chart-card transaction-chart-card">
+        <div class="visual-heading">
+          <h2>Tiền ra theo danh mục</h2>
+          <p>Mỗi phần màu cho biết tiền đang được dùng vào nhóm chi tiêu nào trong bộ lọc hiện tại.</p>
+        </div>
+        {% if expense_breakdown %}
+          <div class="donut-layout transaction-donut-layout">
+            <svg class="donut-chart" viewBox="0 0 140 140" aria-label="Tiền ra theo danh mục">
+              <circle class="donut-base" cx="70" cy="70" r="48"></circle>
+              {% for item in expense_breakdown %}
+                {% if item.percent > 0 %}
+                  <path
+                    class="pie-segment {{ item.class_name }}"
+                    d="{{ item.path_d }}"
+                    data-breakdown-segment
+                    data-breakdown-detail-target="expenseBreakdownDetail"
+                    data-label="{{ item.label }}"
+                    data-value="{{ item.value }}"
+                    data-percent="{{ item.percent_label }}"
+                    role="button"
+                    tabindex="0"
+                  ></path>
+                {% endif %}
+              {% endfor %}
+              <circle class="pie-hole" cx="70" cy="70" r="28"></circle>
+            </svg>
+            <div class="chart-detail" id="expenseBreakdownDetail">
+              <span data-breakdown-detail-label>Tổng tiền ra</span>
+              <strong data-breakdown-detail-value>{{ total_expense }}</strong>
+              <p data-breakdown-detail-note>Bấm vào từng phần màu để xem số tiền và tỷ lệ của từng danh mục.</p>
+            </div>
+          </div>
+          <div class="chart-legend">
+            {% for item in expense_breakdown %}
+              <button
+                type="button"
+                class="legend-item {{ item.class_name }}"
+                data-breakdown-segment
+                data-breakdown-detail-target="expenseBreakdownDetail"
+                data-label="{{ item.label }}"
+                data-value="{{ item.value }}"
+                data-percent="{{ item.percent_label }}"
+              >
+                <span></span>{{ item.label }}
+              </button>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="chart-empty">
+            <strong>Chưa có dữ liệu để tổng hợp</strong>
+            <p>Khi có khoản chi, NUFI sẽ tự chia theo danh mục để bạn nhìn nhanh tiền đang đi đâu.</p>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="summary-table-card breakdown-table-card">
+        <div class="visual-heading">
+          <h2>Bảng chia tiền ra</h2>
+        </div>
+        {% if expense_breakdown %}
+          <div class="table-wrap">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Danh mục</th>
+                  <th>Số tiền</th>
+                  <th>Tỷ lệ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in expense_breakdown %}
+                  <tr>
+                    <td>{{ item.label }}</td>
+                    <td>{{ item.value }}</td>
+                    <td>
+                      <span class="breakdown-percent">{{ item.percent_label }}</span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <strong>Chưa có dòng chi nào</strong>
+            <p>Bảng sẽ hiện sau khi bạn thêm khoản chi tiêu đầu tiên.</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+
+    <section class="management-panel">
+      <div class="visual-heading">
+        <h2>Danh sách chi tiêu</h2>
+      </div>
+      {% if expenses %}
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Khoản chi</th>
+                <th>Danh mục</th>
+                <th>Tài khoản</th>
+                <th>Số tiền</th>
+                <th>Ngày</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for expense in expenses %}
+                <tr>
+                  <td>
+                    <strong>{{ expense.description|default:"Khoản chi" }}</strong>
+                    {% if expense.note %}
+                      <p>{{ expense.note }}</p>
+                    {% endif %}
+                  </td>
+                  <td>{{ expense.category.category_name }}</td>
+                  <td>{{ expense.bank_account.account_name|default:"Không chọn" }}</td>
+                  <td>{{ expense.formatted_amount }}</td>
+                  <td>{{ expense.expense_date|date:"d/m/Y" }}</td>
+                  <td>
+                    <div class="table-actions">
+                      <a href="{% url 'expense_update' expense.expense_id %}">Sửa</a>
+                      <a href="{% url 'expense_delete' expense.expense_id %}">Xóa</a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <strong>Chưa có khoản chi tiêu</strong>
+          <p>Thêm khoản chi đầu tiên để NUFI theo dõi tiền ra và kiểm tra ngân sách.</p>
+        </div>
+      {% endif %}
+    </section>
+  </section>
+{% endblock %}

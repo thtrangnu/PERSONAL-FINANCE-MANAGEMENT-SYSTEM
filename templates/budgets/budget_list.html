@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Ngân sách{% endblock %}
+
+{% block content %}
+  <section class="card management-shell">
+    <div class="management-heading">
+      <div>
+        <span class="eyebrow">Ngân sách</span>
+        <h1>Quản lý hạn mức</h1>
+        <p class="hero-copy">Đặt hạn mức theo tháng để NUFI cảnh báo khi bạn sắp vượt hoặc đã vượt ngân sách.</p>
+      </div>
+      <a class="button" href="{% url 'budget_create' %}">Tạo ngân sách</a>
+    </div>
+
+    <section class="management-panel">
+      {% if budgets %}
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Ngân sách</th>
+                <th>Thời gian</th>
+                <th>Đã dùng</th>
+                <th>Còn lại</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for budget in budgets %}
+                <tr>
+                  <td>
+                    <strong>{{ budget.budget_name }}</strong>
+                    <p>
+                      {% if budget.budget_scope == 'category' %}
+                        Theo danh mục: {{ budget.category.category_name }}
+                      {% else %}
+                        Ngân sách tổng
+                      {% endif %}
+                    </p>
+                  </td>
+                  <td>Tháng {{ budget.period_month }}/{{ budget.period_year }}</td>
+                  <td>
+                    {{ budget.used_amount }}
+                    <div class="mini-progress"><span style="width: {{ budget.usage_percent }}%;"></span></div>
+                  </td>
+                  <td>{{ budget.remaining_amount }}</td>
+                  <td>
+                    {% if budget.status == 'closed' %}
+                      <span class="status-toggle is-locked">
+                        <span class="status-toggle-knob" aria-hidden="true"></span>
+                        <span>Đã đóng</span>
+                      </span>
+                    {% else %}
+                      <form
+                        class="status-toggle-form"
+                        method="post"
+                        action="{% url 'budget_toggle_status' budget.budget_id %}"
+                        data-status-toggle-form
+                        data-on-label="Đang dùng"
+                        data-off-label="Tạm tắt"
+                        data-on-title="Bấm để tạm tắt ngân sách"
+                        data-off-title="Bấm để bật lại ngân sách"
+                      >
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button
+                          class="status-toggle {% if budget.status == 'active' %}is-on{% endif %}"
+                          type="button"
+                          aria-pressed="{% if budget.status == 'active' %}true{% else %}false{% endif %}"
+                          title="{% if budget.status == 'active' %}Bấm để tạm tắt ngân sách{% else %}Bấm để bật lại ngân sách{% endif %}"
+                          data-status-toggle-button
+                        >
+                          <span class="status-toggle-knob" aria-hidden="true"></span>
+                          <span data-status-toggle-label>{% if budget.status == 'active' %}Đang dùng{% else %}Tạm tắt{% endif %}</span>
+                        </button>
+                      </form>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="table-actions">
+                      <a href="{% url 'budget_update' budget.budget_id %}">Sửa</a>
+                      <a
+                        href="{% url 'budget_delete' budget.budget_id %}"
+                        data-budget-close-action
+                        {% if budget.status != 'active' %}hidden{% endif %}
+                      >Đóng</a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <strong>Chưa có ngân sách</strong>
+          <p>Tạo ngân sách tổng hoặc theo danh mục để bắt đầu nhận cảnh báo khi chi tiêu tăng cao.</p>
+        </div>
+      {% endif %}
+    </section>
+  </section>
+{% endblock %}

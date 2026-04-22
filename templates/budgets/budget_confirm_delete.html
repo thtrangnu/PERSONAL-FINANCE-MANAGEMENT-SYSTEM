@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Đóng ngân sách{% endblock %}
+
+{% block content %}
+  <section class="card confirm-shell">
+    <span class="eyebrow">Xác nhận</span>
+    <h1>Đóng ngân sách?</h1>
+    <p>Ngân sách <strong>{{ budget.budget_name }}</strong> sẽ không còn dùng để tạo cảnh báo mới.</p>
+    <form class="form-actions" method="post">
+      {% csrf_token %}
+      <button class="danger" type="submit">Đóng ngân sách</button>
+      <a class="button ghost" href="{% url 'budget_list' %}">Hủy</a>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}NUFI | Tổng quan{% endblock %}
+
+{% block content %}
+  <section class="card dashboard-shell">
+    <div class="dashboard-heading">
+      <div>
+        <span class="eyebrow">{{ dashboard_month }}</span>
+        <h1>Tổng quan tài chính</h1>
+        <p class="hero-copy">
+          Xin chào {{ dashboard_user_name }}.
+          Đây là các con số quan trọng giúp bạn nhìn nhanh tình hình tiền bạc trong tháng.
+        </p>
+      </div>
+      <div class="dashboard-status-card">
+        <span>Trạng thái tháng này</span>
+        <strong>{{ net_flow_label }}</strong>
+        <p>{{ alert_summary }}</p>
+        {% if show_admin_shortcut %}
+          <a class="button secondary dashboard-admin-button" href="{% url 'admin:index' %}">
+            Mở trang quản trị
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dashboard-grid" aria-label="Các số liệu tổng quan">
+      {% for card in dashboard_cards %}
+        <article class="dashboard-card">
+          <div class="dashboard-card-top">
+            <span>{{ card.order }}</span>
+            <p class="dashboard-label">{{ card.label }}</p>
+          </div>
+          <strong class="dashboard-value">{{ card.value }}</strong>
+          <p class="dashboard-note">{{ card.note }}</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="dashboard-analysis" aria-label="Phân tích nhanh">
+      <article class="analysis-card">
+        <span class="analysis-label">Dòng tiền ròng</span>
+        <strong>{{ net_flow }}</strong>
+        <p>Tiền vào tháng này trừ đi tiền ra tháng này.</p>
+      </article>
+      <article class="analysis-card analysis-card-wide">
+        <div class="analysis-row">
+          <span class="analysis-label">Mức dùng ngân sách</span>
+          <strong>{{ budget_used_percent }}%</strong>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <span style="width: {{ budget_used_percent }}%;"></span>
+        </div>
+        <p>{{ budget_status }}</p>
+      </article>
+    </div>
+
+    <div class="dashboard-visuals" aria-label="Bảng và biểu đồ tổng quan">
+      <section class="summary-table-card">
+        <div class="visual-heading">
+          <h2>Tổng hợp tháng này</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Chỉ số</th>
+                <th>Giá trị</th>
+                <th>Ý nghĩa</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in summary_rows %}
+                <tr>
+                  <td>{{ row.label }}</td>
+                  <td>{{ row.value }}</td>
+                  <td>{{ row.explain }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="chart-card">
+        <div class="visual-heading">
+          <h2>So sánh dòng tiền</h2>
+        </div>
+        <div class="bar-chart">
+          {% for bar in cashflow_bars %}
+            <div class="bar-row">
+              <div class="bar-meta">
+                <span>{{ bar.label }}</span>
+                <strong>{{ bar.value }}</strong>
+              </div>
+              <div class="bar-track">
+                <span class="bar-fill {{ bar.tone }}" style="width: {{ bar.percent }}%;"></span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="chart-card budget-chart-card">
+        <div class="visual-heading">
+          <h2>Ngân sách tháng</h2>
+        </div>
+        {% if budget_chart_available %}
+          <div class="donut-layout">
+            <svg class="donut-chart" viewBox="0 0 140 140" aria-label="Chart ngân sách tháng">
+              <circle class="donut-base" cx="70" cy="70" r="48"></circle>
+              {% for segment in budget_segments %}
+                {% if segment.percent > 0 %}
+                  <circle
+                    class="donut-segment {{ segment.class_name }}"
+                    cx="70"
+                    cy="70"
+                    r="48"
+                    pathLength="100"
+                    stroke-dasharray="{{ segment.percent }} 100"
+                    stroke-dashoffset="{{ segment.offset }}"
+                    data-budget-segment
+                    data-label="{{ segment.label }}"
+                    data-value="{{ segment.value }}"
+                    data-percent="{{ segment.percent }}%"
+                    role="button"
+                    tabindex="0"
+                  ></circle>
+                {% endif %}
+              {% endfor %}
+              <text x="70" y="66" text-anchor="middle" class="donut-center">{{ budget_chart_center }}</text>
+              <text x="70" y="84" text-anchor="middle" class="donut-caption">đã dùng</text>
+            </svg>
+            <div class="chart-detail" id="budgetChartDetail">
+              <span>Chi tiết chart</span>
+              <strong>Bấm vào phần màu trên chart</strong>
+              <p>{{ budget_chart_note }}</p>
+            </div>
+          </div>
+          <div class="chart-legend">
+            {% for segment in budget_segments %}
+              <button
+                type="button"
+                class="legend-item {{ segment.class_name }}"
+                data-budget-segment
+                data-label="{{ segment.label }}"
+                data-value="{{ segment.value }}"
+                data-percent="{{ segment.percent }}%"
+              >
+                <span></span>{{ segment.label }}
+              </button>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="chart-empty">
+            <strong>Chưa có ngân sách tháng này</strong>
+            <p>{{ budget_chart_note }}</p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </section>
+
+  <script>
+    document.querySelectorAll('[data-budget-segment]').forEach((segment) => {
+      const detail = document.getElementById('budgetChartDetail');
+      if (!detail) return;
+
+      const showDetail = () => {
+        document.querySelectorAll('[data-budget-segment]').forEach((item) => {
+          item.classList.remove('is-active');
+        });
+        segment.classList.add('is-active');
+        detail.innerHTML = `
+          <span>${segment.dataset.label}</span>
+          <strong>${segment.dataset.value}</strong>
+          <p>Chiếm ${segment.dataset.percent} ngân sách tháng này.</p>
+        `;
+      };
+
+      segment.addEventListener('click', showDetail);
+      segment.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          showDetail();
+        }
+      });
+    });
+  </script>
+{% endblock %}
