@@ -1,0 +1,89 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: nufi-cd
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/nufi-web
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-push:
+    name: Build and push Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t "${IMAGE_NAME}:${IMAGE_TAG}" -t "${IMAGE_NAME}:latest" .
+
+      - name: Push Docker image
+        run: |
+          docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+          docker push "${IMAGE_NAME}:latest"
+
+  helm-deploy:
+    name: Deploy to Kubernetes with Helm
+    needs: build-and-push
+    runs-on: self-hosted
+    if: ${{ vars.ENABLE_K8S_DEPLOY == 'true' }}
+
+    env:
+      RELEASE_NAME: nufi
+      NAMESPACE: nufi
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Deploy Helm chart
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+        run: |
+          helm upgrade --install "$RELEASE_NAME" deploy/helm/nufi \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --set image.repository="${IMAGE_NAME}" \
+            --set image.tag="${IMAGE_TAG}" \
+            --set externalDatabase.name="${DB_NAME:-pfms}" \
+            --set externalDatabase.user="${DB_USER:-root}" \
+            --set externalDatabase.host="${DB_HOST:-host.docker.internal}" \
+            --set externalDatabase.port="${DB_PORT:-3306}" \
+            --set secret.secretKey="${SECRET_KEY:-django-insecure-nufi-k8s-change-me}" \
+            --set secret.dbPassword="${DB_PASSWORD}" \
+            --set secret.googleOauthClientId="${GOOGLE_OAUTH_CLIENT_ID}" \
+            --set secret.googleOauthClientSecret="${GOOGLE_OAUTH_CLIENT_SECRET}" \
+            --set monitoring.serviceMonitor.enabled=true \
+            --set monitoring.prometheusRule.enabled=true
+
+      - name: Verify rollout
+        run: |
+          kubectl -n "$NAMESPACE" rollout status deployment -l app.kubernetes.io/instance="$RELEASE_NAME" --timeout=180s
+          kubectl -n "$NAMESPACE" get pods,svc,ingress

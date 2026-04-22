@@ -1,0 +1,65 @@
+name: CD Local
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: nufi-local-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy with Docker Compose on self-hosted runner
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Create Docker env file
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+        run: |
+          cat > .env.docker <<ENV
+          SECRET_KEY=${SECRET_KEY:-django-insecure-nufi-local-deploy-change-me}
+          DEBUG=True
+          ALLOWED_HOSTS=127.0.0.1,localhost,0.0.0.0,web
+          WEB_HOST_PORT=8001
+          PORT=8000
+          WEB_CONCURRENCY=2
+          GUNICORN_TIMEOUT=120
+          RUN_MIGRATIONS=true
+          RUN_COLLECTSTATIC=true
+          DB_ENGINE=mysql
+          DB_NAME=${DB_NAME:-pfms}
+          DB_USER=${DB_USER:-root}
+          DB_PASSWORD=${DB_PASSWORD}
+          DB_HOST=host.docker.internal
+          DB_PORT=3306
+          DB_UNIX_SOCKET=
+          GS_BUCKET_NAME=
+          REPORT_OUTPUT_DIR=generated_reports
+          DJANGO_SUPERUSER_USERNAME=admin
+          DJANGO_SUPERUSER_EMAIL=admin@nufi.local
+          DJANGO_SUPERUSER_PASSWORD=admin12345
+          GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+          GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
+          ENV
+
+      - name: Deploy Docker Compose
+        run: |
+          docker compose --env-file .env.docker down
+          docker compose --env-file .env.docker up --build -d
+
+      - name: Verify deployment
+        run: |
+          docker compose --env-file .env.docker ps
+          docker compose --env-file .env.docker exec -T web python manage.py check

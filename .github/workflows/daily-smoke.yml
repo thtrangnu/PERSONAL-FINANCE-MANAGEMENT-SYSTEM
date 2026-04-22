@@ -1,0 +1,36 @@
+name: Daily Smoke Test
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: Health and route smoke test
+    runs-on: ubuntu-latest
+
+    env:
+      SMOKE_BASE_URL: ${{ secrets.SMOKE_BASE_URL }}
+      SMOKE_USERNAME: ${{ secrets.SMOKE_USERNAME }}
+      SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install smoke dependencies
+        run: pip install requests==2.33.1
+
+      - name: Skip when demo URL is not configured
+        if: ${{ env.SMOKE_BASE_URL == '' }}
+        run: echo "SMOKE_BASE_URL is not configured, skipping scheduled smoke test."
+
+      - name: Run smoke test
+        if: ${{ env.SMOKE_BASE_URL != '' }}
+        run: python scripts/smoke_test.py
