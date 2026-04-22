@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-pfms}
+      MYSQL_USER: ${MYSQL_USER:-nufi}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nufi_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+07:00
+    ports:
+      - "${MYSQL_HOST_PORT:-3308}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  web:
+    build:
+      context: .
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      DB_ENGINE: ${DB_ENGINE:-mysql}
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-pfms}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+      DB_UNIX_SOCKET: ${DB_UNIX_SOCKET:-}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-127.0.0.1,localhost,0.0.0.0,web}
+      PORT: ${PORT:-8000}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+      RUN_COLLECTSTATIC: ${RUN_COLLECTSTATIC:-true}
+    ports:
+      - "${WEB_HOST_PORT:-8001}:8000"
+    volumes:
+      - .:/app
+      - ./media:/app/media
+      - static_data:/app/staticfiles
+
+volumes:
+  mysql_data:
+  static_data:
