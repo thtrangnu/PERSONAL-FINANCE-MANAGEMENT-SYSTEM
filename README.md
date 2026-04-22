@@ -2,6 +2,72 @@
 
 NUFI là hệ thống quản lý tài chính cá nhân chạy bằng Django và MySQL. Repo đã được chuẩn bị để chạy local bằng Docker Compose, dùng chung MySQL local trên máy Mac, và có CI/CD bằng GitHub Actions.
 
+## Trọng Tâm Database Của Dự Án
+
+Đây là project môn **Hệ quản trị cơ sở dữ liệu**, nên database không chỉ là nơi lưu dữ liệu cho web mà là phần cốt lõi của toàn bộ hệ thống.
+
+Trong dự án này:
+
+- Hệ quản trị CSDL chính là **MySQL 8**.
+- Cơ sở dữ liệu quản lý các thực thể chính như:
+  - `users`
+  - `categories`
+  - `bank_accounts`
+  - `incomes`
+  - `expenses`
+  - `budgets`
+  - `alerts`
+  - `debts`
+  - `debt_payments`
+  - `groups`
+  - `group_members`
+  - `shared_transactions`
+- Thiết kế dữ liệu có sử dụng:
+  - **Primary Key**
+  - **Foreign Key**
+  - **CHECK**
+  - **UNIQUE**
+  - **NOT NULL**
+  - **INDEX**
+  - **VIEW**
+  - **FUNCTION**
+  - **PROCEDURE**
+  - **TRIGGER**
+- Hệ thống còn mở rộng sang các nội dung gần với vận hành thực tế như:
+  - backup / restore
+  - scheduled jobs
+  - monitoring
+  - alerting
+
+Nếu nhìn theo đúng tinh thần môn DBMS, repo này có 3 lớp chính:
+
+1. **Thiết kế dữ liệu**
+   - ERD
+   - lược đồ quan hệ
+   - business rules
+   - phân quyền dữ liệu
+
+2. **Cài đặt SQL**
+   - schema
+   - views
+   - functions
+   - procedures
+   - triggers
+   - indexes
+   - sample data
+
+3. **Tích hợp và khai thác dữ liệu**
+   - Django đọc/ghi dữ liệu từ MySQL
+   - dashboard, reports, alerts
+   - CronJob, backup, monitoring
+
+Các tài liệu database quan trọng nhất:
+
+- [project-overview.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/project-overview.md)
+- [business-rules.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/business-rules.md)
+- [relational-schema.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/relational-schema.md)
+- [system-requirements.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/system-requirements.md)
+
 ## Hướng Dẫn Chạy Nhanh
 
 Nếu muốn chạy nhanh dự án bằng Docker Compose, làm theo thứ tự này:
@@ -290,6 +356,57 @@ Nếu bạn chỉ muốn dựng web để chạy ứng dụng Django, không c�
 python manage.py migrate
 ```
 
+## Tài Liệu Database
+
+Nếu bạn đọc repo theo hướng học phần DBMS, nên đi theo thứ tự này:
+
+1. Xem tổng quan bài toán và phạm vi dữ liệu:
+
+```text
+docs/specifications/project-overview.md
+```
+
+2. Xem các luật nghiệp vụ chi phối dữ liệu:
+
+```text
+docs/specifications/business-rules.md
+```
+
+3. Xem module nghiệp vụ để hiểu dữ liệu được dùng ở đâu:
+
+```text
+docs/specifications/modules.md
+```
+
+4. Xem lược đồ quan hệ, chuẩn hóa, ERD rút gọn, PK/FK và các SQL object:
+
+```text
+docs/specifications/relational-schema.md
+```
+
+5. Xem yêu cầu chức năng và phi chức năng gắn với dữ liệu:
+
+```text
+docs/specifications/system-requirements.md
+```
+
+6. Sau đó mới đi vào phần script SQL thực thi:
+
+```text
+sql/schema.sql
+sql/functions.sql
+sql/triggers.sql
+sql/views.sql
+sql/procedures.sql
+sql/indexes.sql
+sql/sample_data.sql
+```
+
+Nếu cần viết bài luận hoặc báo cáo môn DBMS, 2 tài liệu quan trọng nhất để bắt đầu là:
+
+- [relational-schema.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/relational-schema.md)
+- [system-requirements.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/system-requirements.md)
+
 ## Kiểm Tra Luồng Chính
 
 Sau khi web lên, kiểm tra nhanh:
@@ -525,6 +642,97 @@ Nếu terminal báo `helm: command not found`, cài Helm trên macOS:
 ```bash
 brew install helm
 ```
+
+## Cổng Mặc Định
+
+Các cổng thường dùng trong repo:
+
+- `8000`: Django local chạy trực tiếp bằng `runserver`
+- `8001`: Docker Compose
+- `8002`: Kubernetes qua `kubectl port-forward svc/nufi 8002:80`
+- `3000`: Grafana
+- `9090`: Prometheus
+- `9093`: Alertmanager
+
+Nên giữ đúng các cổng trên khi demo để:
+
+- Google OAuth callback không bị lệch
+- smoke test và checklist demo không phải sửa lại
+- Cloudflare Tunnel luôn trỏ đúng vào bản Kubernetes ở `8002`
+
+## Troubleshooting
+
+### Web không lên ở `8000`
+
+- Kiểm tra môi trường ảo đã activate chưa.
+- Nếu dùng SQLite, chạy lại:
+
+```bash
+DB_ENGINE=sqlite python manage.py migrate
+DB_ENGINE=sqlite python manage.py runserver 127.0.0.1:8000
+```
+
+### Web không lên ở `8001`
+
+- Kiểm tra container:
+
+```bash
+docker compose --env-file .env.docker ps
+```
+
+- Xem log web:
+
+```bash
+docker compose --env-file .env.docker logs -f web
+```
+
+### Web không lên ở `8002`
+
+- Chạy lại port-forward:
+
+```bash
+kubectl -n nufi port-forward svc/nufi 8002:80
+```
+
+- Nếu cổng đang bận, dừng terminal `port-forward` cũ hoặc kill tiến trình cũ.
+
+### Prometheus target `nufi` bị `DOWN`
+
+- Mở Prometheus ở `9090`.
+- Kiểm tra query:
+
+```promql
+up{job="nufi"}
+```
+
+- Nếu bằng `0`, kiểm tra:
+  - pod `nufi` còn chạy không
+  - `ServiceMonitor` đã apply chưa
+  - `ALLOWED_HOSTS` có chặn pod IP hoặc tunnel host không
+
+### Alertmanager / watcher không báo
+
+- Kiểm tra Alertmanager đang mở ở `9093`.
+- Chạy thử một lần:
+
+```bash
+.venv/bin/python scripts/alert_watcher.py --once
+```
+
+- Nếu cổng `9093` đang bận, đổi sang cổng khác:
+
+```bash
+kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-alertmanager 9094:9093
+.venv/bin/python scripts/alert_watcher.py --url http://127.0.0.1:9094/api/v2/alerts
+```
+
+### Cloudflare trả `502` hoặc `Bad Request`
+
+- Kiểm tra terminal `cloudflared` còn chạy không.
+- Kiểm tra terminal `kubectl -n nufi port-forward svc/nufi 8002:80` còn chạy không.
+- Refresh lại link sau khi `8002` hoạt động lại.
+
+## Tài Liệu Quan Trọng
 
 File quản lý version app, data model và pipeline:
 
