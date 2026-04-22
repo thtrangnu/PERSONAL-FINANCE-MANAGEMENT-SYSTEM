@@ -1,0 +1,68 @@
+{{- if .Values.pipelines.mysqlDump.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "nufi.fullname" . }}-mysql-dump
+  labels:
+    {{- include "nufi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+    nufi.io/pipeline: mysql-dump
+spec:
+  schedule: {{ .Values.pipelines.mysqlDump.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.pipelines.mysqlDump.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.pipelines.mysqlDump.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: mysql-dump
+              image: {{ .Values.pipelines.mysqlDump.image | quote }}
+              env:
+                - name: DB_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "nufi.configMapName" . }}
+                      key: DB_HOST
+                - name: DB_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "nufi.configMapName" . }}
+                      key: DB_PORT
+                - name: DB_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "nufi.configMapName" . }}
+                      key: DB_NAME
+                - name: DB_USER
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "nufi.configMapName" . }}
+                      key: DB_USER
+                - name: MYSQL_PWD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "nufi.secretName" . }}
+                      key: DB_PASSWORD
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  mkdir -p /backup/mysql
+                  mysqldump -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" "$DB_NAME" \
+                    | gzip > "/backup/mysql/${DB_NAME}-$(date +%Y%m%d-%H%M%S).sql.gz"
+              volumeMounts:
+                - name: reports
+                  mountPath: /backup
+          volumes:
+            - name: reports
+              {{- if .Values.persistence.reports.enabled }}
+              persistentVolumeClaim:
+                claimName: {{ include "nufi.reportsPvcName" . }}
+              {{- else }}
+              emptyDir: {}
+              {{- end }}
+{{- end }}

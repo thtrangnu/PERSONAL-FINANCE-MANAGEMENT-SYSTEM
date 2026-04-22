@@ -1,0 +1,162 @@
+replicaCount: 1
+
+image:
+  repository: nufi-web
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: /metrics
+  prometheus.io/port: "8000"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: nufi.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+app:
+  version: "0.1.0"
+  modelVersion: "data-model-2026.04"
+  pipelineVersion: "pipeline-2026.04"
+
+env:
+  debug: "False"
+  allowedHosts: "nufi.local,127.0.0.1,localhost"
+  webConcurrency: "2"
+  gunicornTimeout: "120"
+  reportOutputDir: /app/generated_reports
+  gsBucketName: ""
+  djangoSuperuserUsername: ""
+  djangoSuperuserEmail: ""
+
+externalDatabase:
+  engine: mysql
+  name: pfms
+  user: root
+  host: mysql.default.svc.cluster.local
+  port: "3306"
+  unixSocket: ""
+
+secret:
+  create: true
+  name: ""
+  secretKey: "change-me-before-deploy"
+  dbPassword: ""
+  djangoSuperuserPassword: ""
+  googleOauthClientId: ""
+  googleOauthClientSecret: ""
+
+persistence:
+  media:
+    enabled: true
+    hostPath: ""
+    size: 1Gi
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+  reports:
+    enabled: true
+    size: 2Gi
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+
+migrationJob:
+  enabled: true
+  useHelmHook: true
+  backoffLimit: 3
+
+pipelines:
+  dailySummary:
+    enabled: true
+    schedule: "5 0 * * *"
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+  budgetAlertCheck:
+    enabled: true
+    schedule: "*/30 * * * *"
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+  debtOverdueCheck:
+    enabled: true
+    schedule: "15 0 * * *"
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+  backupAndExport:
+    enabled: true
+    schedule: "30 1 * * *"
+    successfulJobsHistoryLimit: 5
+    failedJobsHistoryLimit: 3
+  mysqlDump:
+    enabled: false
+    schedule: "45 1 * * *"
+    image: mysql:8.0
+    successfulJobsHistoryLimit: 5
+    failedJobsHistoryLimit: 3
+  smokeTest:
+    enabled: true
+    schedule: "0 2 * * *"
+    baseUrl: ""
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+
+monitoring:
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    scrapeTimeout: 10s
+    path: /metrics
+    releaseLabel: prometheus
+  prometheusRule:
+    enabled: false
+    labels:
+      release: prometheus
+  grafanaDashboard:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

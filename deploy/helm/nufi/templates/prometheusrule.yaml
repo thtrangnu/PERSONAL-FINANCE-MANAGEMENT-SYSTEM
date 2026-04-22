@@ -1,0 +1,165 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "nufi.fullname" . }}
+  labels:
+    {{- include "nufi.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: nufi.availability
+      rules:
+        - alert: NufiWebDown
+          expr: max(up{job="{{ include "nufi.fullname" . }}", namespace="{{ .Release.Namespace }}"}) < 1 or absent(up{job="{{ include "nufi.fullname" . }}", namespace="{{ .Release.Namespace }}"})
+          for: 2m
+          labels:
+            severity: critical
+            category: availability
+            service: nufi
+          annotations:
+            summary: NUFI đang mất kết nối monitoring
+            description: Prometheus không thể scrape metrics từ web NUFI trong ít nhất 2 phút.
+            impact: Dashboard và alert có thể không còn phản ánh đúng trạng thái thật của ứng dụng.
+            action: Kiểm tra pod, log ứng dụng, Service, Endpoint và truy cập thử /healthz hoặc /metrics.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+            runbook_url: http://127.0.0.1:3000/d/nufi-monitoring
+        - alert: NufiMetricsScrapeSlow
+          expr: avg_over_time(scrape_duration_seconds{job="{{ include "nufi.fullname" . }}", namespace="{{ .Release.Namespace }}"}[10m]) > 1
+          for: 10m
+          labels:
+            severity: warning
+            category: availability
+            service: nufi
+          annotations:
+            summary: Endpoint metrics của NUFI phản hồi chậm
+            description: Prometheus mất hơn 1 giây để scrape metrics của NUFI trong ít nhất 10 phút.
+            impact: Dashboard và cảnh báo có thể bị trễ hoặc thiếu ổn định.
+            action: Kiểm tra tải CPU, bộ nhớ, truy vấn DB và log ứng dụng để tìm điểm nghẽn.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+    - name: nufi.runtime
+      rules:
+        - alert: NufiPodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "nufi.fullname" . }}.*"}[15m]) >= 3
+          for: 5m
+          labels:
+            severity: critical
+            category: stability
+            service: nufi
+          annotations:
+            summary: Pod NUFI đang restart lặp lại
+            description: Container của NUFI đã restart từ 3 lần trở lên trong 15 phút gần đây.
+            impact: Người dùng có thể gặp lỗi truy cập, timeout hoặc mất phiên.
+            action: Kiểm tra log pod, migration, kết nối cơ sở dữ liệu và biến môi trường mới deploy.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+        - alert: NufiPodRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "nufi.fullname" . }}.*"}[10m]) > 0
+          for: 2m
+          labels:
+            severity: warning
+            category: stability
+            service: nufi
+          annotations:
+            summary: Pod NUFI vừa khởi động lại
+            description: Có container của NUFI đã restart trong 10 phút gần đây.
+            impact: Đây có thể là dấu hiệu sớm của lỗi cấu hình, thiếu tài nguyên hoặc lỗi kết nối bên dưới.
+            action: Kiểm tra pod events và application logs trước khi vấn đề trở nên nghiêm trọng hơn.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+        - alert: NufiPodOOMKilled
+          expr: max_over_time(kube_pod_container_status_last_terminated_reason{namespace="{{ .Release.Namespace }}", pod=~"{{ include "nufi.fullname" . }}.*", reason="OOMKilled"}[15m]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            category: stability
+            service: nufi
+          annotations:
+            summary: Pod NUFI bị OOMKilled
+            description: Kubernetes ghi nhận container NUFI bị dừng do thiếu bộ nhớ trong 15 phút gần đây.
+            impact: Ứng dụng có thể bị restart, mất ổn định hoặc phản hồi chậm khi tải tăng.
+            action: Tăng memory limit nếu cần và kiểm tra đoạn xử lý hoặc truy vấn gây tăng bộ nhớ bất thường.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+    - name: nufi.resources
+      rules:
+        - alert: NufiHighCpu
+          expr: sum(rate(container_cpu_usage_seconds_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "nufi.fullname" . }}.*", container!="", image!=""}[5m])) > 0.4
+          for: 10m
+          labels:
+            severity: warning
+            category: resource
+            service: nufi
+          annotations:
+            summary: CPU của NUFI đang cao
+            description: Pod web của NUFI đã dùng CPU cao hơn ngưỡng dự kiến trong ít nhất 10 phút.
+            impact: Người dùng có thể bắt đầu thấy phản hồi chậm ở một số thao tác nặng.
+            action: Kiểm tra dashboard CPU, log ứng dụng và truy vấn chậm để xác định tác vụ tiêu tốn CPU.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+        - alert: NufiCriticalCpu
+          expr: sum(rate(container_cpu_usage_seconds_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "nufi.fullname" . }}.*", container!="", image!=""}[5m])) > 0.8
+          for: 10m
+          labels:
+            severity: critical
+            category: resource
+            service: nufi
+          annotations:
+            summary: CPU của NUFI đang ở mức rất cao
+            description: Pod web của NUFI đã dùng CPU rất cao liên tục trong ít nhất 10 phút.
+            impact: Ứng dụng có nguy cơ timeout, chậm toàn cục hoặc bắt đầu restart nếu tải tiếp tục tăng.
+            action: Kiểm tra request bất thường, tối ưu truy vấn và cân nhắc tăng tài nguyên hoặc scale thêm replica.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+        - alert: NufiHighMemory
+          expr: sum(container_memory_working_set_bytes{namespace="{{ .Release.Namespace }}", pod=~"{{ include "nufi.fullname" . }}.*", container!="", image!=""}) > 400 * 1024 * 1024
+          for: 10m
+          labels:
+            severity: warning
+            category: resource
+            service: nufi
+          annotations:
+            summary: Bộ nhớ của NUFI đang cao
+            description: Pod web của NUFI đã dùng hơn 400Mi bộ nhớ trong ít nhất 10 phút.
+            impact: Nếu xu hướng tiếp tục tăng, pod có thể tiến gần giới hạn bộ nhớ và bị OOMKilled.
+            action: Theo dõi biểu đồ memory, kiểm tra các request nặng, export báo cáo và truy vấn dùng nhiều RAM.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+        - alert: NufiCriticalMemory
+          expr: sum(container_memory_working_set_bytes{namespace="{{ .Release.Namespace }}", pod=~"{{ include "nufi.fullname" . }}.*", container!="", image!=""}) > 470 * 1024 * 1024
+          for: 5m
+          labels:
+            severity: critical
+            category: resource
+            service: nufi
+          annotations:
+            summary: Bộ nhớ của NUFI gần chạm ngưỡng giới hạn
+            description: Pod web của NUFI đang dùng trên 470Mi bộ nhớ trong ít nhất 5 phút.
+            impact: Pod có nguy cơ OOMKilled và gây gián đoạn truy cập cho người dùng.
+            action: Cần xử lý ngay truy vấn hoặc tác vụ gây tăng bộ nhớ, hoặc tăng memory limit nếu phù hợp.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+    - name: nufi.business
+      rules:
+        - alert: NufiUnreadAlertsBacklog
+          expr: max(nufi_unread_alerts_total{job="{{ include "nufi.fullname" . }}", namespace="{{ .Release.Namespace }}"}) >= 10
+          for: 15m
+          labels:
+            severity: warning
+            category: business
+            service: nufi
+          annotations:
+            summary: Cảnh báo chưa đọc trong NUFI đang tích lại
+            description: Hệ thống đang có từ 10 cảnh báo chưa đọc trở lên trong ít nhất 15 phút.
+            impact: Người dùng hoặc quản trị viên có thể bỏ lỡ các tín hiệu quan trọng như vượt ngân sách hoặc lỗi luồng dữ liệu.
+            action: Mở phần cảnh báo trong ứng dụng để xem nguyên nhân và xử lý các cảnh báo đang tồn đọng.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+        - alert: NufiUnreadAlertsCritical
+          expr: max(nufi_unread_alerts_total{job="{{ include "nufi.fullname" . }}", namespace="{{ .Release.Namespace }}"}) >= 25
+          for: 15m
+          labels:
+            severity: critical
+            category: business
+            service: nufi
+          annotations:
+            summary: Số cảnh báo chưa đọc của NUFI đang ở mức nguy hiểm
+            description: Hệ thống đang có từ 25 cảnh báo chưa đọc trở lên trong ít nhất 15 phút.
+            impact: Đây là tín hiệu rõ ràng cho thấy ứng dụng đang tích tụ bất thường nghiệp vụ hoặc người dùng đang bị ngập cảnh báo.
+            action: Kiểm tra ngay dashboard tổng quan, phần cảnh báo trong app và các job định kỳ gần nhất.
+            dashboard_url: http://127.0.0.1:3000/d/nufi-monitoring
+{{- end }}

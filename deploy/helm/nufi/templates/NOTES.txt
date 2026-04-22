@@ -1,0 +1,13 @@
+NUFI has been installed.
+
+Web service:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "nufi.fullname" . }} 8002:{{ .Values.service.port }}
+
+Open:
+  http://127.0.0.1:8002/
+
+Check pods:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Run backup manually:
+  kubectl -n {{ .Release.Namespace }} create job --from=cronjob/{{ include "nufi.fullname" . }}-backup-and-export nufi-backup-manual

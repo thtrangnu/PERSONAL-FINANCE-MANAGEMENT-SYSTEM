@@ -1,0 +1,153 @@
+{{- if .Values.pipelines.dailySummary.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "nufi.fullname" . }}-daily-summary
+  labels:
+    {{- include "nufi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pipeline
+    nufi.io/pipeline: daily-summary
+spec:
+  schedule: {{ .Values.pipelines.dailySummary.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.pipelines.dailySummary.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.pipelines.dailySummary.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: {{ include "nufi.serviceAccountName" . }}
+          containers:
+            - name: daily-summary
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["/entrypoint.sh"]
+              args: ["python", "manage.py", "daily_summary"]
+              envFrom:
+                - configMapRef:
+                    name: {{ include "nufi.configMapName" . }}
+                - secretRef:
+                    name: {{ include "nufi.secretName" . }}
+              volumeMounts:
+                - name: reports
+                  mountPath: /app/generated_reports
+          volumes:
+            - name: reports
+              {{- if .Values.persistence.reports.enabled }}
+              persistentVolumeClaim:
+                claimName: {{ include "nufi.reportsPvcName" . }}
+              {{- else }}
+              emptyDir: {}
+              {{- end }}
+---
+{{- end }}
+{{- if .Values.pipelines.budgetAlertCheck.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "nufi.fullname" . }}-budget-alert-check
+  labels:
+    {{- include "nufi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pipeline
+    nufi.io/pipeline: budget-alert-check
+spec:
+  schedule: {{ .Values.pipelines.budgetAlertCheck.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.pipelines.budgetAlertCheck.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.pipelines.budgetAlertCheck.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: {{ include "nufi.serviceAccountName" . }}
+          containers:
+            - name: budget-alert-check
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["/entrypoint.sh"]
+              args: ["python", "manage.py", "budget_alert_check"]
+              envFrom:
+                - configMapRef:
+                    name: {{ include "nufi.configMapName" . }}
+                - secretRef:
+                    name: {{ include "nufi.secretName" . }}
+---
+{{- end }}
+{{- if and .Values.pipelines (hasKey .Values.pipelines "debtOverdueCheck") .Values.pipelines.debtOverdueCheck.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "nufi.fullname" . }}-debt-overdue-check
+  labels:
+    {{- include "nufi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pipeline
+    nufi.io/pipeline: debt-overdue-check
+spec:
+  schedule: {{ .Values.pipelines.debtOverdueCheck.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.pipelines.debtOverdueCheck.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.pipelines.debtOverdueCheck.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: {{ include "nufi.serviceAccountName" . }}
+          containers:
+            - name: debt-overdue-check
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["/entrypoint.sh"]
+              args: ["python", "manage.py", "debt_overdue_check"]
+              envFrom:
+                - configMapRef:
+                    name: {{ include "nufi.configMapName" . }}
+                - secretRef:
+                    name: {{ include "nufi.secretName" . }}
+---
+{{- end }}
+{{- if .Values.pipelines.backupAndExport.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "nufi.fullname" . }}-backup-and-export
+  labels:
+    {{- include "nufi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+    nufi.io/pipeline: backup-and-export
+spec:
+  schedule: {{ .Values.pipelines.backupAndExport.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.pipelines.backupAndExport.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.pipelines.backupAndExport.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: {{ include "nufi.serviceAccountName" . }}
+          containers:
+            - name: backup-and-export
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["/entrypoint.sh"]
+              args: ["python", "manage.py", "backup_and_export"]
+              envFrom:
+                - configMapRef:
+                    name: {{ include "nufi.configMapName" . }}
+                - secretRef:
+                    name: {{ include "nufi.secretName" . }}
+              volumeMounts:
+                - name: reports
+                  mountPath: /app/generated_reports
+          volumes:
+            - name: reports
+              {{- if .Values.persistence.reports.enabled }}
+              persistentVolumeClaim:
+                claimName: {{ include "nufi.reportsPvcName" . }}
+              {{- else }}
+              emptyDir: {}
+              {{- end }}
+{{- end }}

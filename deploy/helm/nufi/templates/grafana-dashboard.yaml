@@ -1,0 +1,234 @@
+{{- if .Values.monitoring.grafanaDashboard.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nufi.fullname" . }}-grafana-dashboard
+  labels:
+    {{- include "nufi.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.grafanaDashboard.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  nufi-dashboard.json: |
+    {
+      "uid": "nufi-monitoring",
+      "title": "NUFI Monitoring Tổng Quan",
+      "tags": ["nufi", "django", "finance", "overview"],
+      "description": "Dashboard tổng quan để theo dõi tình trạng ứng dụng NUFI, tài nguyên và các cảnh báo quan trọng.",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 2,
+      "refresh": "30s",
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Trạng thái ứng dụng",
+          "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {"options": {"0": {"index": 0, "text": "Đang lỗi"}, "1": {"index": 1, "text": "Ổn định"}}, "type": "value"}
+              ],
+              "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}
+            },
+            "overrides": []
+          },
+          "targets": [
+            {"expr": "max(up{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "up"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Alert đang kích hoạt",
+          "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 3}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {"expr": "count(ALERTS{alertstate=\"firing\", alertname=~\"Nufi.*\"})", "legendFormat": "firing"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Cảnh báo chưa đọc",
+          "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 5},
+                  {"color": "red", "value": 10}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {"expr": "max(nufi_unread_alerts_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "unread"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Tài khoản đang theo dõi",
+          "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+          },
+          "targets": [
+            {"expr": "max(nufi_active_accounts_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "accounts"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Khoản thu đang theo dõi",
+          "gridPos": {"x": 0, "y": 4, "w": 8, "h": 4},
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+          },
+          "targets": [
+            {"expr": "max(nufi_active_income_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "income"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Khoản chi đang theo dõi",
+          "gridPos": {"x": 8, "y": 4, "w": 8, "h": 4},
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+          },
+          "targets": [
+            {"expr": "max(nufi_active_expenses_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "expenses"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Ngân sách đang hoạt động",
+          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 4},
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+          },
+          "targets": [
+            {"expr": "max(nufi_active_budgets_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "budgets"}
+          ]
+        },
+        {
+          "type": "bargauge",
+          "title": "Dữ liệu tài chính hiện có",
+          "gridPos": {"x": 0, "y": 8, "w": 8, "h": 8},
+          "options": {
+            "displayMode": "basic",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "showUnfilled": true
+          },
+          "targets": [
+            {"expr": "max(nufi_active_income_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "Thu nhập"},
+            {"expr": "max(nufi_active_expenses_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "Chi tiêu"},
+            {"expr": "max(nufi_active_accounts_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "Tài khoản"},
+            {"expr": "max(nufi_active_budgets_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "Ngân sách"},
+            {"expr": "max(nufi_unread_alerts_total{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"})", "legendFormat": "Cảnh báo chưa đọc"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "CPU của pod NUFI",
+          "gridPos": {"x": 8, "y": 8, "w": 8, "h": 8},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "cores"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {"expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"{{ .Release.Namespace }}\", pod=~\"{{ include "nufi.fullname" . }}.*\", container!=\"\", image!=\"\"}[5m]))", "legendFormat": "CPU"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Bộ nhớ của pod NUFI",
+          "gridPos": {"x": 16, "y": 8, "w": 8, "h": 8},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "targets": [
+            {"expr": "sum(container_memory_working_set_bytes{namespace=\"{{ .Release.Namespace }}\", pod=~\"{{ include "nufi.fullname" . }}.*\", container!=\"\", image!=\"\"})", "legendFormat": "Memory"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Số alert theo thời gian",
+          "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+          "targets": [
+            {"expr": "count(ALERTS{alertstate=\"firing\", alertname=~\"Nufi.*\"})", "legendFormat": "Alert firing"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Tín hiệu scrape của NUFI",
+          "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+          "fieldConfig": {
+            "defaults": {
+              "max": 1,
+              "min": 0
+            },
+            "overrides": []
+          },
+          "targets": [
+            {"expr": "up{job=\"{{ include "nufi.fullname" . }}\", namespace=\"{{ .Release.Namespace }}\"}", "legendFormat": "{{`{{pod}}`}}"}
+          ]
+        }
+      ]
+    }
+{{- end }}

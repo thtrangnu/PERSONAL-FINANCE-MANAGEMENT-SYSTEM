@@ -1,0 +1,13 @@
+# Local Docker Desktop override.
+# Keep avatar uploads shared between local Django, Docker Compose and Kubernetes.
+externalDatabase:
+  engine: mysql
+  name: pfms
+  user: root
+  host: host.docker.internal
+  port: "3306"
+
+persistence:
+  media:
+    enabled: true
+    hostPath: /Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/media

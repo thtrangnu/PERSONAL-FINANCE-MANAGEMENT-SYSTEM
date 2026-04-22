@@ -1,0 +1,29 @@
+{{- if .Values.pipelines.smokeTest.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "nufi.fullname" . }}-smoke-test
+  labels:
+    {{- include "nufi.labels" . | nindent 4 }}
+    app.kubernetes.io/component: smoke-test
+    nufi.io/pipeline: smoke-test
+spec:
+  schedule: {{ .Values.pipelines.smokeTest.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.pipelines.smokeTest.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.pipelines.smokeTest.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: smoke-test
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["python"]
+              args: ["scripts/smoke_test.py"]
+              env:
+                - name: SMOKE_BASE_URL
+                  value: {{ default (printf "http://%s.%s.svc.cluster.local" (include "nufi.fullname" .) .Release.Namespace) .Values.pipelines.smokeTest.baseUrl | quote }}
+{{- end }}
