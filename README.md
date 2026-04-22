@@ -31,6 +31,75 @@ docker compose --env-file .env.docker up --build -d
 http://127.0.0.1:8001/
 ```
 
+## Chạy Local Bằng Django Trên Cổng 8000
+
+Nếu muốn chạy trực tiếp bằng Django thay vì Docker, có thể dùng một trong hai cách dưới đây.
+
+### Cách 1. Chạy local nhanh nhất bằng SQLite
+
+1. Tạo môi trường ảo và cài thư viện:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+2. Chạy migrate với SQLite:
+
+```bash
+DB_ENGINE=sqlite python manage.py migrate
+```
+
+3. Mở web local ở cổng `8000`:
+
+```bash
+DB_ENGINE=sqlite python manage.py runserver 127.0.0.1:8000
+```
+
+4. Truy cập:
+
+```text
+http://127.0.0.1:8000/
+```
+
+### Cách 2. Chạy local với MySQL
+
+1. Tạo file môi trường:
+
+```bash
+cp .env.example .env
+```
+
+2. Chỉnh `.env` cho đúng MySQL local của bạn, ví dụ:
+
+```env
+DB_ENGINE=mysql
+DB_NAME=pfms
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_HOST=127.0.0.1
+DB_PORT=3306
+```
+
+3. Chạy migrate:
+
+```bash
+python manage.py migrate
+```
+
+4. Mở web local ở cổng `8000`:
+
+```bash
+python manage.py runserver 127.0.0.1:8000
+```
+
+5. Truy cập:
+
+```text
+http://127.0.0.1:8000/
+```
+
 ## Cấu Trúc Thư Mục Dự Án
 
 Các thư mục chính trong repo:
@@ -323,6 +392,89 @@ Tài liệu triển khai chi tiết nằm ở:
 ```text
 docs/deployment/kubernetes.md
 ```
+
+### Cách Mở Monitoring
+
+Sau khi stack `monitoring` đã được cài trên Kubernetes, có thể mở các dịch vụ giám sát như sau:
+
+1. Mở Grafana:
+
+```bash
+kubectl -n monitoring port-forward svc/monitoring-grafana 3000:80
+```
+
+Truy cập:
+
+```text
+http://127.0.0.1:3000/
+```
+
+2. Mở Prometheus:
+
+```bash
+kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090
+```
+
+Truy cập:
+
+```text
+http://127.0.0.1:9090/
+```
+
+3. Mở Alertmanager:
+
+```bash
+kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-alertmanager 9093:9093
+```
+
+Truy cập:
+
+```text
+http://127.0.0.1:9093/
+```
+
+4. Kiểm tra target của ứng dụng NUFI trong Prometheus:
+
+```promql
+up{job="nufi"}
+```
+
+Nếu target hoạt động đúng, giá trị sẽ là `1`.
+
+5. Kiểm tra nhanh các metric của ứng dụng:
+
+```promql
+nufi_active_income_total
+```
+
+```promql
+nufi_active_expenses_total
+```
+
+```promql
+nufi_unread_alerts_total
+```
+
+6. Nếu muốn máy local nhận thông báo khi có alert mới:
+
+```bash
+.venv/bin/python scripts/alert_watcher.py
+```
+
+Hoặc chỉ kiểm tra một lần:
+
+```bash
+.venv/bin/python scripts/alert_watcher.py --once
+```
+
+### Dashboard Monitoring Của NUFI
+
+Sau khi Grafana mở ở `3000`, bạn có thể:
+
+- vào `Dashboards`
+- tìm dashboard `NUFI Monitoring` hoặc `NUFI Monitoring Tổng Quan`
+
+Dashboard này lấy dữ liệu trực tiếp từ Prometheus thông qua `ServiceMonitor` và `PrometheusRule` đã cấu hình trong Helm chart của dự án.
 
 ## Public Demo Bằng Cloudflare Tunnel
 
