@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from apps.accounts.models import UserProfile
+from apps.bank_accounts.balance import database_trigger_exists
 from apps.bank_accounts.models import BankAccount
 from apps.debts.forms import DebtForm, DebtPaymentForm
 from apps.debts.models import Debt
@@ -37,6 +38,12 @@ def _format_money(amount, currency='VND'):
 
 def _can_add_payment(debt):
     return debt.is_active and debt.status != Debt.STATUS_PAID and debt.remaining_amount > 0
+
+
+def _database_handles_debt_updates():
+    if connection.vendor != 'mysql':
+        return False
+    return database_trigger_exists('trg_debt_payments_ai_update_debt')
 
 
 @login_required
@@ -127,10 +134,11 @@ def debt_payment_create(request, debt_id):
                 with transaction.atomic():
                     payment.debt = debt
                     payment.save()
-                    if connection.vendor == 'mysql':
+                    if _database_handles_debt_updates():
                         debt.refresh_from_db()
                     else:
                         debt.remaining_amount = max(Decimal('0'), debt.remaining_amount - payment.amount)
+                        debt.save(update_fields=['remaining_amount', 'updated_at'])
                     sync_debt_status_and_alert(debt)
                     delta = -payment.amount if debt.debt_type == Debt.TYPE_I_OWE else payment.amount
                     BankAccount.objects.filter(
