@@ -116,71 +116,6 @@
     </div>
   </section>
 
-  <section class="soft-section card landing-panel feature-shell" aria-label="Bảo mật, phân quyền và quản lý dữ liệu">
-    <div class="section-heading">
-      <h2 class="section-title">Bảo mật, phân quyền và quản lý dữ liệu</h2>
-    </div>
-    <p class="section-copy">
-      Trong NUFI, dữ liệu tài chính cá nhân không chỉ được lưu lại để bạn xem cho tiện,
-      mà còn được sắp xếp, kiểm soát và theo dõi theo cách an toàn hơn. Hiểu đơn giản,
-      hệ thống giúp bạn yên tâm rằng thông tin quan trọng như tài khoản tiền, lịch sử
-      thu chi, ngân sách, khoản nợ hay báo cáo đều được giữ đúng chỗ, đúng người, đúng quyền và
-      dễ tìm lại khi cần.
-    </p>
-    <div class="security-grid">
-      <div class="security-card">
-        <strong>Bảo vệ thông tin cá nhân và lịch sử tài chính</strong>
-        <p>
-          Mỗi người dùng có khu vực dữ liệu riêng để xem hồ sơ, số tiền đang có, khoản
-          thu nhập, khoản chi tiêu và các báo cáo của mình. Điều này giúp thông tin cá
-          nhân không bị lẫn với dữ liệu của người khác trong quá trình sử dụng.
-        </p>
-        <p>
-          Với người dùng thông thường, điều quan trọng nhất là bạn có thể đăng nhập và
-          xem đúng phần dữ liệu của mình, thay vì phải lo dữ liệu bị hiển thị tràn sang
-          tài khoản khác.
-        </p>
-      </div>
-      <div class="security-card">
-        <strong>Kiểm soát quyền xem và quyền tham gia</strong>
-        <p>
-          Khi có tính năng làm việc theo nhóm, hệ thống không tự ý đưa người khác vào
-          dữ liệu chung. Người được mời cần xác nhận trước khi tham gia, nên bạn dễ hiểu
-          ai đang cùng xem hoặc cùng theo dõi một khoản chia sẻ.
-        </p>
-        <p>
-          Cách làm này giúp hạn chế việc chia sẻ nhầm thông tin và tạo cảm giác rõ ràng
-          hơn về quyền truy cập của từng người trong từng nhóm.
-        </p>
-      </div>
-      <div class="security-card">
-        <strong>Lưu dữ liệu có tổ chức để dễ tìm, dễ kiểm tra</strong>
-        <p>
-          Dữ liệu được chia thành từng phần như tài khoản tiền, danh mục, thu nhập, chi
-          tiêu, ngân sách, cảnh báo, khoản nợ và báo cáo. Nhờ vậy, khi cần xem lại, bạn
-          không phải dò từng dòng rời rạc mà có thể tìm theo đúng phần mình đang cần.
-        </p>
-        <p>
-          Với người dùng, điều này mang lại cảm giác gọn gàng và dễ hiểu hơn rất nhiều,
-          nhất là khi dữ liệu đã tăng lên theo nhiều tháng sử dụng.
-        </p>
-      </div>
-      <div class="security-card">
-        <strong>Quản trị hệ thống, sao lưu và giữ trải nghiệm ổn định</strong>
-        <p>
-          Phía sau giao diện người dùng, hệ thống có các bước kiểm tra định kỳ, tạo báo
-          cáo và sao lưu dữ liệu để giảm rủi ro thất lạc thông tin quan trọng. Nhờ đó,
-          việc sử dụng hằng ngày ổn định hơn và dữ liệu có cơ sở để khôi phục khi cần.
-        </p>
-        <p>
-          Bạn không cần thao tác kỹ thuật để dùng phần này, nhưng vẫn được hưởng lợi vì
-          hệ thống luôn có lớp quản trị đứng sau để duy trì sự an toàn và trật tự của dữ
-          liệu.
-        </p>
-      </div>
-    </div>
-  </section>
-
   <section class="soft-section info-stack">
     <div id="workflow" class="card landing-panel info-card">
       <div class="section-heading">
@@ -214,13 +149,44 @@
         </div>
       </div>
     </div>
-    <div class="card landing-panel info-card">
-      <div class="section-heading">
-        <h2 class="section-title section-title-compact">Liên hệ</h2>
+
+    <footer class="landing-footer" aria-label="Thông tin cuối trang">
+      <div class="landing-footer-grid">
+        <div class="landing-footer-brand">
+          <strong>NUFI</strong>
+          <p>
+            Hệ thống quản lý tài chính cá nhân giúp ghi nhận thu chi,
+            theo dõi ngân sách, khoản nợ và báo cáo theo thời gian.
+          </p>
+        </div>
+
+        <div class="landing-footer-column">
+          <h2>Tính năng nổi bật</h2>
+          <ul>
+            <li>Quản lý thu chi</li>
+            <li>Theo dõi ngân sách</li>
+            <li>Báo cáo tài chính</li>
+          </ul>
+        </div>
+
+        <div class="landing-footer-column">
+          <h2>Bảo mật và phân quyền</h2>
+          <ul>
+            <li><a href="{% url 'legal_policy' %}">Chính sách pháp lý</a></li>
+            <li><a href="{% url 'user_policy' %}">Chính sách người dùng</a></li>
+          </ul>
+        </div>
+
+        <div class="landing-footer-column">
+          <h2>Liên hệ</h2>
+          <ul>
+            <li>
+              <a href="mailto:thuytrangnu311@gmail.com">thuytrangnu311@gmail.com</a>
+            </li>
+          </ul>
+        </div>
       </div>
-      <p>
-        Email: <a href="mailto:thuytrangnu311@gmail.com">thuytrangnu311@gmail.com</a>
-      </p>
-    </div>
+
+    </footer>
   </section>
 {% endblock %}

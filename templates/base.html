@@ -1112,6 +1112,78 @@
       text-underline-offset: 4px;
     }
 
+    .landing-footer {
+      border-top: 1px solid rgba(232, 220, 200, 0.96);
+      padding: 42px 0 0;
+    }
+
+    .landing-footer-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.35fr) repeat(3, minmax(160px, 0.72fr));
+      gap: 42px;
+      align-items: start;
+    }
+
+    .landing-footer-brand strong {
+      display: block;
+      margin-bottom: 14px;
+      color: var(--brand);
+      font-size: 1.35rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+
+    .landing-footer-brand p {
+      max-width: 420px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.75;
+    }
+
+    .landing-footer-column h2 {
+      margin: 0 0 18px;
+      color: var(--ink);
+      font-size: 0.98rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .landing-footer-column ul {
+      display: grid;
+      gap: 14px;
+      margin: 0;
+      padding: 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+      font-weight: 760;
+      line-height: 1.5;
+      list-style: none;
+    }
+
+    .landing-footer-column a {
+      color: var(--muted);
+      font-weight: 760;
+    }
+
+    .landing-footer-column a:hover {
+      color: var(--brand-dark);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .landing-footer-bottom {
+      margin-top: 42px;
+      border-top: 1px solid rgba(232, 220, 200, 0.96);
+      padding: 24px 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 760;
+      line-height: 1.65;
+    }
+
     .dashboard-shell {
       background:
         radial-gradient(circle at top left, rgba(217, 244, 239, 0.58), transparent 24rem),
@@ -2823,6 +2895,14 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .landing-footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .landing-footer-brand {
+        grid-column: 1 / -1;
+      }
+
       .debt-payment-summary {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -2895,6 +2975,19 @@
       .theme-footer-wrap {
         align-items: flex-start;
         flex-direction: column;
+      }
+
+      .landing-footer {
+        padding-top: 32px;
+      }
+
+      .landing-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+
+      .landing-footer-bottom {
+        margin-top: 32px;
       }
 
       .status-choice-group {
