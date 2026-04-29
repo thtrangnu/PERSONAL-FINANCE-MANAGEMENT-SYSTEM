@@ -22,6 +22,8 @@ class LoginRequiredMiddleware:
             reverse('login'),
             reverse('google_login_start'),
             reverse('register'),
+            reverse('legal_policy'),
+            reverse('user_policy'),
         }
         public_prefixes = [
             settings.STATIC_URL,

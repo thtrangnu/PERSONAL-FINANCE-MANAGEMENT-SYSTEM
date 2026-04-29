@@ -75,6 +75,14 @@ def landing(request):
     return render(request, 'dashboard/landing.html')
 
 
+def legal_policy(request):
+    return render(request, 'dashboard/legal_policy.html')
+
+
+def user_policy(request):
+    return render(request, 'dashboard/user_policy.html')
+
+
 def healthz(request):
     return JsonResponse({'status': 'ok', 'service': 'nufi'})
 
