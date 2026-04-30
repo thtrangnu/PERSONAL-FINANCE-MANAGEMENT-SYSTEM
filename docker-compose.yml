@@ -30,13 +30,6 @@ services:
     env_file:
       - .env.docker
     environment:
-      DB_ENGINE: ${DB_ENGINE:-mysql}
-      DB_HOST: ${DB_HOST:-host.docker.internal}
-      DB_PORT: ${DB_PORT:-3306}
-      DB_NAME: ${DB_NAME:-pfms}
-      DB_USER: ${DB_USER:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-}
-      DB_UNIX_SOCKET: ${DB_UNIX_SOCKET:-}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-127.0.0.1,localhost,0.0.0.0,web}
       PORT: ${PORT:-8000}
       RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
