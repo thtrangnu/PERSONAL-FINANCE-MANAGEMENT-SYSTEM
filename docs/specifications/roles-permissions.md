@@ -1,456 +1,456 @@
 # Roles and Permissions Specification
 
-## 1. Mục đích tài liệu
-Tài liệu này xác định rõ:
-- hệ thống có những actor nào,
-- mỗi actor được làm gì,
-- mỗi actor không được làm gì,
-- nguyên tắc phân quyền và bảo mật dữ liệu.
+## 1. Purpose
+This document defines:
+- which actors exist in the system,
+- what each actor is allowed to do,
+- what each actor is not allowed to do,
+- access control principles and data security policies.
 
-Đây là tài liệu cực kỳ quan trọng vì project liên quan trực tiếp đến **dữ liệu tài chính cá nhân**, nên nếu phân quyền sai thì hệ thống bị lỗi nghiêm trọng cả về nghiệp vụ lẫn bảo mật.
+This is an extremely important document because the project deals directly with **personal financial data**. Incorrect permission design leads to serious failures in both business logic and security.
 
 ---
 
-## 2. Danh sách actor chính
-Hệ thống chốt 3 actor:
+## 2. List of Main Actors
+The system has 3 confirmed actors:
 1. **Guest**
 2. **User**
 3. **Admin**
 
 ---
 
-## 3. Mô tả actor
+## 3. Actor Descriptions
 
 ### 3.1. Guest
-Guest là người chưa đăng nhập vào hệ thống.
+A guest is a user who has not logged in.
 
-**Đặc điểm:**
-- Không có phiên xác thực.
-- Không có dữ liệu tài chính cá nhân trong hệ thống hoặc chưa truy cập dữ liệu đó.
+**Characteristics:**
+- No authenticated session.
+- Has no personal financial data in the system, or has not yet accessed it.
 
-**Mục tiêu sử dụng:**
-- Tìm hiểu về hệ thống.
-- Đăng ký tài khoản mới.
-- Đăng nhập nếu đã có tài khoản.
+**Usage goals:**
+- Learn about the system.
+- Register a new account.
+- Log in if an account already exists.
 
 ---
 
 ### 3.2. User
-User là người đã đăng nhập thành công và sử dụng hệ thống để quản lý tài chính cá nhân.
+A user is someone who has successfully logged in and uses the system to manage personal finances.
 
-**Đặc điểm:**
-- Có tài khoản hợp lệ.
-- Chỉ được thao tác trên dữ liệu của chính mình.
-- Có thể sử dụng các module lõi như income, expense, category, bank account, budget, reports.
+**Characteristics:**
+- Has a valid account.
+- May only operate on their own data.
+- Can use core modules: income, expense, category, bank account, budget, reports.
 
-**Mục tiêu sử dụng:**
-- Theo dõi tài chính cá nhân.
-- Xem báo cáo chi tiêu.
-- Kiểm soát ngân sách.
-- Nhận cảnh báo.
+**Usage goals:**
+- Track personal finances.
+- View spending reports.
+- Control budgets.
+- Receive alerts.
 
 ---
 
 ### 3.3. Admin
-Admin là người quản trị hệ thống.
+An admin is a system administrator.
 
-**Đặc điểm:**
-- Có quyền cao hơn User.
-- Có thể quản lý người dùng, category mặc định, logs, trạng thái hệ thống.
-- Không được dùng quyền quản trị để xem tùy tiện dữ liệu tài chính riêng tư nếu chính sách hệ thống không cho phép.
+**Characteristics:**
+- Has higher permissions than a regular user.
+- Can manage users, default categories, logs, and system status.
+- Must not use administrative privileges to arbitrarily view users' private financial data unless the system policy permits it.
 
-**Mục tiêu sử dụng:**
-- Quản lý vận hành hệ thống.
-- Kiểm tra người dùng.
-- Kiểm tra lỗi và log.
-- Theo dõi backup/recovery.
+**Usage goals:**
+- Manage system operations.
+- Check user accounts.
+- Check errors and logs.
+- Monitor backup/recovery.
 
 ---
 
-## 4. Nguyên tắc phân quyền tổng quát
+## 4. General Access Control Principles
 
 ### 4.1. Principle of Least Privilege
-Mỗi actor chỉ được cấp **đúng mức quyền cần thiết** để hoàn thành công việc của mình.
+Each actor is granted **only the permissions necessary** to complete their tasks.
 
-### 4.2. Ownership-based Access Control
-Đối với dữ liệu tài chính cá nhân, quyền truy cập phải dựa trên nguyên tắc **sở hữu dữ liệu**:
-- bản ghi income thuộc user nào thì chỉ user đó được xem/sửa/xóa,
-- expense thuộc user nào thì chỉ user đó được xem/sửa/xóa,
-- budget thuộc user nào thì chỉ user đó được xem/sửa/xóa,
-- bank account thuộc user nào thì chỉ user đó được xem/sửa/xóa.
+### 4.2. Ownership-Based Access Control
+For personal financial data, access must be based on **data ownership**:
+- income records belong to a user — only that user may view/edit/delete them,
+- expense records belong to a user — only that user may view/edit/delete them,
+- budgets belong to a user — only that user may view/edit/delete them,
+- bank accounts belong to a user — only that user may view/edit them.
 
-### 4.3. Authentication before Authorization
-Muốn kiểm tra quyền thì trước hết phải xác thực người dùng là ai.
+### 4.3. Authentication Before Authorization
+To check permissions, a user must first be authenticated.
 
 ### 4.4. Default Deny
-Nếu một quyền chưa được cấp rõ ràng, hệ thống phải mặc định từ chối.
+If a permission has not been explicitly granted, the system must deny access by default.
 
 ---
 
-## 5. Bảng quyền theo actor
+## 5. Permission Matrix by Actor
 
-| Chức năng | Guest | User | Admin |
+| Feature | Guest | User | Admin |
 |---|---|---|---|
-| Xem landing page | Có | Có | Có |
-| Đăng ký | Có | Không cần | Có thể tạo user thủ công nếu hỗ trợ |
-| Đăng nhập | Có | Có | Có |
-| Đăng xuất | Không | Có | Có |
-| Xem/sửa hồ sơ cá nhân | Không | Có (chỉ của mình) | Có (hồ sơ admin của chính mình) |
-| Quản lý income | Không | Có (chỉ của mình) | Không mặc định |
-| Quản lý expenses | Không | Có (chỉ của mình) | Không mặc định |
-| Quản lý categories cá nhân | Không | Có (chỉ của mình) | Có thể quản lý category hệ thống |
-| Quản lý bank accounts | Không | Có (chỉ của mình) | Không mặc định |
-| Quản lý budgets | Không | Có (chỉ của mình) | Không mặc định |
-| Xem alerts | Không | Có (chỉ của mình) | Có thể xem alert hệ thống |
-| Xem dashboard | Không | Có (chỉ của mình) | Có dashboard quản trị |
-| Xem reports | Không | Có (chỉ của mình) | Chỉ báo cáo quản trị nếu có |
-| Theo dõi debts | Không | Có (chỉ của mình) | Không mặc định |
-| Tham gia sharing groups | Không | Có | Không mặc định |
-| Export Excel/PDF | Không | Có (dữ liệu của mình) | Có thể export báo cáo quản trị |
-| Quản lý users | Không | Không | Có |
-| Quản lý logs | Không | Không | Có |
-| Backup/Recovery operations | Không | Không | Có |
+| View landing page | Yes | Yes | Yes |
+| Register | Yes | Not needed | Can create users manually if supported |
+| Login | Yes | Yes | Yes |
+| Logout | No | Yes | Yes |
+| View/edit personal profile | No | Yes (own only) | Yes (admin's own profile) |
+| Manage income | No | Yes (own only) | Not by default |
+| Manage expenses | No | Yes (own only) | Not by default |
+| Manage personal categories | No | Yes (own only) | Can manage system categories |
+| Manage bank accounts | No | Yes (own only) | Not by default |
+| Manage budgets | No | Yes (own only) | Not by default |
+| View alerts | No | Yes (own only) | Can view system alerts |
+| View dashboard | No | Yes (own only) | Has admin dashboard |
+| View reports | No | Yes (own only) | Admin reports only if available |
+| Track debts | No | Yes (own only) | Not by default |
+| Join sharing groups | No | Yes | Not by default |
+| Export Excel/PDF | No | Yes (own data only) | Can export admin reports |
+| Manage users | No | No | Yes |
+| Manage logs | No | No | Yes |
+| Backup/Recovery operations | No | No | Yes |
 
 ---
 
-## 6. Quyền chi tiết theo actor
+## 6. Detailed Permissions by Actor
 
-# 6.1. Guest permissions
+# 6.1. Guest Permissions
 
-### Guest được phép
-- Truy cập landing page.
-- Xem giới thiệu hệ thống.
-- Truy cập trang đăng ký.
-- Truy cập trang đăng nhập.
+### Guest is allowed to
+- Access the landing page.
+- View system introduction content.
+- Access the registration page.
+- Access the login page.
 
-### Guest không được phép
-- Xem dashboard.
-- Xem báo cáo.
-- Xem hoặc tạo income/expense.
-- Xem bất kỳ dữ liệu tài chính nào.
-- Gọi API yêu cầu xác thực.
+### Guest is not allowed to
+- View the dashboard.
+- View reports.
+- View or create income/expense.
+- View any financial data.
+- Call APIs that require authentication.
 
-### Hành vi hệ thống khi Guest cố truy cập trái phép
-- Chuyển hướng đến trang login.
-- Hoặc trả về HTTP 401/403 tùy kiến trúc.
-
----
-
-# 6.2. User permissions
-
-## 6.2.1. Quyền với hồ sơ cá nhân
-User được phép:
-- xem hồ sơ,
-- sửa hồ sơ,
-- đổi mật khẩu,
-- thay đổi một số cài đặt cá nhân.
-
-User không được:
-- sửa hồ sơ của người khác,
-- xem hồ sơ chi tiết của người khác.
+### System behavior when a guest attempts unauthorized access
+- Redirect to the login page.
+- Or return HTTP 401/403 depending on the architecture.
 
 ---
 
-## 6.2.2. Quyền với income
-User được phép:
-- tạo income,
-- xem danh sách income của mình,
-- xem chi tiết income của mình,
-- sửa income của mình,
-- xóa income của mình.
+# 6.2. User Permissions
 
-User không được:
-- xem income của user khác,
-- sửa/xóa income của user khác,
-- truyền `user_id` tùy ý để chiếm quyền bản ghi.
+## 6.2.1. Personal Profile
+Users are allowed to:
+- view their profile,
+- edit their profile,
+- change their password,
+- modify certain personal settings.
 
----
-
-## 6.2.3. Quyền với expenses
-User được phép:
-- tạo expense,
-- xem expense của mình,
-- sửa expense của mình,
-- xóa expense của mình,
-- lọc expense theo category/date/account.
-
-User không được:
-- truy cập expense của user khác,
-- xem category usage của user khác.
+Users are not allowed to:
+- edit another user's profile,
+- view another user's detailed profile.
 
 ---
 
-## 6.2.4. Quyền với categories
-User được phép:
-- tạo category cá nhân,
-- sửa category cá nhân,
-- vô hiệu hóa category cá nhân,
-- dùng category hệ thống mặc định nếu được cung cấp.
+## 6.2.2. Income
+Users are allowed to:
+- create income,
+- view their own income list,
+- view details of their own income,
+- edit their own income,
+- delete their own income.
 
-User không được:
-- chỉnh sửa category hệ thống nếu không phải admin,
-- chỉnh sửa category cá nhân của người khác.
-
----
-
-## 6.2.5. Quyền với bank accounts
-User được phép:
-- tạo bank account,
-- sửa thông tin tài khoản,
-- xem số dư,
-- xem giao dịch liên quan.
-
-User không được:
-- xem hoặc thay đổi bank account của người khác,
-- rút/trừ số dư của người khác.
+Users are not allowed to:
+- view another user's income,
+- edit/delete another user's income,
+- pass arbitrary `user_id` to take ownership of records.
 
 ---
 
-## 6.2.6. Quyền với budgets
-User được phép:
-- tạo budget,
-- sửa budget,
-- đóng budget,
-- xem mức sử dụng budget,
-- xem cảnh báo phát sinh từ budget.
+## 6.2.3. Expenses
+Users are allowed to:
+- create expenses,
+- view their own expenses,
+- edit their own expenses,
+- delete their own expenses,
+- filter expenses by category/date/account.
 
-User không được:
-- truy cập budget của người khác.
-
----
-
-## 6.2.7. Quyền với alerts
-User được phép:
-- xem alert của mình,
-- đánh dấu đã đọc,
-- lọc theo loại alert.
-
-User không được:
-- xem alert của user khác.
+Users are not allowed to:
+- access another user's expenses,
+- view another user's category usage.
 
 ---
 
-## 6.2.8. Quyền với reports/dashboard
-User được phép:
-- xem dashboard cá nhân,
-- xem báo cáo ngày/tháng/năm của mình,
-- xem biểu đồ và bảng dữ liệu của mình,
-- export dữ liệu của mình.
+## 6.2.4. Categories
+Users are allowed to:
+- create personal categories,
+- edit their own categories,
+- deactivate their own categories,
+- use default system categories if provided.
 
-User không được:
-- xem báo cáo tổng của người khác,
-- export dữ liệu người khác.
-
----
-
-## 6.2.9. Quyền với debts
-User được phép:
-- tạo debt record,
-- cập nhật trạng thái,
-- ghi payment,
-- xem debt của mình.
-
-User không được:
-- xem debt của người khác trừ khi có mô hình chia sẻ hợp lệ.
+Users are not allowed to:
+- edit system categories (admin only),
+- edit another user's personal categories.
 
 ---
 
-## 6.2.10. Quyền với sharing groups
-User được phép:
-- tạo group nếu hệ thống cho phép,
-- tham gia group,
-- xem shared transactions của nhóm mình là thành viên,
-- thêm shared transaction nếu có quyền trong nhóm.
+## 6.2.5. Bank Accounts
+Users are allowed to:
+- create bank accounts,
+- edit account information,
+- view balance,
+- view related transactions.
 
-User không được:
-- xem giao dịch của group khác,
-- thêm thành viên trái phép nếu không phải owner/admin nhóm,
-- xem transaction private không được chia sẻ.
-
----
-
-# 6.3. Admin permissions
-
-## 6.3.1. Quyền với người dùng
-Admin được phép:
-- xem danh sách user,
-- kích hoạt / vô hiệu hóa user,
-- tìm kiếm user,
-- xem trạng thái tài khoản.
-
-Admin cần thận trọng với:
-- việc chỉnh sửa dữ liệu tài chính cá nhân,
-- việc truy cập dữ liệu riêng tư không nằm trong chính sách.
+Users are not allowed to:
+- view or modify another user's bank accounts,
+- deduct from another user's balance.
 
 ---
 
-## 6.3.2. Quyền với category hệ thống
-Admin được phép:
-- tạo default categories,
-- chỉnh sửa category dùng chung,
-- vô hiệu hóa category hệ thống.
+## 6.2.6. Budgets
+Users are allowed to:
+- create budgets,
+- edit budgets,
+- close budgets,
+- view budget usage,
+- view alerts generated by budgets.
+
+Users are not allowed to:
+- access another user's budgets.
 
 ---
 
-## 6.3.3. Quyền với logs và vận hành
-Admin được phép:
-- xem authentication logs,
-- xem error logs,
-- xem log của các job định kỳ,
-- theo dõi backup/recovery,
-- kiểm tra tác vụ hệ thống.
+## 6.2.7. Alerts
+Users are allowed to:
+- view their own alerts,
+- mark alerts as read,
+- filter by alert type.
+
+Users are not allowed to:
+- view another user's alerts.
 
 ---
 
-## 6.3.4. Quyền với backup/recovery
-Admin được phép:
-- chạy backup thủ công,
-- phục hồi dữ liệu theo quy trình,
-- kiểm tra tình trạng file backup,
-- xác minh tính toàn vẹn cơ bản.
+## 6.2.8. Reports and Dashboard
+Users are allowed to:
+- view their personal dashboard,
+- view their own daily/monthly/yearly reports,
+- view their own charts and data tables,
+- export their own data.
+
+Users are not allowed to:
+- view another user's aggregate reports,
+- export another user's data.
 
 ---
 
-## 6.3.5. Hạn chế của Admin
-Admin không nên mặc định có quyền xem toàn bộ transaction cá nhân chi tiết trừ khi:
-- có chính sách môn học/đề tài cho phép,
-- hoặc cần phục vụ debug có kiểm soát,
-- hoặc dữ liệu chỉ là dữ liệu demo.
+## 6.2.9. Debts
+Users are allowed to:
+- create debt records,
+- update status,
+- record payments,
+- view their own debts.
 
-Khuyến nghị tốt hơn:
-- Admin quản trị user và hệ thống,
-- dữ liệu tài chính chi tiết của user vẫn nên được bảo vệ.
+Users are not allowed to:
+- view another user's debts unless a valid sharing model exists.
 
 ---
 
-## 7. Quy tắc bảo mật cốt lõi
+## 6.2.10. Sharing Groups
+Users are allowed to:
+- create a group if the system permits,
+- join a group,
+- view shared transactions of groups they are a member of,
+- add shared transactions if they have permission in the group.
 
-### 7.1. Mỗi user chỉ xem dữ liệu tài chính của chính mình
-Đây là nguyên tắc quan trọng nhất của hệ thống.
+Users are not allowed to:
+- view transactions of groups they are not a member of,
+- add members without authorization if not the owner/admin of the group,
+- view private transactions that have not been shared.
 
-Áp dụng cho:
+---
+
+# 6.3. Admin Permissions
+
+## 6.3.1. User Management
+Admin is allowed to:
+- view user list,
+- activate / deactivate users,
+- search users,
+- view account status.
+
+Admin should exercise caution with:
+- editing individual users' personal financial data,
+- accessing private data outside of policy.
+
+---
+
+## 6.3.2. System Category Management
+Admin is allowed to:
+- create default categories,
+- edit shared categories,
+- deactivate system categories.
+
+---
+
+## 6.3.3. Logs and Operations
+Admin is allowed to:
+- view authentication logs,
+- view error logs,
+- view scheduled job logs,
+- monitor backup/recovery,
+- check system tasks.
+
+---
+
+## 6.3.4. Backup/Recovery
+Admin is allowed to:
+- run manual backups,
+- restore data following procedure,
+- check backup file status,
+- verify basic integrity.
+
+---
+
+## 6.3.5. Admin Limitations
+By default, admins should not have access to all individual transaction details unless:
+- the course/project policy explicitly permits it,
+- it is needed for controlled debugging,
+- the data is demo data only.
+
+Better practice:
+- admins manage users and the system,
+- users' detailed financial data should still be protected.
+
+---
+
+## 7. Core Security Rules
+
+### 7.1. Each user may only view their own financial data
+This is the most important rule in the system.
+
+Applies to:
 - income,
 - expenses,
-- categories cá nhân,
+- personal categories,
 - bank accounts,
 - budgets,
 - alerts,
 - reports,
 - debts.
 
-### 7.2. Không được lộ income/expense của người khác
-Điều này áp dụng ở cả:
-- giao diện,
+### 7.2. Income/expense must never be exposed to other users
+This applies at all levels:
+- UI,
 - API,
-- export,
-- báo cáo,
-- query DB.
+- exports,
+- reports,
+- DB queries.
 
-### 7.3. Không tin dữ liệu từ phía client
-Dù client gửi `user_id`, backend vẫn phải lấy user từ session/token hiện tại và kiểm tra ownership.
+### 7.3. Never trust client-side data
+Even if the client sends a `user_id`, the backend must extract the user from the current session/token and verify ownership.
 
-### 7.4. Cần log các hành vi quan trọng
-Các hành vi nên log:
-- login thành công/thất bại,
-- đổi mật khẩu,
-- khóa/mở user,
+### 7.4. Log important actions
+Actions that should be logged:
+- successful/failed logins,
+- password changes,
+- locking/unlocking users,
 - backup/recovery,
-- lỗi hệ thống,
-- chạy job nền.
+- system errors,
+- background job runs.
 
 ---
 
-## 8. Hướng đăng nhập được chốt
+## 8. Confirmed Login Methods
 
-### Giai đoạn đầu
-- **Login thường** bằng email/username + password.
+### Phase 1
+- **Standard login** with email/username + password.
 
-### Giai đoạn sau
-- **Google Login** có thể thêm sau.
+### Phase 2
+- **Google Login** can be added later.
 
-### Lý do chốt như vậy
-- Login thường dễ triển khai và ổn định cho MVP.
-- Google login là mở rộng tốt nhưng không nên làm ngay khi schema/chức năng lõi chưa xong.
-
----
-
-## 9. Quy tắc phân quyền ở backend Django
-Trong Django, cần thực hiện kiểm soát ở các mức sau:
-
-### 9.1. Route-level protection
-- Trang cần đăng nhập phải có `login_required` hoặc equivalent.
-- API phải chặn truy cập chưa xác thực.
-
-### 9.2. Object-level permission
-Không chỉ kiểm tra user đã login hay chưa, mà còn phải kiểm tra:
-- object này có thuộc user hiện tại không.
-
-Ví dụ:
-- `/expenses/15/edit/` chỉ hợp lệ nếu expense id=15 thuộc user đang đăng nhập.
-
-### 9.3. Admin panel separation
-- Admin panel chỉ cho admin truy cập.
-- User thường không được truy cập chức năng quản trị.
+### Rationale
+- Standard login is straightforward and stable for MVP.
+- Google login is a good extension but should not be implemented before the core schema and features are complete.
 
 ---
 
-## 10. Permission matrix chi tiết hơn theo module
+## 9. Backend Permission Enforcement in Django
+In Django, access control must be enforced at the following levels:
+
+### 9.1. Route-Level Protection
+- Pages requiring login must have `login_required` or equivalent.
+- APIs must block unauthenticated access.
+
+### 9.2. Object-Level Permissions
+Not only checking if the user is logged in, but also verifying:
+- whether this object belongs to the current user.
+
+Example:
+- `/expenses/15/edit/` is only valid if expense id=15 belongs to the currently logged-in user.
+
+### 9.3. Admin Panel Separation
+- The admin panel is accessible to admins only.
+- Regular users must not access admin features.
+
+---
+
+## 10. Detailed Permission Matrix by Module
 
 | Module | Guest | User | Admin |
 |---|---|---|---|
 | Accounts | register/login | profile/update/logout | manage users |
-| Income | không | CRUD own | không mặc định |
-| Expenses | không | CRUD own | không mặc định |
-| Categories | không | CRUD own categories | manage default categories |
-| Bank Accounts | không | CRUD own | không mặc định |
-| Budgets | không | CRUD own | không mặc định |
-| Alerts | không | view own | system-level only |
-| Reports | không | view/export own | admin reports only |
-| Debts | không | CRUD own | không mặc định |
-| Sharing | không | access groups of membership | moderate if designed |
-| Logs | không | không | view/manage |
-| Backup/Recovery | không | không | manage |
+| Income | none | CRUD own | not by default |
+| Expenses | none | CRUD own | not by default |
+| Categories | none | CRUD own categories | manage default categories |
+| Bank Accounts | none | CRUD own | not by default |
+| Budgets | none | CRUD own | not by default |
+| Alerts | none | view own | system-level only |
+| Reports | none | view/export own | admin reports only |
+| Debts | none | CRUD own | not by default |
+| Sharing | none | access groups of membership | moderate if designed |
+| Logs | none | none | view/manage |
+| Backup/Recovery | none | none | manage |
 
 ---
 
-## 11. Các tình huống kiểm thử phân quyền
+## 11. Permission Test Cases
 
-### Test case 1
-User A đăng nhập và cố xem expense của User B bằng cách sửa URL.
+### Test Case 1
+User A logs in and attempts to view User B's expense by modifying the URL.
 
-**Kết quả mong đợi:**
-- Bị từ chối truy cập.
-- Trả 403 hoặc redirect hợp lý.
+**Expected result:**
+- Access denied.
+- Returns 403 or appropriate redirect.
 
-### Test case 2
-Guest truy cập `/dashboard/`.
+### Test Case 2
+A guest accesses `/dashboard/`.
 
-**Kết quả mong đợi:**
-- Bị chuyển đến login.
+**Expected result:**
+- Redirected to login.
 
-### Test case 3
-User thường truy cập `/admin/`.
+### Test Case 3
+A regular user accesses `/admin/`.
 
-**Kết quả mong đợi:**
-- Không vào được vùng quản trị.
+**Expected result:**
+- Cannot access the admin area.
 
-### Test case 4
-Admin vô hiệu hóa user.
+### Test Case 4
+Admin deactivates a user.
 
-**Kết quả mong đợi:**
-- User bị vô hiệu hóa không thể đăng nhập tiếp.
+**Expected result:**
+- The deactivated user cannot log in again.
 
-### Test case 5
-User export report tháng.
+### Test Case 5
+A user exports a monthly report.
 
-**Kết quả mong đợi:**
-- Chỉ dữ liệu của user đó được đưa vào file export.
+**Expected result:**
+- Only that user's data is included in the export file.
 
 ---
 
-## 12. Kết luận
-Tài liệu phân quyền này là nền móng cho toàn bộ hệ thống vì bài toán quản lý tài chính cá nhân cực kỳ nhạy cảm về dữ liệu. Từ thời điểm này trở đi, mọi thiết kế schema, API, query, dashboard và report đều phải tuân theo nguyên tắc:
+## 12. Conclusion
+This permission document is the foundation of the entire system because personal financial management is extremely sensitive in terms of data. From this point forward, every schema design, API, query, dashboard, and report must follow this principle:
 
-**mỗi user chỉ được xem và thao tác trên dữ liệu tài chính của chính mình**.
+**Each user may only view and operate on their own financial data.**
 
-Đây là rule không được phá vỡ trong bất kỳ module nào của hệ thống.
+This rule must not be broken in any module of the system.

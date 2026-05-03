@@ -1,387 +1,387 @@
 # Business Rules Specification
 
-## 1. Mục đích tài liệu
-Tài liệu này định nghĩa các **luật nghiệp vụ** mà hệ thống phải tuân theo. Đây là cầu nối giữa:
-- requirement,
-- use case,
+## 1. Purpose
+This document defines the **business rules** that the system must follow. It serves as the bridge between:
+- requirements,
+- use cases,
 - database schema,
 - backend logic,
-- trigger/procedure/function.
+- triggers/procedures/functions.
 
-Nếu không chốt business rules ngay từ đầu, hệ thống sẽ rất dễ bị:
-- lệch nghiệp vụ,
-- cập nhật balance sai,
-- báo cáo sai,
-- phân quyền sai,
-- dữ liệu bị mâu thuẫn.
-
----
-
-## 2. Nguyên tắc chung
-1. Mỗi dữ liệu tài chính phải có chủ sở hữu rõ ràng.
-2. Mỗi giao dịch phải có giá trị hợp lệ.
-3. Mọi thay đổi liên quan đến tiền phải phản ánh nhất quán lên số dư, budget và report.
-4. Những dữ liệu đã phát sinh nghiệp vụ nên hạn chế xóa cứng nếu có nguy cơ làm sai lịch sử.
-5. Shared data phải được kiểm soát theo nhóm thành viên.
+Without establishing business rules upfront, the system is at risk of:
+- drifting from the intended business logic,
+- incorrect balance updates,
+- incorrect reports,
+- incorrect access control,
+- data inconsistencies.
 
 ---
 
-# 3. Luật nghiệp vụ chi tiết
-
-# 3.1. Rules về user ownership
-
-### BR-01 — Mỗi income thuộc về đúng một user
-- Một bản ghi income phải có `user_id`.
-- Không tồn tại income “vô chủ”.
-- Chỉ user sở hữu mới được xem/sửa/xóa income đó.
-
-### BR-02 — Mỗi expense thuộc về đúng một user
-- Một bản ghi expense phải có `user_id`.
-- Chỉ user sở hữu mới được thao tác trên expense đó.
-
-### BR-03 — Mỗi budget thuộc về đúng một user
-- Budget không được dùng chung giữa nhiều user ở bản lõi.
-- User này không được xem budget của user khác.
-
-### BR-04 — Mỗi bank account thuộc về đúng một user
-- Tài khoản ngân hàng hoặc ví tiền là tài sản tài chính cá nhân.
-- Chỉ user đó mới được xem và chỉnh sửa.
-
-### BR-05 — Mỗi alert phải gắn với một user nhận cảnh báo
-- Alert luôn có đối tượng nhận rõ ràng.
-- Không có alert “mồ côi” không biết thuộc ai.
+## 2. General Principles
+1. Every piece of financial data must have a clearly identified owner.
+2. Every transaction must have a valid value.
+3. All money-related changes must be consistently reflected in balances, budgets, and reports.
+4. Records that have already generated business events should not be hard-deleted if doing so risks corrupting history.
+5. Shared data must be controlled by group membership.
 
 ---
 
-# 3.2. Rules về category
+# 3. Detailed Business Rules
 
-### BR-06 — Mỗi income/expense phải thuộc một category hợp lệ
-- Income và expense đều phải có `category_id` hợp lệ.
-- Điều này giúp tổng hợp báo cáo nhất quán theo category.
+# 3.1. User Ownership Rules
 
-### BR-07 — Category chỉ được dùng nếu đang active
-- Nếu category bị vô hiệu hóa, user không được dùng nó cho income/expense mới.
-- Tuy nhiên lịch sử cũ vẫn giữ nguyên.
+### BR-01 — Each income belongs to exactly one user
+- An income record must have a `user_id`.
+- No "ownerless" income may exist.
+- Only the owning user may view, edit, or delete that income.
 
-### BR-08 — Category có thể là category cá nhân hoặc category hệ thống
-- Category hệ thống có thể dùng chung.
-- Category cá nhân chỉ thuộc một user.
-- Category còn phải có `category_type` phù hợp với giao dịch:
-  - income chỉ dùng category type `income` hoặc `both`,
-  - expense chỉ dùng category type `expense` hoặc `both`.
+### BR-02 — Each expense belongs to exactly one user
+- An expense record must have a `user_id`.
+- Only the owning user may operate on that expense.
 
-### BR-09 — Không xóa cứng category nếu đang được income/expense/budget tham chiếu
-- Nên dùng `is_active = false` thay vì xóa.
-- Mục tiêu là bảo toàn lịch sử dữ liệu.
+### BR-03 — Each budget belongs to exactly one user
+- Budgets may not be shared between users in the core version.
+- A user may not view another user's budget.
 
----
+### BR-04 — Each bank account belongs to exactly one user
+- A bank account or wallet is personal financial property.
+- Only the owning user may view and edit it.
 
-# 3.3. Rules về income/expense và bank account
-
-### BR-10 — Mỗi income/expense có thể gắn một bank account hoặc không
-- Giao dịch có thể thuộc tài khoản ngân hàng/ ví/ tiền mặt cụ thể.
-- Nếu không gắn bank account, giao dịch vẫn hợp lệ nhưng không ảnh hưởng balance của account cụ thể.
-
-### BR-11 — Khi thêm income thì balance tăng
-- Nếu income có `bank_account_id`, số dư account phải tăng đúng bằng `amount`.
-- Quy tắc này phải được áp dụng nhất quán khi tạo mới.
-
-### BR-12 — Khi thêm expense thì balance giảm
-- Nếu expense có `bank_account_id`, số dư account phải giảm đúng bằng `amount`.
-
-### BR-13 — Khi sửa income thì balance phải được điều chỉnh chênh lệch
-Ví dụ:
-- income cũ = 1,000,000
-- income mới = 1,500,000
-- balance phải tăng thêm 500,000
-
-Nếu đổi bank account:
-- account cũ bị trừ rollback số cũ,
-- account mới được cộng số mới.
-
-### BR-14 — Khi sửa expense thì balance phải được điều chỉnh chênh lệch
-Ví dụ:
-- expense cũ = 300,000
-- expense mới = 250,000
-- balance phải cộng trả lại 50,000
-
-Nếu đổi bank account:
-- rollback account cũ,
-- áp dụng lại cho account mới.
-
-### BR-15 — Khi xóa income/expense đã gắn bank account, phải rollback balance
-- Xóa income => trừ lại balance.
-- Xóa expense => cộng lại balance.
-
-### BR-16 — Amount của income/expense phải lớn hơn 0
-- Không cho phép amount bằng 0 hoặc âm ở bản ghi chuẩn.
-- Nếu cần điều chỉnh âm thì nên dùng loại nghiệp vụ riêng, không dùng sai expense/income thường.
-
-### BR-17 — Expense date và income date không được null
-- Mỗi giao dịch phải có ngày phát sinh.
-- Đây là dữ liệu bắt buộc để tổng hợp theo ngày/tháng/năm.
+### BR-05 — Each alert must be linked to a specific recipient user
+- Alerts always have a clearly identified recipient.
+- No "orphan" alerts with an unknown owner.
 
 ---
 
-# 3.4. Rules về bank accounts
+# 3.2. Category Rules
 
-### BR-18 — Mỗi bank account có trạng thái active/inactive
-- Account inactive vẫn giữ lịch sử cũ.
-- Account inactive không nên nhận giao dịch mới.
+### BR-06 — Each income/expense must belong to a valid category
+- Both income and expense records must have a valid `category_id`.
+- This ensures consistent aggregation in reports by category.
 
-### BR-19 — Số dư account phải phản ánh trạng thái hiện tại theo rule hệ thống
-Có hai cách thường gặp:
-1. lưu current_balance và update theo trigger/business logic,
-2. hoặc tính động từ opening_balance + transactions.
+### BR-07 — A category may only be used if it is active
+- If a category is deactivated, users may not use it for new income/expense records.
+- Existing historical records remain unchanged.
 
-Trong project này có thể ưu tiên:
-- lưu `opening_balance`,
-- lưu `current_balance`,
-- đồng thời đảm bảo current_balance được cập nhật nhất quán bởi backend/trigger.
+### BR-08 — A category may be personal or system-level
+- System categories can be shared across all users.
+- Personal categories belong to a single user.
+- Categories must also have a `category_type` matching the transaction:
+  - income may only use categories of type `income` or `both`,
+  - expense may only use categories of type `expense` or `both`.
 
-### BR-20 — Account number nếu lưu thì chỉ nên lưu dạng masked
-- Không nên lưu đầy đủ số tài khoản thật nếu không cần.
-- Ví dụ: `****1234`.
-
----
-
-# 3.5. Rules về budget
-
-### BR-21 — Budget có thể là budget tổng hoặc budget theo category
-- `budget_scope = overall` nghĩa là hạn mức cho toàn bộ chi tiêu tháng.
-- `budget_scope = category` nghĩa là hạn mức chỉ áp dụng cho một category cụ thể.
-
-### BR-22 — Budget phải gắn với chu kỳ thời gian rõ ràng
-- Ít nhất phải có `period_month` và `period_year`.
-- Không được tạo budget mà không biết áp dụng cho thời gian nào.
-
-### BR-23 — Budget category bắt buộc phải có category_id
-- Nếu scope là category mà không có category_id thì budget không hợp lệ.
-
-### BR-24 — Budget overall không bắt buộc category_id
-- Vì nó quản lý tổng chi tiêu toàn tháng.
-
-### BR-25 — Spending limit phải lớn hơn 0
-- Không cho phép budget bằng 0 hoặc âm.
-
-### BR-26 — Warning percent phải nằm trong khoảng hợp lệ
-Khuyến nghị:
-- từ 1 đến 100.
-- Thường dùng 70, 80, 90.
-
-### BR-27 — Chi tiêu dùng để tính budget là expense trong đúng kỳ
-- Chỉ expense có ngày nằm trong tháng/năm của budget mới được cộng vào usage.
-
-### BR-28 — Budget usage phải được cập nhật khi expense thay đổi
-Các thao tác ảnh hưởng usage:
-- thêm expense,
-- sửa expense,
-- xóa expense,
-- đổi category,
-- đổi date sang tháng khác.
-
-### BR-29 — Một user không nên có 2 budget active trùng logic trong cùng kỳ
-Ví dụ không nên có:
-- hai overall budget cùng tháng 05/2026 cùng active,
-- hoặc hai category budget cùng category ăn uống cho cùng tháng 05/2026 cùng active.
-
-Có thể enforce bằng unique rule nghiệp vụ.
+### BR-09 — Do not hard-delete a category if it is referenced by income/expense/budget
+- Use `is_active = false` instead of deletion.
+- The goal is to preserve historical data integrity.
 
 ---
 
-# 3.6. Rules về alerts
+# 3.3. Income/Expense and Bank Account Rules
 
-### BR-30 — Khi chi tiêu vượt ngưỡng budget thì phải tạo alert
-- Nếu usage >= warning threshold, tạo alert cảnh báo.
-- Nếu usage > limit, tạo alert vượt mức.
+### BR-10 — Each income/expense may optionally be linked to a bank account
+- A transaction may belong to a specific bank account, e-wallet, or cash wallet.
+- If no bank account is linked, the transaction is still valid but does not affect any specific account balance.
 
-### BR-31 — Không tạo alert trùng vô hạn cho cùng một trạng thái
-Ví dụ:
-- Nếu đã có alert “budget vượt 100%” cho budget tháng này rồi, không nên mỗi lần refresh lại sinh thêm hàng loạt bản sao.
+### BR-11 — Adding income increases balance
+- If income has a `bank_account_id`, the account's balance must increase by exactly `amount`.
+- This rule must be applied consistently on creation.
 
-Cần cơ chế chống trùng:
-- theo `budget_id + alert_type + period + severity`.
+### BR-12 — Adding expense decreases balance
+- If expense has a `bank_account_id`, the account's balance must decrease by exactly `amount`.
 
-### BR-32 — Alert phải phân loại mức độ
-Gợi ý:
+### BR-13 — Editing income requires adjusting the balance difference
+Example:
+- old income = 1,000,000
+- new income = 1,500,000
+- balance must increase by 500,000
+
+If the bank account is changed:
+- the old account is reversed by the old amount,
+- the new account receives the new amount.
+
+### BR-14 — Editing expense requires adjusting the balance difference
+Example:
+- old expense = 300,000
+- new expense = 250,000
+- balance must be credited back 50,000
+
+If the bank account is changed:
+- rollback the old account,
+- apply to the new account.
+
+### BR-15 — Deleting income/expense linked to a bank account must roll back the balance
+- Deleting income => subtract from balance.
+- Deleting expense => add back to balance.
+
+### BR-16 — Amount of income/expense must be greater than 0
+- Zero or negative amounts are not allowed in standard records.
+- If a negative adjustment is needed, use a separate transaction type — do not abuse normal income/expense records.
+
+### BR-17 — Expense date and income date must not be null
+- Every transaction must have a date.
+- This is required data for daily/monthly/yearly aggregation.
+
+---
+
+# 3.4. Bank Account Rules
+
+### BR-18 — Each bank account has an active/inactive status
+- Inactive accounts retain their historical data.
+- Inactive accounts should not accept new transactions.
+
+### BR-19 — Account balance must reflect the current state according to system rules
+Two common approaches:
+1. Store `current_balance` and update via trigger/business logic.
+2. Calculate dynamically from `opening_balance + transactions`.
+
+In this project, the preferred approach is:
+- store `opening_balance`,
+- store `current_balance`,
+- ensure `current_balance` is updated consistently by backend/trigger.
+
+### BR-20 — Account number, if stored, should only be stored in masked form
+- Do not store the full account number unless necessary.
+- Example: `****1234`.
+
+---
+
+# 3.5. Budget Rules
+
+### BR-21 — A budget may be an overall budget or a category budget
+- `budget_scope = overall` means the spending limit applies to all expenses in the month.
+- `budget_scope = category` means the limit applies only to a specific category.
+
+### BR-22 — A budget must be tied to a clear time period
+- At minimum, must have `period_month` and `period_year`.
+- Budgets without a defined time period are not valid.
+
+### BR-23 — A category budget must have a category_id
+- If scope is `category` and `category_id` is missing, the budget is invalid.
+
+### BR-24 — An overall budget does not require a category_id
+- Because it manages the total monthly spending.
+
+### BR-25 — Spending limit must be greater than 0
+- Budgets with a zero or negative limit are not allowed.
+
+### BR-26 — Warning percent must be within a valid range
+Recommended:
+- between 1 and 100.
+- Common values: 70, 80, 90.
+
+### BR-27 — Expenses counted toward a budget must fall within the budget period
+- Only expenses with a date within the budget's month/year are counted toward usage.
+
+### BR-28 — Budget usage must be updated when expenses change
+Operations that affect usage:
+- adding an expense,
+- editing an expense,
+- deleting an expense,
+- changing the category,
+- moving the date to a different month.
+
+### BR-29 — A user should not have 2 active budgets with overlapping logic in the same period
+Examples of what should not exist:
+- two overall budgets both active for May 2026,
+- or two category budgets for the same "dining" category both active for May 2026.
+
+This can be enforced via a business-level uniqueness rule.
+
+---
+
+# 3.6. Alert Rules
+
+### BR-30 — An alert must be created when spending exceeds a budget threshold
+- If usage >= warning threshold, create a warning alert.
+- If usage > limit, create an exceeded alert.
+
+### BR-31 — Do not create infinite duplicate alerts for the same condition
+Example:
+- If a "100% budget exceeded" alert already exists for this month's budget, do not generate more duplicates on every refresh.
+
+A deduplication mechanism is needed:
+- keyed by `budget_id + alert_type + period + severity`.
+
+### BR-32 — Alerts must be classified by severity
+Suggested levels:
 - info
 - warning
 - critical
 
-### BR-33 — Alert có thể ở trạng thái read/unread
-- Mặc định alert mới là unread.
-- User có thể đánh dấu đã đọc.
+### BR-33 — Alerts have read/unread status
+- New alerts default to unread.
+- Users can mark alerts as read.
 
-### BR-33A — Mỗi alert chỉ nên tham chiếu một đối tượng liên quan
-- Alert loại budget chỉ nên dùng `related_budget_id`.
-- Alert loại debt chỉ nên dùng `related_debt_id`.
-- Một alert không nên đồng thời tham chiếu nhiều đối tượng.
+### BR-33A — Each alert should reference only one related object
+- Budget alerts should only use `related_budget_id`.
+- Debt alerts should only use `related_debt_id`.
+- A single alert should not reference multiple objects simultaneously.
 
 ---
 
-# 3.7. Rules về debts
+# 3.7. Debt Rules
 
-### BR-34 — Debt có trạng thái đang nợ / đã trả / quá hạn
-Các trạng thái cơ bản:
+### BR-34 — A debt has one of: pending / partially_paid / paid / overdue
+Core statuses:
 - pending
 - partially_paid
 - paid
 - overdue
 
-### BR-35 — Debt phải có original_amount > 0
-- Khoản nợ phải có số tiền gốc hợp lệ.
+### BR-35 — Debt original_amount must be > 0
+- Every debt must have a valid principal amount.
 
-### BR-36 — Remaining amount không được âm
-- Sau khi cộng tất cả payment, số còn nợ không được nhỏ hơn 0.
-- Nếu user thanh toán vượt, hệ thống phải chặn hoặc yêu cầu điều chỉnh.
+### BR-36 — Remaining amount must not be negative
+- After summing all payments, the remaining amount must not fall below 0.
+- If a user overpays, the system must block or require adjustment.
 
-### BR-37 — Debt payment phải thuộc một debt cụ thể
-- Không có payment độc lập không biết trả cho khoản nợ nào.
+### BR-37 — A debt payment must belong to a specific debt
+- No standalone payments that are unlinked to a debt.
 
-### BR-38 — Nếu remaining_amount = 0 thì debt chuyển sang paid
-- Quy tắc cập nhật trạng thái phải tự động hoặc bán tự động.
+### BR-38 — If remaining_amount = 0, the debt transitions to paid
+- The status update rule must be automatic or semi-automatic.
 
-### BR-39 — Nếu quá due_date mà remaining_amount > 0 thì debt có thể chuyển overdue
-- Rule này có thể do background job kiểm tra hằng ngày.
-
----
-
-# 3.8. Rules về sharing groups
-
-### BR-40 — Shared transactions chỉ hiện cho thành viên nhóm
-- Đây là rule quan trọng nhất của module sharing.
-
-### BR-41 — Mỗi shared transaction phải thuộc một group cụ thể
-- Không có shared transaction “tự do”.
-
-### BR-42 — Chỉ member hợp lệ mới được xem transaction của group
-- Nếu user không nằm trong `GroupMembers`, phải bị từ chối truy cập.
-
-### BR-43 — Chỉ owner/admin nhóm mới được quản lý thành viên
-- Thêm/xóa thành viên phải có quyền rõ.
-
-### BR-43A — Thành viên được mời phải xác nhận trước khi vào nhóm
-- Khi owner mời một user vào nhóm, hệ thống tạo trạng thái `pending`.
-- User được mời phải chọn đồng ý hoặc từ chối.
-- Chỉ thành viên có trạng thái `active` mới được xem và chia sẻ giao dịch trong nhóm.
-
-### BR-44 — Giao dịch cá nhân không tự động trở thành giao dịch chia sẻ
-- User phải chủ động đánh dấu giao dịch là shared hoặc tạo bản ghi liên kết chia sẻ.
-
-### BR-44A — Shared transaction chỉ được tham chiếu một loại giao dịch gốc
-- Chỉ một trong hai `expense_id` hoặc `income_id` được phép có giá trị.
-- Không được để cả hai cùng có giá trị.
-- Không được để cả hai cùng null.
+### BR-39 — If past due_date with remaining_amount > 0, the debt may become overdue
+- This rule may be checked by a daily background job.
 
 ---
 
-# 3.9. Rules về xóa dữ liệu
+# 3.8. Sharing Group Rules
 
-### BR-45 — Hạn chế xóa cứng dữ liệu tài chính quan trọng
-Khuyến nghị soft delete cho:
+### BR-40 — Shared transactions are only visible to group members
+- This is the most critical rule in the sharing module.
+
+### BR-41 — Each shared transaction must belong to a specific group
+- No "free-floating" shared transactions.
+
+### BR-42 — Only valid members may view a group's transactions
+- If a user is not in `GroupMembers`, access must be denied.
+
+### BR-43 — Only the group owner/admin may manage members
+- Adding/removing members requires explicit permission.
+
+### BR-43A — Invited members must confirm before joining the group
+- When an owner invites a user, the system creates a `pending` status.
+- The invited user must accept or decline.
+- Only members with `active` status may view and share transactions in the group.
+
+### BR-44 — Personal transactions do not automatically become shared transactions
+- The user must explicitly mark a transaction as shared or create a linking share record.
+
+### BR-44A — A shared transaction may only reference one type of source transaction
+- Only one of `expense_id` or `income_id` may have a value.
+- Both may not be set simultaneously.
+- Both may not be null simultaneously.
+
+---
+
+# 3.9. Deletion Rules
+
+### BR-45 — Avoid hard-deleting important financial data
+Soft delete recommended for:
 - categories,
 - bank accounts,
 - budgets,
 - alerts,
 - debts.
 
-### BR-46 — Nếu xóa cứng income/expense phải đảm bảo rollback nghiệp vụ
-- Điều chỉnh balance.
-- Điều chỉnh budget usage.
-- Cập nhật report cache nếu có.
+### BR-46 — Hard-deleting income/expense must ensure business rollback
+- Adjust balance.
+- Adjust budget usage.
+- Update report cache if applicable.
 
-### BR-47 — Không được xóa user nếu còn dữ liệu tài chính mà không có chính sách rõ ràng
-- Có thể khóa tài khoản thay vì xóa vật lý.
-
----
-
-# 3.10. Rules về báo cáo
-
-### BR-48 — Daily/Monthly/Yearly summary chỉ tính dữ liệu của chính user hiện tại
-- Không gộp nhầm dữ liệu nhiều user.
-
-### BR-49 — Báo cáo phải dựa trên transaction hợp lệ, active
-- Không tính những record đã bị invalid/inactive nếu hệ thống có trạng thái này.
-
-### BR-50 — Báo cáo category chỉ tính các expense có category hợp lệ
-- Nếu category bị vô hiệu hóa sau này thì lịch sử cũ vẫn có thể được tính, tùy rule báo cáo đã chốt.
-
-### BR-51 — Dashboard là dữ liệu tổng hợp gần thời gian thực
-- Dashboard cần cập nhật khi transaction thay đổi.
+### BR-47 — Do not delete a user with financial data without a clear policy
+- Lock the account instead of physically deleting it.
 
 ---
 
-# 3.11. Rules về bảo mật và truy cập dữ liệu
+# 3.10. Reporting Rules
 
-### BR-52 — User không được chỉ định `user_id` của người khác để thao tác dữ liệu
-- Backend phải lấy user từ session/token, không tin payload client.
+### BR-48 — Daily/Monthly/Yearly summary only counts data for the current user
+- Do not aggregate data across multiple users.
 
-### BR-53 — API/query phải luôn lọc theo owner
-- Đây là rule kỹ thuật bắt buộc phát sinh từ rule nghiệp vụ.
+### BR-49 — Reports must be based on valid, active transactions
+- Do not include records marked as invalid/inactive if the system uses such statuses.
 
-### BR-54 — Export chỉ được xuất dữ liệu được phép truy cập
-- File export không được chứa dữ liệu người khác.
+### BR-50 — Category reports only count expenses with a valid category
+- If a category is deactivated later, historical records may still be included, depending on the agreed reporting rule.
 
----
-
-# 3.12. Rules về audit/logging
-
-### BR-55 — Các hành động quan trọng nên được log
-Bao gồm:
-- login thất bại/thành công,
-- tạo/sửa/xóa transaction,
-- thay đổi budget,
-- chạy backup,
-- recovery,
-- lỗi hệ thống nghiêm trọng.
-
-### BR-56 — Các tác vụ nền tạo alert/backup nên có dấu vết thực thi
-- Có log thời gian chạy,
-- kết quả thành công/thất bại,
-- thông điệp lỗi nếu có.
+### BR-51 — Dashboard data must be near real-time
+- Dashboard must refresh when transactions change.
 
 ---
 
-## 4. Ví dụ minh họa nghiệp vụ
+# 3.11. Security and Data Access Rules
 
-### Ví dụ 1 — Thêm expense có bank account và budget
-- User A có bank account với balance = 5,000,000.
-- User A có budget ăn uống tháng 4 là 2,000,000.
-- Đã chi ăn uống trong tháng 4 là 1,700,000.
-- User A thêm expense ăn uống = 400,000 vào ngày 2026-04-10.
+### BR-52 — Users must not specify another user's `user_id` to operate on data
+- The backend must extract the user from the session/token — not from client payload.
 
-**Kết quả đúng phải là:**
-- expense được lưu,
-- balance account còn 4,600,000,
-- budget usage thành 2,100,000,
-- hệ thống tạo alert vượt ngân sách.
+### BR-53 — All API/query operations must always filter by owner
+- This is a mandatory technical rule derived from the business rule above.
 
-### Ví dụ 2 — Sửa expense đổi account
-- Expense cũ = 300,000 gắn account A.
-- User sửa thành 300,000 gắn account B.
-
-**Kết quả đúng:**
-- account A được cộng trả lại 300,000,
-- account B bị trừ 300,000.
-
-### Ví dụ 3 — Debt quá hạn
-- Khoản nợ còn 2,000,000.
-- due_date là 2026-04-01.
-- Hôm nay là 2026-04-04.
-- chưa có payment mới.
-
-**Kết quả đúng:**
-- debt status có thể chuyển sang overdue,
-- hệ thống tạo alert overdue nếu module này bật.
+### BR-54 — Exports may only include data the user is authorized to access
+- Export files must not contain another user's data.
 
 ---
 
-## 5. Kết luận
-Business rules là phần chốt để đảm bảo từ thiết kế database đến code Django đều đi cùng một hướng. Với project này, có 4 rule quan trọng nhất cần luôn nhớ:
+# 3.12. Audit/Logging Rules
 
-1. **Mỗi dữ liệu tài chính phải có chủ sở hữu rõ ràng.**
-2. **Income làm tăng balance, expense làm giảm balance.**
-3. **Budget phải được kiểm tra ngay khi expense thay đổi.**
-4. **Shared transaction chỉ hiển thị cho đúng thành viên nhóm.**
+### BR-55 — Important actions should be logged
+Including:
+- failed/successful logins,
+- creating/editing/deleting transactions,
+- budget changes,
+- backup runs,
+- recovery operations,
+- critical system errors.
 
-Sau khi chốt được tài liệu này, bước tiếp theo là vẽ use case, ERD và thiết kế schema logic chi tiết.
+### BR-56 — Background tasks that generate alerts/backups should leave an execution trace
+- Log the run time,
+- success/failure result,
+- error message if any.
+
+---
+
+## 4. Business Examples
+
+### Example 1 — Adding an expense with bank account and budget
+- User A has a bank account with balance = 5,000,000.
+- User A has a dining budget for April of 2,000,000.
+- Total dining expenses in April so far: 1,700,000.
+- User A adds a dining expense of 400,000 on 2026-04-10.
+
+**Expected result:**
+- expense is saved,
+- account balance becomes 4,600,000,
+- budget usage becomes 2,100,000,
+- system creates a "budget exceeded" alert.
+
+### Example 2 — Editing an expense and changing the account
+- Old expense = 300,000 linked to account A.
+- User edits to 300,000 linked to account B.
+
+**Expected result:**
+- account A is credited back 300,000,
+- account B is debited 300,000.
+
+### Example 3 — Overdue debt
+- Debt remaining amount = 2,000,000.
+- Due date = 2026-04-01.
+- Today = 2026-04-04.
+- No new payment has been made.
+
+**Expected result:**
+- debt status may transition to overdue,
+- system creates an overdue alert if this module is enabled.
+
+---
+
+## 5. Conclusion
+Business rules are the anchor that ensures the database design and Django code stay aligned. In this project, the 4 most important rules to always remember are:
+
+1. **Every piece of financial data must have a clearly identified owner.**
+2. **Income increases balance; expense decreases balance.**
+3. **Budget must be checked every time an expense changes.**
+4. **Shared transactions are only visible to the correct group members.**
+
+Once this document is finalized, the next steps are to draw use cases, create the ERD, and design the detailed logical schema.

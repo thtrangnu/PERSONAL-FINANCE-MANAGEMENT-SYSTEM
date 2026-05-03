@@ -1,13 +1,13 @@
 # Business Modules Specification
 
-## 1. Mục đích tài liệu
-Tài liệu này chia hệ thống thành các module nghiệp vụ cụ thể để:
-- dễ phân công công việc,
-- dễ thiết kế schema và API,
-- dễ code theo app trong Django,
-- dễ xác định đâu là phần làm trước, đâu là phần mở rộng làm sau.
+## 1. Purpose
+This document divides the system into specific business modules to:
+- facilitate task assignment,
+- facilitate schema and API design,
+- facilitate coding by Django app,
+- clearly identify what to build first vs. what to extend later.
 
-Các module đã chốt:
+Confirmed modules:
 - accounts
 - income
 - expenses
@@ -23,78 +23,78 @@ Các module đã chốt:
 
 ---
 
-## 2. Nguyên tắc chia module
-Mỗi module cần xác định rõ:
-1. **Mục đích module**
-2. **Chức năng chính**
-3. **Dữ liệu mà module quản lý**
-4. **Module nào phụ thuộc module nào**
-5. **Có thuộc MVP hay phase sau không**
+## 2. Module Design Principles
+Each module must clearly define:
+1. **Module purpose**
+2. **Main features**
+3. **Data managed by the module**
+4. **Dependencies on other modules**
+5. **Whether it belongs to MVP or a later phase**
 
 ---
 
-# 3. Mô tả chi tiết từng module
+# 3. Detailed Module Descriptions
 
 # 3.1. accounts
 
-## Mục đích
-Quản lý người dùng, xác thực và hồ sơ cá nhân.
+## Purpose
+Manages users, authentication, and personal profiles.
 
-## Chức năng chính
-- Đăng ký.
-- Đăng nhập.
-- Đăng xuất.
-- Xem hồ sơ cá nhân.
-- Cập nhật hồ sơ.
-- Đổi mật khẩu.
-- Quản lý trạng thái tài khoản.
-- Mở rộng: Google login.
+## Main Features
+- Registration.
+- Login.
+- Logout.
+- View personal profile.
+- Update profile.
+- Change password.
+- Manage account status.
+- Extension: Google login.
 
-## Dữ liệu chính
+## Primary Data
 - Users
-- UserProfile (nếu tách riêng)
-- Login logs (nếu có)
+- UserProfile (if separated)
+- Login logs (if implemented)
 
-## Đầu vào điển hình
+## Typical Inputs
 - email/username
 - password
 - profile fields
 
-## Đầu ra điển hình
+## Typical Outputs
 - session/token
 - profile summary
-- trạng thái xác thực
+- authentication status
 
-## Phụ thuộc
-- Không phụ thuộc module nghiệp vụ khác.
-- Là module nền tảng cho toàn hệ thống.
+## Dependencies
+- Does not depend on other business modules.
+- It is the foundation module for the entire system.
 
-## Mức ưu tiên
-**Bắt buộc làm trong bản 1.**
+## Priority
+**Required in version 1.**
 
 ---
 
 # 3.2. income
 
-## Mục đích
-Quản lý các khoản thu nhập của người dùng.
+## Purpose
+Manages income transactions for users.
 
-## Chức năng chính
-- Tạo khoản income.
-- Sửa income.
-- Xóa income.
-- Xem danh sách income.
-- Lọc theo thời gian.
-- Lọc theo category.
-- Lọc theo bank account.
+## Main Features
+- Create an income record.
+- Edit income.
+- Delete income.
+- View income list.
+- Filter by date.
+- Filter by category.
+- Filter by bank account.
 
-## Dữ liệu chính
+## Primary Data
 - Incomes
 - Categories
-- Có liên quan đến Users
-- Có thể liên quan BankAccounts
+- Related to Users
+- May relate to BankAccounts
 
-## Thuộc tính chính của income
+## Key Income Attributes
 - user_id
 - category_id
 - title
@@ -106,45 +106,45 @@ Quản lý các khoản thu nhập của người dùng.
 - created_at
 - updated_at
 
-## Luồng nghiệp vụ chính
-1. User tạo income.
-2. Hệ thống validate dữ liệu.
-3. Ghi bản ghi vào bảng incomes.
-4. Nếu income gắn với bank account thì tăng balance.
-5. Giao dịch xuất hiện trong dashboard/reports.
+## Main Business Flow
+1. User creates income.
+2. System validates data.
+3. Saves record to the incomes table.
+4. If income is linked to a bank account, increase balance.
+5. Transaction appears in dashboard/reports.
 
-## Phụ thuộc
+## Dependencies
 - accounts
-- bank_accounts (nếu gắn tài khoản)
+- bank_accounts (if account is linked)
 - reports
 
-## Mức ưu tiên
-**Bắt buộc làm trong bản 1.**
+## Priority
+**Required in version 1.**
 
 ---
 
 # 3.3. expenses
 
-## Mục đích
-Quản lý các khoản chi tiêu của người dùng.
+## Purpose
+Manages expense transactions for users.
 
-## Chức năng chính
-- Tạo expense.
-- Sửa expense.
-- Xóa expense.
-- Xem danh sách expense.
-- Lọc theo category.
-- Lọc theo thời gian.
-- Lọc theo bank account.
-- Theo dõi transaction history.
+## Main Features
+- Create an expense.
+- Edit an expense.
+- Delete an expense.
+- View expense list.
+- Filter by category.
+- Filter by date.
+- Filter by bank account.
+- Track transaction history.
 
-## Dữ liệu chính
+## Primary Data
 - Expenses
 - Users
 - Categories
 - BankAccounts
 
-## Thuộc tính chính của expense
+## Key Expense Attributes
 - user_id
 - category_id
 - amount
@@ -156,15 +156,15 @@ Quản lý các khoản chi tiêu của người dùng.
 - created_at
 - updated_at
 
-## Luồng nghiệp vụ chính
-1. User nhập expense.
-2. Hệ thống validate amount/category/user ownership.
-3. Nếu có bank account, hệ thống trừ balance.
-4. Hệ thống kiểm tra budget.
-5. Nếu vượt ngưỡng, sinh alert.
-6. Expense xuất hiện trong dashboard/reports.
+## Main Business Flow
+1. User enters an expense.
+2. System validates amount/category/user ownership.
+3. If a bank account is linked, deduct balance.
+4. System checks budget.
+5. If threshold exceeded, generate alert.
+6. Expense appears in dashboard/reports.
 
-## Phụ thuộc
+## Dependencies
 - accounts
 - categories
 - bank_accounts
@@ -172,29 +172,29 @@ Quản lý các khoản chi tiêu của người dùng.
 - alerts
 - reports
 
-## Mức ưu tiên
-**Bắt buộc làm trong bản 1.**
+## Priority
+**Required in version 1.**
 
 ---
 
 # 3.4. categories
 
-## Mục đích
-Quản lý danh mục dùng cho cả thu nhập và chi tiêu.
+## Purpose
+Manages categories used for both income and expenses.
 
-## Chức năng chính
-- Tạo category cá nhân.
-- Sửa category.
-- Vô hiệu hóa category.
-- Xem danh sách category.
-- Hỗ trợ category hệ thống mặc định.
-- Phân loại category theo income / expense / both.
+## Main Features
+- Create personal categories.
+- Edit categories.
+- Deactivate categories.
+- View category list.
+- Support for default system categories.
+- Classify categories as income / expense / both.
 
-## Dữ liệu chính
+## Primary Data
 - Categories
 
-## Thuộc tính chính
-- user_id (nullable nếu là default/system category)
+## Key Attributes
+- user_id (nullable for default/system categories)
 - category_name
 - category_type
 - description
@@ -205,38 +205,38 @@ Quản lý danh mục dùng cho cả thu nhập và chi tiêu.
 - created_at
 - updated_at
 
-## Vai trò trong hệ thống
-- Giúp chuẩn hóa phân loại income và expense.
-- Là đầu vào cho reports.
-- Là nền cho category budget.
+## Role in the System
+- Standardizes classification of income and expenses.
+- Input for reports.
+- Foundation for category budgets.
 
-## Phụ thuộc
+## Dependencies
 - accounts
 - expenses
 - budgets
 - reports
 
-## Mức ưu tiên
-**Bắt buộc làm trong bản 1.**
+## Priority
+**Required in version 1.**
 
 ---
 
 # 3.5. bank_accounts
 
-## Mục đích
-Theo dõi nơi giữ tiền của người dùng: tài khoản ngân hàng, ví điện tử, tiền mặt.
+## Purpose
+Tracks where users hold their money: bank accounts, e-wallets, and cash wallets.
 
-## Chức năng chính
-- Tạo bank account.
-- Sửa bank account.
-- Xem balance.
-- Xem transaction liên quan.
-- Kích hoạt/vô hiệu hóa tài khoản.
+## Main Features
+- Create a bank account.
+- Edit a bank account.
+- View balance.
+- View related transactions.
+- Activate/deactivate an account.
 
-## Dữ liệu chính
+## Primary Data
 - BankAccounts
 
-## Thuộc tính chính
+## Key Attributes
 - user_id
 - account_name
 - account_type
@@ -249,40 +249,40 @@ Theo dõi nơi giữ tiền của người dùng: tài khoản ngân hàng, ví 
 - created_at
 - updated_at
 
-## Luồng nghiệp vụ chính
-1. User tạo account.
-2. Income/expense có thể tham chiếu account này.
-3. Balance được tăng/giảm theo giao dịch.
-4. Dashboard lấy dữ liệu tổng balance từ module này.
+## Main Business Flow
+1. User creates an account.
+2. Income/expense can reference this account.
+3. Balance increases/decreases according to transactions.
+4. Dashboard pulls total balance from this module.
 
-## Phụ thuộc
+## Dependencies
 - accounts
 - income
 - expenses
 - reports
 
-## Mức ưu tiên
-**Bắt buộc làm trong bản 1.**
+## Priority
+**Required in version 1.**
 
 ---
 
 # 3.6. budgets
 
-## Mục đích
-Quản lý kế hoạch chi tiêu và hạn mức ngân sách.
+## Purpose
+Manages spending plans and budget limits.
 
-## Chức năng chính
-- Tạo overall budget theo tháng.
-- Tạo category budget.
-- Chỉnh sửa budget.
-- Đóng budget.
-- Theo dõi amount used / remaining / usage %.
-- Gọi logic alert khi vượt ngưỡng.
+## Main Features
+- Create an overall monthly budget.
+- Create a category budget.
+- Edit a budget.
+- Close a budget.
+- Track amount used / remaining / usage %.
+- Trigger alert logic when threshold is exceeded.
 
-## Dữ liệu chính
+## Primary Data
 - Budgets
 
-## Thuộc tính chính
+## Key Attributes
 - user_id
 - budget_name
 - budget_scope (overall/category)
@@ -295,40 +295,40 @@ Quản lý kế hoạch chi tiêu và hạn mức ngân sách.
 - created_at
 - updated_at
 
-## Luồng nghiệp vụ chính
-1. User tạo budget tổng theo tháng hoặc budget theo category.
-2. Mỗi expense mới phát sinh sẽ được so với budget liên quan.
-3. Nếu usage >= warning threshold thì sinh alert cảnh báo.
-4. Nếu usage > limit thì sinh alert vượt ngân sách.
+## Main Business Flow
+1. User creates an overall monthly budget or a category budget.
+2. Each new expense is compared against the relevant budget.
+3. If usage >= warning threshold, generate a warning alert.
+4. If usage > limit, generate a budget exceeded alert.
 
-## Phụ thuộc
+## Dependencies
 - accounts
 - expenses
 - categories
 - alerts
 - reports
 
-## Mức ưu tiên
-**Bắt buộc làm trong bản 1.**
+## Priority
+**Required in version 1.**
 
 ---
 
 # 3.7. alerts
 
-## Mục đích
-Thông báo cho người dùng khi có sự kiện cần chú ý.
+## Purpose
+Notifies users when attention-worthy events occur.
 
-## Chức năng chính
-- Tạo alert khi vượt budget.
-- Tạo alert khi gần chạm budget.
-- Tạo alert nợ quá hạn (phase sau).
-- Đánh dấu đã đọc.
-- Xem danh sách alert.
+## Main Features
+- Create alerts for budget exceeded.
+- Create alerts for nearing the budget.
+- Create debt overdue alerts (later phase).
+- Mark as read.
+- View alert list.
 
-## Dữ liệu chính
+## Primary Data
 - Alerts
 
-## Thuộc tính chính
+## Key Attributes
 - user_id
 - alert_type
 - title
@@ -340,40 +340,40 @@ Thông báo cho người dùng khi có sự kiện cần chú ý.
 - severity
 - created_at
 
-## Nguồn sinh alert
-- budget checks khi thêm/sửa expense
-- job định kỳ từ Django command hoặc Kubernetes CronJob
+## Alert Sources
+- budget checks when adding/editing expenses
+- periodic jobs via Django management commands or Kubernetes CronJob
 - debt overdue checker
 
-## Phụ thuộc
+## Dependencies
 - accounts
 - budgets
 - expenses
 - debts
 
-## Mức ưu tiên
-**Bắt buộc tối thiểu trong bản 1.**
+## Priority
+**Minimum required in version 1.**
 
 ---
 
 # 3.8. debts
 
-## Mục đích
-Quản lý các khoản nợ và lịch sử thanh toán.
+## Purpose
+Manages debt records and payment history.
 
-## Chức năng chính
-- Tạo debt.
-- Cập nhật debt.
-- Ghi payment cho debt.
-- Theo dõi due date.
-- Tính số còn nợ.
-- Xác định overdue.
+## Main Features
+- Create a debt.
+- Update a debt.
+- Record a payment for a debt.
+- Track due dates.
+- Calculate remaining balance.
+- Identify overdue status.
 
-## Dữ liệu chính
+## Primary Data
 - Debts
 - DebtPayments
 
-## Thuộc tính chính của debt
+## Key Debt Attributes
 - user_id
 - debt_type
 - counterparty_name
@@ -385,179 +385,179 @@ Quản lý các khoản nợ và lịch sử thanh toán.
 - created_at
 - updated_at
 
-## Thuộc tính chính của debt payment
+## Key Debt Payment Attributes
 - debt_id
 - payment_date
 - amount
 - bank_account_id
 - note
 
-## Phụ thuộc
+## Dependencies
 - accounts
 - bank_accounts
 - alerts
 - reports
 
-## Mức ưu tiên
-**Làm sau khi lõi ổn định.**
+## Priority
+**Build after the core is stable.**
 
 ---
 
 # 3.9. sharing
 
-## Mục đích
-Cho phép một nhóm người dùng chia sẻ một phần dữ liệu tài chính chung.
+## Purpose
+Allows a group of users to share a portion of their financial data.
 
-## Chức năng chính
-- Tạo group.
-- Mời thành viên.
-- Quản lý thành viên.
-- Gắn shared transaction vào nhóm.
-- Xem giao dịch được chia sẻ trong nhóm.
+## Main Features
+- Create a group.
+- Invite members.
+- Manage members.
+- Attach shared transactions to the group.
+- View shared transactions within the group.
 
-## Dữ liệu chính
+## Primary Data
 - Groups
 - GroupMembers
 - SharedTransactions
 
-## Ý nghĩa
-Phù hợp các tình huống:
-- nhóm bạn ở chung,
-- nhóm đi du lịch,
-- gia đình chia sẻ chi tiêu,
-- nhóm làm dự án cần theo dõi quỹ chung.
+## Use Cases
+Suitable for scenarios such as:
+- housemates,
+- travel groups,
+- families tracking shared expenses,
+- project teams managing a shared fund.
 
-## Phụ thuộc
+## Dependencies
 - accounts
-- expenses/income (nếu cho chia sẻ)
+- expenses/income (if sharing is supported)
 - reports
 
-## Mức ưu tiên
-**Làm sau khi bản lõi xong.**
+## Priority
+**Build after the core version is complete.**
 
 ---
 
 # 3.10. reports
 
-## Mục đích
-Sinh các báo cáo phục vụ theo dõi và phân tích.
+## Purpose
+Generates reports for tracking and analysis.
 
-## Chức năng chính
-- Báo cáo theo ngày.
-- Báo cáo theo tháng.
-- Báo cáo theo năm.
-- Báo cáo theo category.
-- Báo cáo theo bank account.
-- Báo cáo bảng.
-- Báo cáo biểu đồ.
+## Main Features
+- Daily report.
+- Monthly report.
+- Yearly report.
+- Report by category.
+- Report by bank account.
+- Table-based reports.
+- Chart-based reports.
 
-## Dữ liệu lấy từ
+## Data Sourced From
 - incomes
 - expenses
 - categories
 - bank_accounts
 - budgets
-- debts (nếu mở rộng)
+- debts (if extended)
 
-## Output điển hình
-- tổng thu
-- tổng chi
-- chênh lệch thu chi
-- top category chi tiêu
-- xu hướng chi tiêu theo thời gian
+## Typical Output
+- total income
+- total expenses
+- net cash flow
+- top spending categories
+- spending trend over time
 
-## Phụ thuộc
-- gần như phụ thuộc toàn bộ module lõi.
+## Dependencies
+- depends on nearly all core modules.
 
-## Mức ưu tiên
-**Bắt buộc làm trong bản 1.**
+## Priority
+**Required in version 1.**
 
 ---
 
 # 3.11. exports
 
-## Mục đích
-Xuất dữ liệu và báo cáo ra file để lưu trữ hoặc chia sẻ.
+## Purpose
+Exports data and reports to files for storage or sharing.
 
-## Chức năng chính
-- Export Excel.
-- Export PDF.
-- Xuất báo cáo tháng/năm.
-- Xuất danh sách transaction.
+## Main Features
+- Export to Excel.
+- Export to PDF.
+- Export monthly/yearly reports.
+- Export transaction lists.
 
-## Dữ liệu lấy từ
+## Data Sourced From
 - reports
 - incomes
 - expenses
 - budgets
 
-## Phụ thuộc
+## Dependencies
 - reports
 - dashboard
 
-## Mức ưu tiên
-**Làm sau phần lõi hoặc làm tối thiểu nếu còn thời gian.**
+## Priority
+**Build after the core or minimally if time allows.**
 
 ---
 
 # 3.12. dashboard
 
-## Mục đích
-Cung cấp cái nhìn tổng quan nhanh nhất về tình hình tài chính hiện tại.
+## Purpose
+Provides the fastest high-level view of the current financial situation.
 
-## Chức năng chính
-- Hiển thị tổng balance.
-- Hiển thị income tháng này.
-- Hiển thị expense tháng này.
-- Hiển thị recent transactions.
-- Hiển thị budget progress.
-- Hiển thị unread alerts.
-- Hiển thị chart nhanh.
+## Main Features
+- Display total balance.
+- Display this month's income.
+- Display this month's expenses.
+- Display recent transactions.
+- Display budget progress.
+- Display unread alerts.
+- Display quick charts.
 
-## Dữ liệu lấy từ
+## Data Sourced From
 - bank_accounts
 - incomes
 - expenses
 - budgets
 - alerts
 
-## Vai trò
-- Là màn hình người dùng xem thường xuyên nhất sau khi đăng nhập.
-- Là nơi kết nối trực quan giữa các module.
+## Role
+- The screen users see most often after logging in.
+- The visual hub connecting all modules.
 
-## Mức ưu tiên
-**Bắt buộc làm trong bản 1.**
+## Priority
+**Required in version 1.**
 
 ---
 
-## 4. Quan hệ phụ thuộc giữa các module
+## 4. Module Dependency Graph
 
-### Module nền tảng
+### Foundation Modules
 - accounts
 - categories
 - bank_accounts
 
-### Module giao dịch lõi
+### Core Transaction Modules
 - income
 - expenses
 
-### Module kiểm soát tài chính
+### Financial Control Modules
 - budgets
 - alerts
 
-### Module hiển thị và đầu ra
+### Display and Output Modules
 - dashboard
 - reports
 - exports
 
-### Module mở rộng
+### Extension Modules
 - debts
 - sharing
 
 ---
 
-## 5. Chốt module làm bản 1 trước
-Các module bắt buộc làm trước:
+## 5. Version 1 Module Priorities
+Modules required in the first version:
 1. accounts / profile
 2. income
 3. expenses
@@ -566,34 +566,34 @@ Các module bắt buộc làm trước:
 6. budgets
 7. reports
 8. dashboard
-9. alerts (ít nhất bản cơ bản)
+9. alerts (at least basic)
 
-### Lý do chọn các module này cho bản 1
-- Đủ để chứng minh nghiệp vụ chính của project.
-- Đủ để thiết kế schema core.
-- Đủ để demo CRUD + dashboard + report.
-- Đủ để sinh use case và ERD mạnh.
+### Why these modules for version 1
+- Sufficient to demonstrate the main business logic.
+- Sufficient to design the core schema.
+- Sufficient to demo CRUD + dashboard + reports.
+- Sufficient to generate strong use cases and ERD.
 
 ---
 
-## 6. Chốt module làm sau
-Các module để giai đoạn 2 hoặc làm nếu còn thời gian:
+## 6. Deferred Modules
+Modules for phase 2 or when time allows:
 1. debts
 2. sharing
-3. exports nâng cao
+3. advanced exports
 4. Google login
-5. cloud sync nâng cao
+5. advanced cloud sync
 
-### Lý do để làm sau
-- Phức tạp hơn về rule và UI.
-- Không nhất thiết phải có để hệ thống lõi hoạt động.
-- Nên triển khai sau khi schema và luồng chính đã ổn định.
+### Why deferred
+- More complex in terms of rules and UI.
+- Not required for the core system to function.
+- Should be implemented after the schema and main flows are stable.
 
 ---
 
-## 7. Gợi ý mapping module sang Django apps
+## 7. Module to Django App Mapping
 
-| Module nghiệp vụ | Django app gợi ý |
+| Business Module | Suggested Django App |
 |---|---|
 | accounts | accounts |
 | income | incomes |
@@ -607,16 +607,16 @@ Các module để giai đoạn 2 hoặc làm nếu còn thời gian:
 | reports | reports |
 | exports | exports |
 | dashboard | dashboard |
-| admin/logging | core hoặc adminpanel |
+| admin/logging | core or adminpanel |
 
 ---
 
-## 8. Kết luận
-Việc chia module như trên giúp project không bị rối khi bắt đầu code. Thay vì nhìn bài toán như một khối lớn, nhóm có thể triển khai theo từng lớp:
-- lớp xác thực,
-- lớp dữ liệu lõi,
-- lớp kiểm soát,
-- lớp hiển thị,
-- lớp mở rộng.
+## 8. Conclusion
+Dividing the system into modules as described above prevents confusion when starting development. Instead of viewing the problem as one large block, the team can build layer by layer:
+- authentication layer,
+- core data layer,
+- control layer,
+- display layer,
+- extension layer.
 
-Đây là bước quan trọng trước khi viết business rules và schema logic, vì nếu module chưa rõ thì database rất dễ bị chồng chéo hoặc trùng chức năng.
+This is an important step before writing business rules and the logical schema, because without clear module boundaries, the database easily becomes tangled or overlapping in responsibility.

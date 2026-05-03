@@ -1,22 +1,22 @@
 # Backup and Restore
 
-Tài liệu này mô tả luồng backup/restore cho NUFI khi chạy bằng Docker hoặc Kubernetes.
+This document describes the backup/restore flow for NUFI when running with Docker or Kubernetes.
 
-## Loại Dữ Liệu Cần Backup
+## Data to Back Up
 
-- Database MySQL: dữ liệu người dùng, giao dịch, ngân sách, cảnh báo, nợ, nhóm.
-- File report/export: thư mục `generated_reports/`.
-- File media: avatar hoặc file upload trong `media/`.
-- Cấu hình triển khai: Helm values, ConfigMap, Secret template, version registry.
+- MySQL database: users, transactions, budgets, alerts, debts, sharing groups.
+- Report/export files: the `generated_reports/` directory.
+- Media files: avatars or uploaded files in `media/`.
+- Deployment configuration: Helm values, ConfigMap, Secret templates, version registry.
 
-## Backup Trong Kubernetes
+## Backup in Kubernetes
 
-Chart có 2 CronJob:
+The chart includes 2 CronJobs:
 
-- `nufi-backup-and-export`: chạy `python manage.py backup_and_export`, xuất CSV và manifest.
-- `nufi-mysql-dump`: tùy chọn, chạy `mysqldump`, tạo file `.sql.gz`.
+- `nufi-backup-and-export`: runs `python manage.py backup_and_export`, exports CSV and manifest files.
+- `nufi-mysql-dump`: optional, runs `mysqldump` to create a `.sql.gz` file.
 
-Bật SQL dump:
+Enable SQL dump:
 
 ```bash
 helm upgrade --install nufi deploy/helm/nufi \
@@ -24,29 +24,29 @@ helm upgrade --install nufi deploy/helm/nufi \
   --set pipelines.mysqlDump.enabled=true
 ```
 
-Chạy backup thủ công:
+Run a manual backup:
 
 ```bash
 kubectl -n nufi create job --from=cronjob/nufi-backup-and-export nufi-backup-manual
 kubectl -n nufi logs job/nufi-backup-manual
 ```
 
-Kiểm tra file backup:
+Check backup files:
 
 ```bash
 kubectl -n nufi get pvc
 kubectl -n nufi exec deploy/nufi -- ls -lah /app/generated_reports
 ```
 
-## Backup Bằng Docker Local
+## Backup with Local Docker
 
-Export dữ liệu ứng dụng:
+Export application data:
 
 ```bash
 docker compose --env-file .env.docker exec web python manage.py backup_and_export
 ```
 
-Dump MySQL container:
+Dump the MySQL container:
 
 ```bash
 docker compose --env-file .env.docker exec db sh -c \
@@ -55,19 +55,19 @@ docker compose --env-file .env.docker exec db sh -c \
 
 ## Restore MySQL
 
-Giải nén và import:
+Decompress and import:
 
 ```bash
 gunzip -c pfms-YYYYMMDD-HHMMSS.sql.gz | mysql -h 127.0.0.1 -P 3306 -u root -p pfms
 ```
 
-Nếu restore vào MySQL container:
+If restoring into the MySQL container:
 
 ```bash
 gunzip -c pfms-YYYYMMDD-HHMMSS.sql.gz | docker compose --env-file .env.docker exec -T db mysql -unufi -pnufi_password pfms
 ```
 
-Sau khi restore:
+After restore:
 
 ```bash
 python manage.py migrate --noinput --fake-initial
@@ -75,9 +75,9 @@ python manage.py check
 python scripts/smoke_test.py
 ```
 
-## Backup Cấu Hình
+## Configuration Backup
 
-Các file cấu hình quan trọng cần nằm trong Git:
+Key configuration files that should be in Git:
 
 - `deploy/helm/nufi/values.yaml`
 - `deploy/helm/nufi/values-local.yaml`
@@ -86,13 +86,13 @@ Các file cấu hình quan trọng cần nằm trong Git:
 - `.env.example`
 - `.env.docker.example`
 
-Secret thật không commit lên Git. Secret được lưu ở GitHub Secrets hoặc Kubernetes Secret.
+Real secrets must not be committed to Git. Secrets are stored in GitHub Secrets or Kubernetes Secrets.
 
-## Minh Chứng Demo
+## Demo Evidence
 
-Khi demo, nên chụp:
+When demoing, capture:
 
-- CronJob backup đã tạo Job thành công.
-- Log backup có dòng `Backup/export ready`.
-- Thư mục backup có file `.csv`, `manifest.json` hoặc `.sql.gz`.
-- Restore command hoặc tài liệu restore này.
+- CronJob backup successfully created a Job.
+- Backup log contains the line `Backup/export ready`.
+- Backup directory contains `.csv`, `manifest.json`, or `.sql.gz` files with timestamps.
+- Restore command or this restore documentation.

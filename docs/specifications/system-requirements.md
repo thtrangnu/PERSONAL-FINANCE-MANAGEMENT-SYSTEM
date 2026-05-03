@@ -1,125 +1,125 @@
 # System Requirements — Personal Finance Management System
 
-## 1. Mục đích tài liệu
-Tài liệu này mô tả chi tiết các yêu cầu chức năng và phi chức năng của hệ thống **NUFI**. Mục tiêu là giúp nhóm thống nhất:
-- hệ thống cần làm gì,
-- mức độ ưu tiên của từng chức năng,
-- phạm vi MVP và phạm vi mở rộng,
-- tiêu chí kiểm thử và nghiệm thu.
+## 1. Purpose
+This document describes the functional and non-functional requirements of the **NUFI** system in detail. The goal is to align the team on:
+- what the system needs to do,
+- the priority of each feature,
+- the MVP scope vs. extension scope,
+- acceptance and test criteria.
 
 ---
 
-## 2. Phạm vi yêu cầu
-Hệ thống là một ứng dụng web hỗ trợ người dùng cá nhân quản lý tài chính hằng ngày, gồm:
-- quản lý hồ sơ cá nhân,
-- ghi nhận thu nhập và chi tiêu,
-- quản lý danh mục thu nhập và chi tiêu,
-- theo dõi tài khoản ngân hàng,
-- lập ngân sách,
-- nhận cảnh báo,
-- xem báo cáo bảng/biểu đồ,
-- mở rộng sang nợ, nhóm chia sẻ, xuất file và đồng bộ cloud.
+## 2. Requirements Scope
+The system is a web application that helps individual users manage their personal finances daily, covering:
+- personal profile management,
+- recording income and expenses,
+- managing income and expense categories,
+- bank account tracking,
+- budget planning,
+- receiving alerts,
+- viewing table/chart reports,
+- extensions into debt tracking, sharing groups, file exports, and cloud sync.
 
 ---
 
-## 3. Phân loại yêu cầu
-Tài liệu chia yêu cầu thành 4 nhóm:
-1. **Functional Requirements (FR)** — hệ thống phải làm gì.
-2. **Non-functional Requirements (NFR)** — hệ thống phải chạy như thế nào.
-3. **Business Constraints / Assumptions** — các ràng buộc và giả định.
-4. **Acceptance Criteria** — tiêu chí chấp nhận để nghiệm thu.
+## 3. Requirement Categories
+This document divides requirements into 4 groups:
+1. **Functional Requirements (FR)** — what the system must do.
+2. **Non-functional Requirements (NFR)** — how the system must perform.
+3. **Business Constraints / Assumptions** — constraints and assumptions.
+4. **Acceptance Criteria** — criteria for sign-off.
 
 ---
 
 ## 4. Functional Requirements (FR)
 
-# 4.1. Nhóm yêu cầu tài khoản và xác thực
+# 4.1. Account and Authentication Requirements
 
 ### FR-01 — User Registration
-Hệ thống phải cho phép Guest đăng ký tài khoản mới.
+The system must allow guests to register a new account.
 
-**Đầu vào:**
+**Input:**
 - full_name
 - email
-- username (nếu dùng)
+- username (if used)
 - password
 - confirm_password
 
-**Xử lý:**
-- Kiểm tra email/username chưa tồn tại.
-- Kiểm tra định dạng email hợp lệ.
-- Kiểm tra mật khẩu đạt yêu cầu tối thiểu.
-- Tạo tài khoản người dùng mới.
+**Processing:**
+- Check that email/username does not already exist.
+- Validate email format.
+- Validate minimum password requirements.
+- Create a new user account.
 
-**Đầu ra:**
-- Thông báo đăng ký thành công hoặc lỗi chi tiết.
+**Output:**
+- Success message or detailed error.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-02 — User Login
-Hệ thống phải cho phép User đăng nhập bằng thông tin xác thực hợp lệ.
+The system must allow users to log in with valid credentials.
 
-**Đầu vào:**
-- email hoặc username
+**Input:**
+- email or username
 - password
 
-**Xử lý:**
-- Kiểm tra tài khoản tồn tại.
-- Kiểm tra mật khẩu đúng.
-- Kiểm tra tài khoản có active hay không.
+**Processing:**
+- Check that the account exists.
+- Verify the password.
+- Check that the account is active.
 
-**Đầu ra:**
-- Tạo phiên đăng nhập và chuyển đến dashboard.
+**Output:**
+- Create a login session and redirect to dashboard.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-03 — User Logout
-Hệ thống phải cho phép User đăng xuất an toàn.
+The system must allow users to log out safely.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-04 — Manage Profile
-Hệ thống phải cho phép User xem và cập nhật hồ sơ cá nhân.
+The system must allow users to view and update their personal profile.
 
-**Thông tin có thể cập nhật:**
-- họ tên
-- số điện thoại
-- ảnh đại diện
-- giới tính (tùy chọn)
-- ngày sinh (tùy chọn)
-- múi giờ (tùy chọn)
-- tiền tệ mặc định (tùy chọn)
+**Editable fields:**
+- full name
+- phone number
+- avatar
+- gender (optional)
+- date of birth (optional)
+- timezone (optional)
+- default currency (optional)
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-05 — Change Password
-User phải đổi được mật khẩu sau khi xác thực mật khẩu cũ.
+Users must be able to change their password after verifying the old password.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
 ### FR-06 — Google Login (future extension)
-Hệ thống có thể hỗ trợ đăng nhập Google ở giai đoạn mở rộng.
+The system may support Google login in an extension phase.
 
-**Ưu tiên:** Thấp / làm sau.
+**Priority:** Low / later.
 
 ---
 
-# 4.2. Nhóm yêu cầu quản lý thu nhập
+# 4.2. Income Management Requirements
 
 ### FR-07 — Create Income
-User phải tạo được khoản thu nhập.
+Users must be able to create an income record.
 
-**Thuộc tính tối thiểu:**
+**Minimum attributes:**
 - user
 - title / description
 - amount
@@ -128,62 +128,62 @@ User phải tạo được khoản thu nhập.
 - bank_account (optional)
 - note
 
-**Xử lý:**
+**Processing:**
 - Validate amount > 0.
-- Validate category hợp lệ cho income (`income` hoặc `both`).
-- Nếu có bank account, cập nhật số dư tăng tương ứng.
-- Ghi log giao dịch.
+- Validate category is valid for income (`income` or `both`).
+- If a bank account is linked, increase balance accordingly.
+- Log the transaction.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-08 — Update Income
-User phải sửa được khoản thu nhập do chính mình tạo.
+Users must be able to edit their own income records.
 
-**Xử lý:**
-- Nếu số tiền hoặc bank account thay đổi, phải điều chỉnh lại balance cho chính xác.
+**Processing:**
+- If the amount or bank account changes, the balance must be adjusted correctly.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-09 — Delete Income
-User phải xóa được khoản thu nhập của mình.
+Users must be able to delete their own income records.
 
-**Xử lý:**
-- Nếu khoản thu đã từng cộng vào bank account thì phải rollback lại balance.
-- Nên dùng soft delete nếu muốn bảo toàn lịch sử.
+**Processing:**
+- If the income has been added to a bank account balance, the balance must be rolled back.
+- Soft delete is recommended to preserve history.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
 ### FR-10 — View Income List
-User phải xem được danh sách income của chính mình.
+Users must be able to view their own income list.
 
-**Bộ lọc:**
-- theo ngày
-- theo tháng
-- theo năm
-- theo category
-- theo bank account
+**Filters:**
+- by date
+- by month
+- by year
+- by category
+- by bank account
 
-**Sắp xếp:**
-- mới nhất
-- cũ nhất
-- số tiền tăng/giảm
+**Sorting:**
+- newest first
+- oldest first
+- ascending/descending amount
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
-# 4.3. Nhóm yêu cầu quản lý chi tiêu
+# 4.3. Expense Management Requirements
 
 ### FR-11 — Create Expense
-User phải tạo được khoản chi tiêu.
+Users must be able to create an expense record.
 
-**Thuộc tính tối thiểu:**
+**Minimum attributes:**
 - user
 - category
 - amount
@@ -193,57 +193,57 @@ User phải tạo được khoản chi tiêu.
 - payment_method (cash/bank/e-wallet/other)
 - note
 
-**Xử lý:**
+**Processing:**
 - Validate amount > 0.
-- Nếu có bank account, giảm balance tương ứng.
-- Kích hoạt check budget.
-- Có thể tạo alert nếu vượt ngưỡng.
+- If a bank account is linked, decrease balance accordingly.
+- Trigger budget check.
+- Create an alert if threshold is exceeded.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-12 — Update Expense
-User phải sửa được khoản chi của chính mình.
+Users must be able to edit their own expense records.
 
-**Xử lý:**
-- Nếu đổi amount, category hoặc bank account, hệ thống phải điều chỉnh lại balance và budget usage.
+**Processing:**
+- If amount, category, or bank account changes, the system must re-adjust balance and budget usage.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-13 — Delete Expense
-User phải xóa được khoản chi của mình.
+Users must be able to delete their own expense records.
 
-**Xử lý:**
-- Nếu khoản này từng trừ vào balance thì phải cộng ngược lại.
-- Nếu khoản này ảnh hưởng budget thì phải cập nhật lại budget usage.
+**Processing:**
+- If this expense had been subtracted from a balance, it must be credited back.
+- If this expense affected a budget, the budget usage must be updated.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
 ### FR-14 — View Expense List
-User phải xem được danh sách expenses của chính mình.
+Users must be able to view their own expense list.
 
-**Bộ lọc:**
-- theo ngày/tháng/năm
-- theo category
-- theo bank account
-- theo payment method
-- theo khoảng tiền
+**Filters:**
+- by date/month/year
+- by category
+- by bank account
+- by payment method
+- by amount range
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
-# 4.4. Nhóm yêu cầu quản lý category
+# 4.4. Category Management Requirements
 
 ### FR-15 — Create Category
-User phải tạo được category phục vụ phân loại thu nhập và chi tiêu.
+Users must be able to create categories for classifying income and expenses.
 
-**Thuộc tính:**
+**Attributes:**
 - category_name
 - category_type (income / expense / both)
 - color
@@ -252,40 +252,40 @@ User phải tạo được category phục vụ phân loại thu nhập và chi 
 - is_default
 - is_active
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-16 — Update Category
-User phải sửa được category do mình sở hữu hoặc category được phép sửa.
+Users must be able to edit their own categories or permitted categories.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-17 — Disable Category
-User/Admin phải có thể vô hiệu hóa category thay vì xóa cứng.
+Users/admins must be able to deactivate a category instead of hard-deleting it.
 
-**Lý do:**
-- tránh làm hỏng lịch sử expense cũ.
+**Reason:**
+- prevents corrupting old expense history.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
 ### FR-18 — View Categories
-User phải xem được danh sách category đang hoạt động theo phạm vi được phép sử dụng.
+Users must be able to view the list of active categories within their permitted scope.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
-# 4.5. Nhóm yêu cầu quản lý bank accounts
+# 4.5. Bank Account Management Requirements
 
 ### FR-19 — Create Bank Account
-User phải tạo được tài khoản ngân hàng / ví / cash wallet.
+Users must be able to create a bank account, e-wallet, or cash wallet.
 
-**Thuộc tính:**
+**Attributes:**
 - account_name
 - account_type
 - provider_name
@@ -294,194 +294,194 @@ User phải tạo được tài khoản ngân hàng / ví / cash wallet.
 - currency
 - note
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-20 — Update Bank Account
-User phải sửa được thông tin bank account của mình.
+Users must be able to edit their own bank account information.
 
-**Lưu ý:**
-- nếu sửa opening balance hoặc current balance thì cần cơ chế kiểm soát rõ ràng.
+**Note:**
+- if opening balance or current balance is edited, a clear control mechanism is required.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-21 — View Bank Accounts
-User phải xem được danh sách tài khoản cùng số dư hiện tại.
+Users must be able to view their account list along with current balances.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-22 — View Account Transactions
-User phải xem được danh sách income/expense liên quan đến từng bank account.
+Users must be able to view income/expense records linked to each bank account.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
-# 4.6. Nhóm yêu cầu quản lý budgets
+# 4.6. Budget Management Requirements
 
 ### FR-23 — Create Overall Budget
-User phải tạo được budget tổng cho một tháng cụ thể.
+Users must be able to create an overall budget for a specific month.
 
-**Thuộc tính:**
+**Attributes:**
 - budget_name
 - period_month
 - period_year
 - spending_limit
 - warning_percent
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-24 — Create Category Budget
-User phải tạo được budget cho một category trong tháng.
+Users must be able to create a budget for a specific category within a month.
 
-**Thuộc tính:**
+**Attributes:**
 - category
 - month/year
 - spending_limit
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-25 — Track Budget Usage
-Hệ thống phải tự tính tổng chi đã dùng trong phạm vi budget.
+The system must automatically calculate total spending within a budget's scope.
 
-**Đầu ra:**
+**Output:**
 - amount_used
 - amount_remaining
 - usage_percent
 - over_limit_flag
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-26 — Update Budget
-User phải sửa được hạn mức và cảnh báo của budget.
+Users must be able to edit budget limits and alert thresholds.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
 ### FR-27 — Disable Budget
-User phải có thể đóng / vô hiệu hóa budget cũ.
+Users must be able to close or deactivate old budgets.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
-# 4.7. Nhóm yêu cầu cảnh báo (alerts)
+# 4.7. Alert Requirements
 
 ### FR-28 — Generate Spending Alert
-Hệ thống phải tạo cảnh báo khi:
-- mức dùng đạt ngưỡng cảnh báo (ví dụ 80%).
-- mức dùng vượt ngân sách (100%+).
+The system must create an alert when:
+- usage reaches the warning threshold (e.g., 80%).
+- usage exceeds the budget limit (100%+).
 
-**Loại alert:**
+**Alert types:**
 - budget_warning
 - budget_exceeded
 - debt_overdue
 - system_info
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-29 — View Alerts
-User phải xem được các alert của mình.
+Users must be able to view their own alerts.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-30 — Mark Alert as Read
-User phải đánh dấu alert là đã đọc.
+Users must be able to mark an alert as read.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
-# 4.8. Nhóm yêu cầu báo cáo và dashboard
+# 4.8. Reports and Dashboard Requirements
 
 ### FR-31 — Daily Summary
-Hệ thống phải cung cấp tổng hợp theo ngày.
+The system must provide a daily summary.
 
-**Nội dung:**
-- tổng income ngày
-- tổng expense ngày
-- net cash flow ngày
+**Content:**
+- total income for the day
+- total expenses for the day
+- net cash flow for the day
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-32 — Monthly Summary
-Hệ thống phải cung cấp tổng hợp theo tháng.
+The system must provide a monthly summary.
 
-**Nội dung:**
-- tổng thu tháng
-- tổng chi tháng
-- category chi nhiều nhất
-- số dư cuối tháng (ước tính hoặc theo account)
+**Content:**
+- total income for the month
+- total expenses for the month
+- top spending category
+- end-of-month balance (estimated or by account)
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-33 — Yearly Summary
-Hệ thống phải cung cấp tổng hợp theo năm.
+The system must provide a yearly summary.
 
-**Ưu tiên:** Trung bình đến cao.
+**Priority:** Medium to High.
 
 ---
 
 ### FR-34 — Graphical Reports
-Hệ thống phải hiển thị báo cáo dạng biểu đồ như:
-- pie chart theo category
-- bar chart theo tháng
-- line chart xu hướng thu/chi
+The system must display chart-based reports such as:
+- pie chart by category
+- bar chart by month
+- line chart of income/expense trends
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-35 — Tabular Reports
-Hệ thống phải hiển thị báo cáo dạng bảng, hỗ trợ lọc và sắp xếp.
+The system must display table-based reports with filtering and sorting support.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-36 — Dashboard Overview
-Dashboard phải hiển thị nhanh:
-- tổng balance các tài khoản
-- tổng income tháng này
-- tổng expense tháng này
+The dashboard must display at a glance:
+- total balance across all accounts
+- total income this month
+- total expenses this month
 - remaining budget
 - recent transactions
 - unread alerts
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
-# 4.9. Nhóm yêu cầu quản lý nợ (extension)
+# 4.9. Debt Management Requirements (Extension)
 
 ### FR-37 — Create Debt
-User phải ghi được khoản nợ.
+Users must be able to record a debt.
 
-**Phân loại:**
-- mình nợ người khác
-- người khác nợ mình
+**Classification:**
+- money they owe someone else
+- money someone else owes them
 
-**Thuộc tính:**
+**Attributes:**
 - debt_type
 - counterparty_name
 - original_amount
@@ -489,171 +489,171 @@ User phải ghi được khoản nợ.
 - status
 - note
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
 ### FR-38 — Record Debt Payment
-User phải ghi được lịch sử thanh toán nợ.
+Users must be able to record debt payment history.
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
 ### FR-39 — Debt Status Tracking
-Hệ thống phải xác định trạng thái:
+The system must determine status:
 - pending
 - partially_paid
 - paid
 - overdue
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
-# 4.10. Nhóm yêu cầu sharing groups (extension)
+# 4.10. Sharing Group Requirements (Extension)
 
 ### FR-40 — Create Group
-User phải tạo được nhóm chia sẻ tài chính.
+Users must be able to create a financial sharing group.
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
 ### FR-41 — Invite / Add Group Members
-Group owner phải gửi lời mời thành viên được. Người được mời phải xác nhận đồng ý trước khi trở thành thành viên chính thức của nhóm.
+Group owners must be able to invite members. Invited users must confirm before becoming official members.
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
 ### FR-42 — Share Transactions
-User phải gắn một số giao dịch thành shared transaction trong group.
+Users must be able to mark selected transactions as shared within a group.
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
 ### FR-43 — Restrict Group Visibility
-Chỉ thành viên nhóm mới xem được giao dịch chia sẻ trong nhóm đó.
+Only group members may view shared transactions within that group.
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
-# 4.11. Nhóm yêu cầu export và cloud sync
+# 4.11. Export and Cloud Sync Requirements
 
 ### FR-44 — Export Excel
-User phải xuất được báo cáo ra Excel.
+Users must be able to export reports to Excel.
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
 ### FR-45 — Export PDF
-User phải xuất được báo cáo ra PDF.
+Users must be able to export reports to PDF.
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
 ### FR-46 — Scheduled Backup
-Hệ thống phải hỗ trợ backup định kỳ.
+The system must support periodic backups.
 
-**Ưu tiên:** Cao về hạ tầng, có thể triển khai tối thiểu trong demo.
+**Priority:** High for infrastructure; minimal demo implementation acceptable.
 
 ---
 
 ### FR-47 — Cloud Sync
-Hệ thống có thể đồng bộ dữ liệu / file backup lên cloud.
+The system may support syncing data/backup files to the cloud.
 
-**Ưu tiên:** Giai đoạn 2.
+**Priority:** Phase 2.
 
 ---
 
-# 4.12. Nhóm yêu cầu quản trị
+# 4.12. Admin Requirements
 
 ### FR-48 — Admin Manage Users
-Admin phải xem danh sách user, kích hoạt/vô hiệu hóa tài khoản, kiểm tra trạng thái.
+Admin must be able to view user list, activate/deactivate accounts, and check status.
 
-**Ưu tiên:** Cao.
+**Priority:** High.
 
 ---
 
 ### FR-49 — Admin Manage Default Categories
-Admin phải quản lý danh mục mặc định của hệ thống.
+Admin must be able to manage the system's default categories.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
 ### FR-50 — Admin View Logs
-Admin phải xem được log hệ thống, log đăng nhập, log lỗi, log tác vụ nền.
+Admin must be able to view system logs, login logs, error logs, and background task logs.
 
-**Ưu tiên:** Trung bình.
+**Priority:** Medium.
 
 ---
 
-## 5. Non-functional Requirements (NFR)
+## 5. Non-Functional Requirements (NFR)
 
 ### NFR-01 — Security
-- Mỗi user chỉ truy cập dữ liệu của chính mình.
-- Tất cả route cần kiểm tra authentication/authorization.
-- Password phải được hash.
-- Không expose ID nhạy cảm theo cách thiếu kiểm soát.
-- Có CSRF protection cho form web.
-- Có validation đầu vào.
+- Each user may only access their own data.
+- All routes must enforce authentication/authorization.
+- Passwords must be hashed.
+- Sensitive IDs must not be exposed without access control.
+- CSRF protection for web forms.
+- Input validation on all entry points.
 
 ### NFR-02 — Performance
-- Truy vấn danh sách giao dịch phổ biến phải phản hồi tốt.
-- Cần index các cột được lọc nhiều như user_id, date, category_id, bank_account_id, status.
-- Báo cáo tháng/năm cần được tối ưu bằng aggregate query hoặc view.
+- Commonly used transaction list queries must respond well.
+- Index frequently filtered columns: user_id, date, category_id, bank_account_id, status.
+- Monthly/yearly reports must be optimized with aggregate queries or views.
 
 ### NFR-03 — Reliability
-- Hệ thống phải hạn chế mất dữ liệu khi lỗi.
-- Các thay đổi balance phải có tính nhất quán.
-- Các thao tác tạo/sửa/xóa transaction nên chạy trong transaction an toàn.
+- The system must minimize data loss on failure.
+- Balance changes must be consistent.
+- Create/update/delete transaction operations should run within safe transactions.
 
 ### NFR-04 — Scalability
-- Có thể mở rộng thêm module debts, sharing, exports mà không phá schema cũ.
-- Có thể triển khai tách service sau này nếu cần.
+- New modules (debts, sharing, exports) can be added without breaking the existing schema.
+- Services can be separated if needed in the future.
 
 ### NFR-05 — Maintainability
-- Code chia module rõ ràng theo Django app.
-- Schema đặt tên nhất quán.
-- Có tài liệu mô tả bảng, rule, API, workflow.
+- Code is clearly organized by Django app module.
+- Schema uses consistent naming conventions.
+- Documentation covers tables, rules, APIs, and workflows.
 
 ### NFR-06 — Usability
-- Giao diện phải dễ hiểu với người dùng phổ thông.
-- Form nhập liệu cần rõ trường bắt buộc/không bắt buộc.
-- Dashboard và báo cáo phải đọc dễ.
+- The interface must be easy to understand for general users.
+- Input forms must clearly indicate required vs. optional fields.
+- Dashboard and reports must be easy to read.
 
 ### NFR-07 — Backup & Recovery
-- Có backup định kỳ DB.
-- Có tài liệu phục hồi dữ liệu.
-- File backup được lưu an toàn.
+- Periodic DB backups.
+- Data recovery documentation.
+- Backup files stored securely.
 
 ### NFR-08 — Auditability
-- Các thay đổi quan trọng nên ghi nhận log.
-- Các alert và tác vụ tự động cần truy vết được nguồn sinh ra.
+- Important changes should be logged.
+- Alerts and automated tasks must be traceable to their source.
 
 ---
 
 ## 6. Business Constraints / Assumptions
-- Hệ thống phục vụ người dùng cá nhân, không phải kế toán doanh nghiệp phức tạp.
-- Dữ liệu bank account ban đầu do user nhập thủ công.
-- Không tích hợp live API ngân hàng ở bản đầu.
-- Một expense thuộc đúng một category chính.
-- Một income/expense có thể gắn một bank account hoặc không.
-- Balance hiện tại là dữ liệu có thể được hệ thống tính từ giao dịch hoặc cập nhật theo rule thống nhất.
-- Budget hiện ưu tiên cho chu kỳ tháng.
-- Currency mặc định là một loại tiền cho mỗi user ở bản đầu.
+- The system serves individual users, not complex corporate accounting.
+- Bank account data is initially entered manually by users.
+- No live banking API integration in the first version.
+- One expense belongs to exactly one primary category.
+- One income/expense may be linked to one bank account or none.
+- Current balance is data that the system can compute from transactions or update via a consistent rule.
+- Budgets prioritize monthly cycles in the first version.
+- Default currency is a single currency per user in the first version.
 
 ---
 
-## 7. In-scope / Out-of-scope tóm tắt
+## 7. In-Scope / Out-of-Scope Summary
 
-### 7.1. In-scope
+### 7.1. In-Scope
 - user profile management
 - income/expense entry
 - bank account tracking
@@ -663,54 +663,54 @@ Admin phải xem được log hệ thống, log đăng nhập, log lỗi, log t�
 - graphical and tabular reports
 - indexes/views/procedures/functions/triggers
 - security, backup, recovery
-- debt tracking (phase 2 nếu kịp)
-- sharing groups (phase 2 nếu kịp)
-- export Excel/PDF (phase 2 nếu kịp)
+- debt tracking (phase 2 if time permits)
+- sharing groups (phase 2 if time permits)
+- export Excel/PDF (phase 2 if time permits)
 - cloud sync (phase 2)
 
-### 7.2. Out-of-scope
+### 7.2. Out-of-Scope
 - live banking integration
 - AI financial prediction
 - OCR receipt scan
-- multi-currency exchange engine real-time
-- full mobile native app
+- real-time multi-currency exchange engine
+- full native mobile app
 
 ---
 
 ## 8. Acceptance Criteria
 
-### 8.1. MVP acceptance criteria
-Project được xem là đạt mức MVP nếu:
-1. User đăng ký, đăng nhập, cập nhật hồ sơ được.
-2. User CRUD được income.
-3. User CRUD được expenses.
-4. User CRUD được categories.
-5. User CRUD được bank accounts.
-6. User tạo và theo dõi được budget.
-7. Hệ thống sinh được alert khi chi tiêu vượt ngưỡng.
-8. Dashboard hiển thị được thông tin tổng quan.
-9. Báo cáo ngày/tháng/năm chạy được.
-10. Dữ liệu giữa các user tách biệt chính xác.
+### 8.1. MVP Acceptance Criteria
+The project is considered to have reached MVP if:
+1. Users can register, log in, and update their profile.
+2. Users can CRUD income.
+3. Users can CRUD expenses.
+4. Users can CRUD categories.
+5. Users can CRUD bank accounts.
+6. Users can create and track a budget.
+7. The system generates an alert when spending exceeds a threshold.
+8. Dashboard displays overview information.
+9. Daily/monthly/yearly reports work.
+10. User data is correctly isolated from other users.
 
-### 8.2. Database acceptance criteria
-1. Có schema relational rõ ràng.
-2. Có PK/FK đầy đủ.
-3. Có index cho các bảng chính.
-4. Có ít nhất một view.
-5. Có ít nhất một procedure hoặc function.
-6. Có ít nhất một trigger liên quan balance/alert/log.
+### 8.2. Database Acceptance Criteria
+1. Clear relational schema.
+2. Complete PK/FK definitions.
+3. Indexes on main tables.
+4. At least one view.
+5. At least one procedure or function.
+6. At least one trigger related to balance/alert/log.
 
-### 8.3. Deployment acceptance criteria
-1. Ứng dụng chạy bằng Docker.
-2. Kết nối MySQL thành công.
-3. Có mô tả job định kỳ hoặc demo được ít nhất một CronJob / scheduled task.
-4. Có phương án backup/recovery.
+### 8.3. Deployment Acceptance Criteria
+1. Application runs with Docker.
+2. MySQL connection is successful.
+3. At least one CronJob / scheduled task is described or demonstrated.
+4. Backup/recovery plan is in place.
 
 ---
 
-## 9. Mức độ ưu tiên triển khai
+## 9. Implementation Priority
 
-### Ưu tiên 1 — Phải có
+### Priority 1 — Must Have
 - auth
 - profile
 - categories
@@ -721,32 +721,32 @@ Project được xem là đạt mức MVP nếu:
 - alerts
 - dashboard
 - reports
-- schema DB
-- security cơ bản
+- DB schema
+- basic security
 
-### Ưu tiên 2 — Nên có
+### Priority 2 — Should Have
 - admin logs
 - export Excel/PDF
 - debt tracking
-- view/procedure/function/trigger hoàn chỉnh
+- complete views/procedures/functions/triggers
 - backup automation
 
-### Ưu tiên 3 — Có thể có nếu còn thời gian
+### Priority 3 — Nice to Have (if time allows)
 - sharing groups
-- cloud sync nâng cao
+- advanced cloud sync
 - Google login
-- báo cáo nâng cao
+- advanced reports
 
 ---
 
-## 10. Kết luận
-Tài liệu yêu cầu này là cơ sở để nhóm tiếp tục đi sang các bước:
-- chốt actor và quyền,
-- chốt module,
-- viết business rules,
-- vẽ use case,
-- vẽ ERD,
-- thiết kế relational schema,
-- sau đó mới sang code Django và database implementation.
+## 10. Conclusion
+This requirements document is the basis for the team to proceed to:
+- finalize actors and permissions,
+- finalize modules,
+- write business rules,
+- draw use cases,
+- draw ERD,
+- design relational schema,
+- then move to Django code and database implementation.
 
-Càng chốt rõ requirement ở giai đoạn đầu thì càng ít lệch hướng khi triển khai code, giao diện và cơ sở dữ liệu.
+The more clearly requirements are defined early, the less drift there will be when implementing code, UI, and the database.

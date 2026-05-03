@@ -1,22 +1,22 @@
 # NUFI System Flow
 
-Tài liệu này dùng để giải thích luồng chạy tổng thể khi demo hoặc viết báo cáo.
+This document explains the overall system flow for demos and reports.
 
-## Luồng Ứng Dụng
+## Application Flow
 
 ```mermaid
 flowchart LR
-    User["Người dùng"] --> Browser["Trình duyệt"]
+    User["User"] --> Browser["Browser"]
     Browser --> Web["NUFI Django Web"]
-    Web --> Auth["Đăng nhập / Đăng ký"]
-    Web --> Finance["Thu nhập, chi tiêu, ngân sách, nợ, nhóm"]
+    Web --> Auth["Login / Register"]
+    Web --> Finance["Income, Expenses, Budgets, Debts, Groups"]
     Finance --> DB["MySQL"]
-    Web --> Reports["Excel / PDF / báo cáo"]
+    Web --> Reports["Excel / PDF / Reports"]
     Reports --> Files["generated_reports / PVC"]
-    Web --> Metrics["/healthz và /metrics"]
+    Web --> Metrics["/healthz and /metrics"]
 ```
 
-## Luồng Docker Local
+## Local Docker Flow
 
 ```mermaid
 flowchart LR
@@ -29,30 +29,30 @@ flowchart LR
     App --> Smoke["scripts/smoke_test.py"]
 ```
 
-## Luồng CI/CD Trên Main
+## CI/CD Flow on Main
 
 ```mermaid
 flowchart TD
-    Push["Push code lên main"] --> CI["GitHub Actions CI"]
+    Push["Push code to main"] --> CI["GitHub Actions CI"]
     CI --> Check["Django check"]
-    CI --> Migrate["Migrate trên MySQL service"]
+    CI --> Migrate["Migrate on MySQL service"]
     CI --> Jobs["daily_summary / budget_alert_check / backup_and_export"]
     CI --> Build["Docker build"]
-    Build --> GHCR["Push image lên GHCR"]
+    Build --> GHCR["Push image to GHCR"]
     GHCR --> CD{"ENABLE_K8S_DEPLOY=true?"}
-    CD -- "Có" --> Helm["helm upgrade --install"]
-    CD -- "Không" --> Done["Dừng ở build image"]
+    CD -- "Yes" --> Helm["helm upgrade --install"]
+    CD -- "No" --> Done["Stop at image build"]
     Helm --> K8s["Kubernetes Deployment"]
 ```
 
-## Luồng Kubernetes Và Monitoring
+## Kubernetes and Monitoring Flow
 
 ```mermaid
 flowchart LR
-    Helm["Helm Release"] --> Deploy["Deployment web"]
+    Helm["Helm Release"] --> Deploy["web Deployment"]
     Helm --> Service["Service"]
-    Helm --> Ingress["Ingress nếu bật"]
-    Helm --> Cron["CronJob pipeline và backup"]
+    Helm --> Ingress["Ingress if enabled"]
+    Helm --> Cron["CronJob pipeline and backup"]
     Helm --> Monitor["ServiceMonitor"]
     Deploy --> Metrics["/metrics"]
     Monitor --> Prometheus["Prometheus"]
@@ -60,15 +60,14 @@ flowchart LR
     Prometheus --> Alerts["PrometheusRule alerts"]
 ```
 
-## Luồng Backup Và Restore
+## Backup and Restore Flow
 
 ```mermaid
 flowchart TD
     Cron["CronJob backup"] --> Export["backup_and_export"]
-    Cron --> Dump["mysqldump nếu bật"]
+    Cron --> Dump["mysqldump if enabled"]
     Export --> ReportsPVC["PVC generated_reports"]
     Dump --> ReportsPVC
-    ReportsPVC --> BackupFile["File backup có timestamp"]
-    BackupFile --> Restore["Restore theo docs/operations/backup-restore.md"]
+    ReportsPVC --> BackupFile["Timestamped backup file"]
+    BackupFile --> Restore["Restore via docs/operations/backup-restore.md"]
 ```
-

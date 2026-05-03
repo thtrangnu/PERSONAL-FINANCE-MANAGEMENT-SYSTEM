@@ -1,305 +1,305 @@
 # Project Overview — Personal Finance Management System
 
-## 1. Tên đề tài
+## 1. Project Name
 **Project 13 — Personal Finance Management System**
 
-Tên gợi ý cho sản phẩm:
+Suggested product names:
 - **Smart Finance Hub**
 - **MyBudget Manager**
 - **Personal Finance Tracker**
 
-Trong tài liệu này, hệ thống sẽ được gọi thống nhất là:
+Throughout this documentation, the system will be referred to as:
 **NUFI**.
 
 ---
 
-## 2. Bối cảnh bài toán
-Trong thực tế, rất nhiều người dùng cá nhân gặp khó khăn khi quản lý tài chính hằng ngày vì các lý do sau:
-- Không ghi lại đầy đủ các khoản thu và chi.
-- Không biết tiền đang nằm ở tài khoản ngân hàng nào.
-- Không nắm được tổng chi tiêu theo ngày, tháng, năm.
-- Không có kế hoạch ngân sách rõ ràng cho từng nhóm chi tiêu.
-- Chỉ phát hiện chi tiêu vượt mức khi đã hết tiền.
-- Không có báo cáo trực quan để đánh giá thói quen tài chính.
-- Việc tổng hợp dữ liệu thủ công bằng Excel dễ sai sót, mất thời gian và khó mở rộng.
+## 2. Problem Context
+Many individual users struggle with managing their personal finances day-to-day for the following reasons:
+- They do not track all income and expenses.
+- They do not know which bank accounts hold their money.
+- They have no visibility into total spending by day, month, or year.
+- They lack a clear budget plan for each spending category.
+- They only discover overspending after the money is gone.
+- They have no visual reports to evaluate their financial habits.
+- Manual data aggregation in Excel is error-prone, time-consuming, and hard to scale.
 
-Từ bài toán đó, hệ thống NUFI được xây dựng nhằm cung cấp một nền tảng giúp người dùng:
-- quản lý hồ sơ cá nhân,
-- ghi nhận thu nhập và chi tiêu,
-- theo dõi số dư tài khoản,
-- lập ngân sách,
-- nhận cảnh báo vượt ngưỡng,
-- xem báo cáo dưới dạng bảng và biểu đồ,
-- mở rộng sang quản lý nợ, nhóm chia sẻ tài chính, xuất báo cáo và đồng bộ đám mây.
-
----
-
-## 3. Mục tiêu tổng quát của dự án
-Hệ thống cần giải quyết được các nhu cầu cốt lõi sau:
-
-1. **Quản lý người dùng**
-   - Người dùng có thể đăng ký, đăng nhập, cập nhật hồ sơ.
-   - Hệ thống phải đảm bảo dữ liệu tài chính của mỗi người là riêng biệt.
-
-2. **Quản lý thu nhập và chi tiêu**
-   - Người dùng có thể thêm, sửa, xóa, xem các khoản income/expense.
-   - Có thể phân loại cả thu nhập và chi tiêu theo category.
-   - Có thể gắn khoản thu/chi với bank account cụ thể.
-
-3. **Theo dõi tài khoản ngân hàng / ví**
-   - Người dùng có thể quản lý nhiều tài khoản.
-   - Hệ thống cần phản ánh biến động số dư khi phát sinh giao dịch.
-
-4. **Lập kế hoạch ngân sách**
-   - Người dùng đặt ngân sách theo tháng hoặc theo category.
-   - Hệ thống theo dõi mức sử dụng ngân sách và cảnh báo khi gần hoặc vượt hạn mức.
-
-5. **Báo cáo và thống kê**
-   - Cung cấp tổng hợp theo ngày/tháng/năm.
-   - Hiển thị biểu đồ trực quan và bảng chi tiết.
-
-6. **Yêu cầu cơ sở dữ liệu nâng cao**
-   - Có sử dụng **indexes, views, procedures, functions, triggers**.
-   - Có cơ chế về **security, backup, recovery**.
-
-7. **Khả năng mở rộng**
-   - Hỗ trợ quản lý nợ.
-   - Hỗ trợ nhóm chia sẻ tài chính.
-   - Hỗ trợ xuất Excel/PDF.
-   - Hỗ trợ đồng bộ cloud.
+To address this, NUFI is built to provide a platform that helps users:
+- manage their personal profile,
+- record income and expenses,
+- track account balances,
+- plan budgets,
+- receive over-limit alerts,
+- view reports in table and chart form,
+- extend into debt tracking, financial sharing groups, report exports, and cloud sync.
 
 ---
 
-## 4. Phạm vi dự án
+## 3. General Project Objectives
+The system must fulfill these core needs:
 
-### 4.1. In-scope (nằm trong phạm vi làm)
-Các chức năng thuộc phạm vi chính thức của dự án gồm:
+1. **User Management**
+   - Users can register, log in, and update their profile.
+   - The system must ensure each user's financial data is isolated.
 
-#### A. Tài khoản và hồ sơ người dùng
-- Đăng ký tài khoản.
-- Đăng nhập / đăng xuất.
-- Quản lý hồ sơ cá nhân.
-- Đổi mật khẩu.
-- Khóa / mở tài khoản ở mức quản trị.
+2. **Income and Expense Management**
+   - Users can add, edit, delete, and view income/expense records.
+   - Transactions can be categorized by category.
+   - Transactions can be linked to a specific bank account.
 
-#### B. Quản lý thu nhập
-- Thêm khoản thu nhập.
-- Sửa khoản thu nhập.
-- Xóa khoản thu nhập.
-- Xem danh sách khoản thu nhập.
-- Lọc theo thời gian, loại, tài khoản.
+3. **Bank Account / Wallet Tracking**
+   - Users can manage multiple accounts.
+   - The system reflects balance changes when transactions occur.
 
-#### C. Quản lý chi tiêu
-- Thêm khoản chi tiêu.
-- Sửa khoản chi tiêu.
-- Xóa khoản chi tiêu.
-- Xem danh sách khoản chi.
-- Gắn category cho expense.
-- Lọc theo category, thời gian, bank account.
+4. **Budget Planning**
+   - Users set monthly or category-based budgets.
+   - The system monitors budget usage and alerts when nearing or exceeding the limit.
 
-#### D. Quản lý danh mục thu nhập và chi tiêu
-- Tạo category cá nhân.
-- Sửa category.
-- Kích hoạt/vô hiệu hóa category.
-- Chọn loại category cho income / expense / both.
-- Gắn màu, biểu tượng, mô tả.
+5. **Reports and Statistics**
+   - Provides daily/monthly/yearly summaries.
+   - Displays visual charts and detailed tables.
 
-#### E. Quản lý tài khoản ngân hàng / ví tiền
-- Tạo bank account.
-- Chỉnh sửa thông tin tài khoản.
-- Theo dõi số dư hiện tại.
-- Theo dõi lịch sử giao dịch liên quan.
+6. **Advanced Database Requirements**
+   - Uses **indexes, views, procedures, functions, triggers**.
+   - Includes mechanisms for **security, backup, recovery**.
 
-#### F. Quản lý ngân sách
-- Tạo ngân sách tổng theo tháng.
-- Tạo ngân sách theo category.
-- Theo dõi mức đã dùng, còn lại, % sử dụng.
-- Sinh cảnh báo khi sắp/vượt ngưỡng.
+7. **Extensibility**
+   - Supports debt tracking.
+   - Supports financial sharing groups.
+   - Supports Excel/PDF export.
+   - Supports cloud sync.
 
-#### G. Báo cáo
-- Tổng hợp theo ngày.
-- Tổng hợp theo tháng.
-- Tổng hợp theo năm.
-- Báo cáo dạng bảng.
-- Báo cáo dạng biểu đồ.
+---
 
-#### H. Chức năng mở rộng ưu tiên sau lõi
-- Quản lý nợ.
-- Nhóm chia sẻ tài chính.
-- Xuất báo cáo.
-- Đồng bộ cloud.
+## 4. Project Scope
 
-#### I. Hạ tầng và triển khai
+### 4.1. In-Scope
+The following features are officially within project scope:
+
+#### A. User Accounts and Profile
+- User registration.
+- Login / logout.
+- Personal profile management.
+- Password change.
+- Account lock / unlock at admin level.
+
+#### B. Income Management
+- Add income.
+- Edit income.
+- Delete income.
+- View income list.
+- Filter by date, type, and account.
+
+#### C. Expense Management
+- Add expense.
+- Edit expense.
+- Delete expense.
+- View expense list.
+- Assign category to expense.
+- Filter by category, date, and bank account.
+
+#### D. Category Management
+- Create personal categories.
+- Edit categories.
+- Activate/deactivate categories.
+- Select category type: income / expense / both.
+- Assign color, icon, and description.
+
+#### E. Bank Account / Wallet Management
+- Create bank accounts.
+- Edit account information.
+- Track current balance.
+- View related transaction history.
+
+#### F. Budget Management
+- Create a total monthly budget.
+- Create category-based budgets.
+- Track amount used, remaining, and usage percentage.
+- Generate alerts when nearing or exceeding the limit.
+
+#### G. Reports
+- Daily summary.
+- Monthly summary.
+- Yearly summary.
+- Table-based reports.
+- Chart-based reports.
+
+#### H. Extension Features (after core)
+- Debt tracking.
+- Financial sharing groups.
+- Report export.
+- Cloud sync.
+
+#### I. Infrastructure and Deployment
 - Backend: Django.
 - Database: MySQL.
-- Container hóa bằng Docker.
-- Django management commands và Kubernetes CronJob cho tác vụ định kỳ / backup / tổng hợp.
-- Kubernetes + Helm cho triển khai và vận hành.
-- Cloudflare Tunnel để public bản demo ra Internet khi cần.
+- Containerized with Docker.
+- Django management commands and Kubernetes CronJob for scheduled tasks, backup, and summaries.
+- Kubernetes + Helm for deployment and operations.
+- Cloudflare Tunnel for public demo access when needed.
 
 ---
 
-### 4.2. Out-of-scope (chưa làm trong giai đoạn đầu)
-Những nội dung dưới đây **không ưu tiên ở bản đầu tiên** hoặc chỉ để dự phòng mở rộng:
-- Tích hợp thanh toán điện tử trực tiếp với ngân hàng.
-- Đồng bộ số dư ngân hàng theo API real-time.
-- OCR hóa đơn tự động bằng AI.
-- Dự báo tài chính nâng cao bằng Machine Learning.
-- Chatbot tư vấn tài chính.
-- Hỗ trợ đa tiền tệ với tỷ giá real-time.
-- Mobile app native riêng cho iOS/Android.
-- Phân tích đầu tư, cổ phiếu, crypto.
+### 4.2. Out-of-Scope
+The following are **not prioritized in the first version** or are reserved for future extension:
+- Direct electronic payment integration with banks.
+- Real-time bank balance sync via API.
+- AI-powered OCR for receipts.
+- Advanced financial forecasting with Machine Learning.
+- Financial advisory chatbot.
+- Multi-currency support with real-time exchange rates.
+- Native mobile app for iOS/Android.
+- Investment, stock, or crypto analysis.
 
 ---
 
-## 5. Các nhóm người dùng chính
-Hệ thống có 3 actor chính:
+## 5. Main User Groups
+The system has 3 main actors:
 
 ### 5.1. Guest
-Người chưa đăng nhập vào hệ thống.
-Quyền chính:
-- Xem landing page.
-- Đăng ký.
-- Đăng nhập.
-- Xem một số thông tin giới thiệu hệ thống.
+A user who has not logged in.
+Key permissions:
+- View the landing page.
+- Register.
+- Log in.
+- View some system introduction content.
 
 ### 5.2. User
-Người dùng đã đăng nhập.
-Quyền chính:
-- Quản lý dữ liệu tài chính của **chính mình**.
-- Tạo/sửa/xóa income, expense, category, bank account, budget.
-- Xem cảnh báo, báo cáo, dashboard.
-- Theo dõi nợ cá nhân.
-- Tham gia nhóm chia sẻ nếu có.
+A logged-in user.
+Key permissions:
+- Manage their own financial data.
+- Create/edit/delete income, expense, category, bank account, budget.
+- View alerts, reports, dashboard.
+- Track personal debts.
+- Join sharing groups if available.
 
 ### 5.3. Admin
-Người quản trị hệ thống.
-Quyền chính:
-- Quản lý người dùng.
-- Quản lý category hệ thống mặc định.
-- Xem log hoạt động.
-- Theo dõi lỗi hệ thống.
-- Kiểm tra backup, phục hồi, vận hành dữ liệu.
+A system administrator.
+Key permissions:
+- Manage users.
+- Manage default system categories.
+- View activity logs.
+- Monitor system errors.
+- Check backup, recovery, and data operations.
 
 ---
 
-## 6. Giá trị mà hệ thống mang lại
+## 6. Value Delivered by the System
 
-### 6.1. Đối với người dùng cá nhân
-- Biết tiền đi đâu về đâu mỗi ngày.
-- Kiểm soát tốt thói quen chi tiêu.
-- Có cảnh báo trước khi vượt ngân sách.
-- Dễ đưa ra quyết định tài chính hơn.
+### 6.1. For Individual Users
+- Know where money comes from and goes every day.
+- Better control over spending habits.
+- Get warned before exceeding the budget.
+- Make financial decisions more easily.
 
-### 6.2. Đối với việc học và làm project
-- Bao quát đầy đủ các thành phần của một hệ thống quản lý dữ liệu thực tế.
-- Có cơ hội áp dụng cả backend, database, cloud, container, workflow scheduling.
-- Dễ trình bày vì có quy trình nghiệp vụ rõ, dữ liệu rõ, báo cáo trực quan.
-- Phù hợp để chứng minh năng lực thiết kế database, xây dựng API, bảo mật và triển khai.
+### 6.2. For Academic and Project Work
+- Covers all components of a real-world data management system.
+- Opportunity to apply backend, database, cloud, container, and workflow scheduling.
+- Easy to present — clear business processes, clear data, and visual reports.
+- Suitable for demonstrating database design, API development, security, and deployment skills.
 
 ---
 
-## 7. Stack công nghệ được chốt
+## 7. Technology Stack
 
 ### 7.1. Django
-Lý do chọn:
-- Phát triển web nhanh.
-- Có sẵn authentication, admin site, ORM.
-- Phù hợp với mô hình CRUD nhiều module.
-- Dễ tổ chức project theo app/module.
+Why chosen:
+- Rapid web development.
+- Built-in authentication, admin site, and ORM.
+- Suitable for the multi-module CRUD model.
+- Easy to organize by app/module.
 
-Vai trò trong dự án:
-- Xử lý business logic.
-- Xử lý xác thực người dùng.
-- Tạo API hoặc render web UI.
-- Kết nối với MySQL.
+Role in the project:
+- Handles business logic.
+- Handles user authentication.
+- Creates APIs or renders web UI.
+- Connects to MySQL.
 
 ### 7.2. MySQL
-Lý do chọn:
-- Quan hệ rõ ràng, phù hợp bài toán tài chính.
-- Dễ thiết kế khóa chính/khóa ngoại/index.
-- Hỗ trợ view, procedure, function, trigger.
-- Phù hợp yêu cầu môn học về CSDL.
+Why chosen:
+- Clear relational model, suitable for financial data.
+- Easy to design primary keys, foreign keys, and indexes.
+- Supports views, procedures, functions, and triggers.
+- Meets course requirements for DBMS.
 
-Vai trò trong dự án:
-- Lưu dữ liệu người dùng, giao dịch, ngân sách, cảnh báo, nhóm chia sẻ.
-- Hỗ trợ truy vấn tổng hợp và báo cáo.
+Role in the project:
+- Stores users, transactions, budgets, alerts, sharing groups.
+- Supports aggregation queries and reporting.
 
 ### 7.3. Docker
-Lý do chọn:
-- Môi trường chạy đồng nhất cho cả nhóm.
-- Giảm lỗi “chạy được trên máy này nhưng không chạy trên máy kia”.
-- Dễ đóng gói Django + MySQL và các thành phần chạy nền liên quan.
+Why chosen:
+- Consistent runtime environment for all team members.
+- Eliminates "works on my machine" issues.
+- Easy to package Django + MySQL and related background components.
 
-Vai trò trong dự án:
-- Container hóa backend.
-- Container hóa database.
-- Tạo môi trường chạy đồng nhất cho các command định kỳ khi cần.
+Role in the project:
+- Containerizes the backend.
+- Containerizes the database.
+- Provides a consistent environment for periodic commands.
 
-### 7.4. Kubernetes và Helm
-Lý do chọn:
-- Phù hợp để đóng gói và triển khai hệ thống theo kiểu production-like.
-- Dễ quản lý cấu hình theo môi trường.
-- Dễ gắn monitoring, scheduled jobs và backup định kỳ.
+### 7.4. Kubernetes and Helm
+Why chosen:
+- Suitable for packaging and deploying the system in a production-like manner.
+- Easy to manage configurations per environment.
+- Easy to attach monitoring, scheduled jobs, and periodic backup.
 
-Vai trò trong dự án:
-- Kubernetes: chạy ứng dụng Django/Gunicorn theo pod và service.
-- Helm: quản lý deployment, secret, configmap, cronjob và monitoring theo chart.
-- Persistent volume hoặc storage cục bộ: lưu backup, file export và media khi cần.
+Role in the project:
+- Kubernetes: runs Django/Gunicorn application as pods and services.
+- Helm: manages deployments, secrets, configmaps, cronjobs, and monitoring via chart.
+- Persistent volume or local storage: stores backups, export files, and media as needed.
 
 ### 7.5. Cloudflare Tunnel
-Lý do chọn:
-- Phù hợp để public nhanh bản demo đang chạy local hoặc trên Kubernetes.
-- Không cần mở port router hoặc dựng hạ tầng public riêng.
-- Tiện cho việc chia sẻ link demo trong giai đoạn phát triển và báo cáo.
+Why chosen:
+- Suitable for quickly making the demo public from a local machine or Kubernetes.
+- No need to open router ports or set up separate public infrastructure.
+- Convenient for sharing demo links during development and presentations.
 
-Vai trò trong dự án:
-- Tạo URL public tạm thời trỏ vào bản NUFI đang chạy trên cổng local.
-- Hỗ trợ demo giao diện và chức năng từ Internet mà không làm thay đổi kiến trúc deploy chính.
-- Có thể mở rộng sang `named tunnel` nếu cần domain cố định.
+Role in the project:
+- Creates a temporary public URL pointing to the NUFI instance running on a local port.
+- Supports live UI and feature demos over the Internet without changing the main deployment architecture.
+- Can be extended to a `named tunnel` if a fixed domain is needed.
 
 ---
 
-## 8. Tính năng mở rộng đã chốt
+## 8. Confirmed Extension Features
 
 ### 8.1. Debt Tracking
-Cho phép người dùng:
-- ghi lại khoản mình đang nợ,
-- khoản người khác nợ mình,
-- kỳ hạn thanh toán,
-- lịch sử trả nợ,
-- trạng thái đã trả / còn nợ / quá hạn.
+Allows users to:
+- record debts they owe,
+- record debts others owe them,
+- set due dates,
+- view payment history,
+- track status: paid / outstanding / overdue.
 
 ### 8.2. Sharing Groups
-Cho phép nhóm người dùng:
-- tạo group,
-- mời thành viên,
-- chia sẻ một số giao dịch,
-- cùng theo dõi chi tiêu nhóm.
+Allows groups of users to:
+- create a group,
+- invite members,
+- share selected transactions,
+- track group expenses together.
 
 ### 8.3. Export Excel/PDF
-Cho phép xuất:
-- báo cáo tháng,
-- chi tiết income/expense,
-- ngân sách,
-- tổng hợp biểu đồ và bảng.
+Allows exporting:
+- monthly reports,
+- income/expense details,
+- budgets,
+- charts and tables.
 
 ### 8.4. Cloud Sync
-Cho phép:
-- đồng bộ dữ liệu lên cloud,
-- backup định kỳ,
-- hỗ trợ phục hồi khi có sự cố.
+Allows:
+- syncing data to the cloud,
+- periodic backup,
+- supporting recovery on failure.
 
 ---
 
-## 9. Kiến trúc tổng quan mức cao
-Kiến trúc đề xuất:
+## 9. High-Level Architecture
+Proposed architecture:
 
 **Frontend/UI**
-- Django templates hoặc Django + REST API + frontend tách rời.
+- Django templates or Django + REST API + separate frontend.
 
 **Backend**
-- Django apps theo module:
+- Django apps per module:
   - accounts
   - income
   - expenses
@@ -315,120 +315,119 @@ Kiến trúc đề xuất:
 
 **Database**
 - MySQL relational database.
-- Chuẩn hóa bảng, PK/FK rõ ràng.
-- Có view/procedure/function/trigger.
+- Normalized tables with clear PK/FK.
+- Includes views, procedures, functions, and triggers.
 
-**Scheduler / background jobs**
+**Scheduler / Background Jobs**
 - Django management commands.
-- Kubernetes CronJob để chạy backup, alert checks, smoke test và tổng hợp định kỳ.
+- Kubernetes CronJob for backup, alert checks, smoke tests, and periodic summaries.
 
 **Infrastructure**
-- Docker Compose cho local.
-- Kubernetes + Helm cho triển khai và vận hành.
-- Cloudflare Tunnel để public bản demo khi cần chia sẻ từ Internet.
+- Docker Compose for local development.
+- Kubernetes + Helm for deployment and operations.
+- Cloudflare Tunnel for public demo access when sharing from the Internet.
 
 ---
 
-## 10. Luồng nghiệp vụ tổng quát của hệ thống
+## 10. General Business Flow
 
-### 10.1. Luồng cơ bản của người dùng
-1. Người dùng đăng ký hoặc đăng nhập.
-2. Người dùng cập nhật hồ sơ và tạo bank account.
-3. Người dùng tạo category nếu cần.
-4. Người dùng nhập income và expense.
-5. Hệ thống cập nhật số dư tài khoản tương ứng.
-6. Người dùng tạo budget cho tháng hoặc category.
-7. Khi phát sinh chi tiêu, hệ thống so sánh với budget.
-8. Nếu gần hoặc vượt ngưỡng, hệ thống sinh alert.
-9. Người dùng xem dashboard, bảng thống kê, biểu đồ.
-10. Người dùng có thể xuất báo cáo hoặc theo dõi nợ / nhóm chia sẻ.
+### 10.1. Basic User Flow
+1. User registers or logs in.
+2. User updates profile and creates a bank account.
+3. User creates categories if needed.
+4. User enters income and expenses.
+5. System updates the corresponding account balance.
+6. User creates a budget for the month or category.
+7. When an expense is recorded, the system compares it against the budget.
+8. If nearing or exceeding the limit, the system generates an alert.
+9. User views the dashboard, statistics tables, and charts.
+10. User can export reports or track debts / sharing groups.
 
-### 10.2. Luồng quản trị
-1. Admin đăng nhập vào vùng quản trị.
-2. Kiểm tra user, log, category mặc định.
-3. Kiểm tra backup và tác vụ nền.
-4. Theo dõi lỗi hệ thống và bảo mật.
-
----
-
-## 11. Yêu cầu phi chức năng tổng quát
-Hệ thống không chỉ cần chạy đúng chức năng mà còn phải đảm bảo các tiêu chí sau:
-
-### 11.1. Bảo mật
-- Mỗi user chỉ xem được dữ liệu của mình.
-- Không lộ thông tin tài chính giữa các tài khoản khác nhau.
-- Mật khẩu phải được băm an toàn.
-- API và form phải chống truy cập trái phép.
-
-### 11.2. Toàn vẹn dữ liệu
-- Mọi transaction phải gắn đúng user.
-- Khóa ngoại và ràng buộc phải được thiết kế chặt chẽ.
-- Trigger/procedure không được làm sai số dư.
-
-### 11.3. Hiệu năng
-- Có index cho các cột tìm kiếm nhiều.
-- Báo cáo tháng/năm phải trả kết quả hợp lý với dữ liệu tăng dần.
-
-### 11.4. Khả năng phục hồi
-- Có backup định kỳ.
-- Có tài liệu recovery.
-- Có thể khôi phục dữ liệu khi hệ thống lỗi.
-
-### 11.5. Khả năng mở rộng
-- Có thể thêm module mới mà không phá cấu trúc cũ.
-- Có thể triển khai cloud và scale trong tương lai.
+### 10.2. Admin Flow
+1. Admin logs into the admin area.
+2. Checks users, logs, and default categories.
+3. Checks backup and background tasks.
+4. Monitors system errors and security.
 
 ---
 
-## 12. Kết quả kỳ vọng của bản đầu tiên (MVP)
-Bản đầu tiên nên tập trung làm tốt các phần sau:
-- Đăng ký / đăng nhập / hồ sơ người dùng.
-- Quản lý income.
-- Quản lý expenses.
-- Quản lý categories.
-- Quản lý bank accounts.
-- Quản lý budgets.
-- Dashboard cơ bản.
-- Báo cáo ngày/tháng/năm.
-- Alert cơ bản khi vượt budget.
+## 11. General Non-Functional Requirements
+The system must not only function correctly but also meet the following criteria:
 
-Đây là phần đủ mạnh để:
-- demo nghiệp vụ,
-- chứng minh schema database,
-- trình bày use case,
-- trình diễn CRUD + báo cáo,
-- mở rộng thêm module sau.
+### 11.1. Security
+- Each user can only see their own data.
+- Financial data must not leak between accounts.
+- Passwords must be securely hashed.
+- APIs and forms must prevent unauthorized access.
 
----
+### 11.2. Data Integrity
+- Every transaction must be linked to the correct user.
+- Foreign keys and constraints must be rigorously designed.
+- Triggers/procedures must not corrupt balances.
 
-## 13. Tiêu chí đánh giá thành công của project
-Dự án được xem là thành công khi đạt các tiêu chí sau:
+### 11.3. Performance
+- Index frequently searched columns.
+- Monthly/yearly reports must respond reasonably as data grows.
 
-### 13.1. Về chức năng
-- User có thể quản lý dữ liệu tài chính cá nhân trọn vẹn.
-- Hệ thống tạo được báo cáo và alert có ý nghĩa.
-- Quyền truy cập giữa các actor là chính xác.
+### 11.4. Recoverability
+- Periodic backups.
+- Recovery documentation.
+- Data can be restored when the system fails.
 
-### 13.2. Về dữ liệu
-- Schema hợp lý, chuẩn hóa, có PK/FK/index.
-- View/procedure/function/trigger được dùng đúng mục đích.
-- Không có lỗi dữ liệu xuyên user.
-
-### 13.3. Về kỹ thuật
-- Chạy được bằng Docker.
-- Có thể kết nối MySQL ổn định.
-- Có cơ chế job định kỳ bằng Django management commands và Kubernetes CronJob.
-- Có hướng triển khai lên Kubernetes/Helm.
-
-### 13.4. Về trình bày đồ án
-- Tài liệu rõ ràng.
-- Có use case, ERD, schema.
-- Có minh họa giao diện và luồng chạy.
-- Có demo dữ liệu thực tế mô phỏng đủ thuyết phục.
+### 11.5. Extensibility
+- New modules can be added without breaking the existing structure.
+- Can be deployed to the cloud and scaled in the future.
 
 ---
 
-## 14. Kết luận
-NUFI là một đề tài có phạm vi rõ, gần với bài toán thực tế, và phù hợp để triển khai thành một hệ thống web quản lý tài chính cá nhân hoàn chỉnh. Với stack đã chốt gồm **Django + MySQL + Docker + Kubernetes + Helm + Cloudflare Tunnel**, nhóm có thể xây dựng một sản phẩm vừa đáp ứng yêu cầu môn học về cơ sở dữ liệu, vừa thể hiện năng lực thiết kế hệ thống phần mềm hiện đại.
+## 12. Expected MVP Deliverables
+The first version should focus on:
+- User registration / login / profile.
+- Income management.
+- Expense management.
+- Category management.
+- Bank account management.
+- Budget management.
+- Basic dashboard.
+- Daily/monthly/yearly reports.
+- Basic budget exceeded alerts.
 
-Trong giai đoạn đầu, dự án sẽ tập trung vào các chức năng lõi như profile, income, expenses, categories, bank accounts, budgets và reports. Sau khi lõi đã ổn định, nhóm sẽ mở rộng sang debt tracking, sharing groups, export và cloud sync.
+This is sufficient to:
+- demo the business logic,
+- demonstrate the database schema,
+- present use cases,
+- show CRUD + reporting,
+- extend with more modules later.
+
+---
+
+## 13. Project Success Criteria
+
+### 13.1. Functional
+- Users can fully manage their personal financial data.
+- The system generates meaningful reports and alerts.
+- Access permissions between actors are accurate.
+
+### 13.2. Data
+- Schema is rational, normalized, with PK/FK/indexes.
+- Views/procedures/functions/triggers are used appropriately.
+- No cross-user data leaks.
+
+### 13.3. Technical
+- Runs with Docker.
+- MySQL connection is stable.
+- Periodic job mechanism via Django management commands and Kubernetes CronJob.
+- Clear path for Kubernetes/Helm deployment.
+
+### 13.4. Presentation
+- Clear documentation.
+- Use cases, ERD, and schema available.
+- UI and flow illustrations available.
+- Realistic demo data that is convincing.
+
+---
+
+## 14. Conclusion
+NUFI is a project with a clear scope, close to real-world problems, and suitable for developing into a complete personal finance web application. With the confirmed stack of **Django + MySQL + Docker + Kubernetes + Helm + Cloudflare Tunnel**, the project can deliver a product that meets both the academic DBMS requirements and demonstrates modern software system design capabilities.
+
+In the first phase, the project focuses on core features: profile, income, expenses, categories, bank accounts, budgets, and reports. Once the core is stable, it will expand into debt tracking, sharing groups, export, and cloud sync.
