@@ -1,332 +1,79 @@
-# NUFI
+# NUFI — Personal Finance Management System
 
-NUFI là hệ thống quản lý tài chính cá nhân chạy bằng Django và MySQL. Repo đã được chuẩn bị để chạy local bằng Docker Compose, dùng chung MySQL local trên máy Mac, và có CI/CD bằng GitHub Actions.
+![System Architecture](image/system-architecture.png)
 
-## Trọng Tâm Database Của Dự Án
+## Overview
 
-Đây là project môn **Hệ quản trị cơ sở dữ liệu**, nên database không chỉ là nơi lưu dữ liệu cho web mà là phần cốt lõi của toàn bộ hệ thống.
+NUFI is a personal finance web application built with **Django 6 + MySQL 8**, containerized with Docker, and deployable to Kubernetes via Helm.
 
-Trong dự án này:
+This is a **Database Management Systems** course project. The database is the core of the system — not just a storage layer. The schema makes use of primary keys, foreign keys, indexes, views, stored procedures, functions, and triggers. See [docs/specifications/](docs/specifications/) for full database documentation.
 
-- Hệ quản trị CSDL chính là **MySQL 8**.
-- Cơ sở dữ liệu quản lý các thực thể chính như:
-  - `users`
-  - `categories`
-  - `bank_accounts`
-  - `incomes`
-  - `expenses`
-  - `budgets`
-  - `alerts`
-  - `debts`
-  - `debt_payments`
-  - `groups`
-  - `group_members`
-  - `shared_transactions`
-- Thiết kế dữ liệu có sử dụng:
-  - **Primary Key**
-  - **Foreign Key**
-  - **CHECK**
-  - **UNIQUE**
-  - **NOT NULL**
-  - **INDEX**
-  - **VIEW**
-  - **FUNCTION**
-  - **PROCEDURE**
-  - **TRIGGER**
-- Hệ thống còn mở rộng sang các nội dung gần với vận hành thực tế như:
-  - backup / restore
-  - scheduled jobs
-  - monitoring
-  - alerting
+**Tech stack:** Django · MySQL 8 · Docker · Gunicorn · Kubernetes + Helm · GitHub Actions CI/CD
 
-Nếu nhìn theo đúng tinh thần môn DBMS, repo này có 3 lớp chính:
+---
 
-1. **Thiết kế dữ liệu**
-   - ERD
-   - lược đồ quan hệ
-   - business rules
-   - phân quyền dữ liệu
+## Prerequisites
 
-2. **Cài đặt SQL**
-   - schema
-   - views
-   - functions
-   - procedures
-   - triggers
-   - indexes
-   - sample data
+| Tool | Version | Required for |
+|---|---|---|
+| Python | 3.11+ | Local development |
+| MySQL | 8.0+ | Local development with MySQL |
+| Docker + Docker Compose | Latest | Docker setup |
+| kubectl + Helm | Latest | Kubernetes deployment |
 
-3. **Tích hợp và khai thác dữ liệu**
-   - Django đọc/ghi dữ liệu từ MySQL
-   - dashboard, reports, alerts
-   - CronJob, backup, monitoring
+---
 
-Các tài liệu database quan trọng nhất:
+## Setup
 
-- [project-overview.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/project-overview.md)
-- [business-rules.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/business-rules.md)
-- [relational-schema.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/relational-schema.md)
-- [system-requirements.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/system-requirements.md)
-
-## Hướng Dẫn Chạy Nhanh
-
-Nếu muốn chạy nhanh dự án bằng Docker Compose, làm theo thứ tự này:
-
-1. Lấy source code về máy:
+### 1. Clone & Install
 
 ```bash
 git clone https://github.com/thtrangnu/PERSONAL-FINANCE-MANAGEMENT-SYSTEM.git
 cd PERSONAL-FINANCE-MANAGEMENT-SYSTEM
-```
 
-2. Tạo file cấu hình môi trường cho Docker:
-
-```bash
-cp .env.docker.example .env.docker
-```
-
-3. Chạy Docker Compose:
-
-```bash
-docker compose --env-file .env.docker up --build -d
-```
-
-4. Mở web:
-
-```text
-http://127.0.0.1:8001/
-```
-
-## Chạy Local Bằng Django Trên Cổng 8000
-
-Nếu muốn chạy trực tiếp bằng Django thay vì Docker, có thể dùng một trong hai cách dưới đây.
-
-### Cách 1. Chạy local nhanh nhất bằng SQLite
-
-1. Tạo môi trường ảo và cài thư viện:
-
-```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-2. Chạy migrate với SQLite:
+### 2. Configure Environment
 
-```bash
-DB_ENGINE=sqlite python manage.py migrate
-```
-
-3. Mở web local ở cổng `8000`:
-
-```bash
-DB_ENGINE=sqlite python manage.py runserver 127.0.0.1:8000
-```
-
-4. Truy cập:
-
-```text
-http://127.0.0.1:8000/
-```
-
-### Cách 2. Chạy local với MySQL
-
-1. Tạo file môi trường:
+**Local (Django direct):**
 
 ```bash
 cp .env.example .env
 ```
 
-2. Chỉnh `.env` cho đúng MySQL local của bạn, ví dụ:
+Edit `.env` with your settings. Minimum required:
 
 ```env
+SECRET_KEY=your-secret-key
+DEBUG=True
 DB_ENGINE=mysql
 DB_NAME=pfms
 DB_USER=root
-DB_PASSWORD=your_mysql_password
+DB_PASSWORD=your_password
 DB_HOST=127.0.0.1
 DB_PORT=3306
 ```
 
-3. Chạy migrate:
+**Docker Compose:**
 
 ```bash
+cp .env.docker.example .env.docker
+```
+
+### 3. Initialize Database
+
+```bash
+# Run migrations
 python manage.py migrate
-```
 
-4. Mở web local ở cổng `8000`:
-
-```bash
-python manage.py runserver 127.0.0.1:8000
-```
-
-5. Truy cập:
-
-```text
-http://127.0.0.1:8000/
-```
-
-## Cấu Trúc Thư Mục Dự Án
-
-Các thư mục chính trong repo:
-
-```text
-PERSONAL-FINANCE-MANAGEMENT-SYSTEM/
-├── apps/                  # Các app nghiệp vụ: accounts, income, expenses, budgets, debts...
-├── config/                # Cấu hình Django, urls, wsgi/asgi, settings
-├── templates/             # Giao diện HTML dùng cho toàn hệ thống
-├── sql/                   # Schema, view, function, procedure, trigger, sample data cho MySQL
-├── docker/                # Script khởi động container
-├── deploy/                # Helm chart, monitoring, version config
-├── docs/
-│   ├── architecture/      # Sơ đồ và mô tả luồng chạy hệ thống
-│   ├── deployment/        # Hướng dẫn triển khai Docker/Kubernetes/Cloudflare
-│   ├── operations/        # Backup/restore, checklist demo, tài liệu vận hành
-│   └── specifications/    # Overview, business rules, schema, module, phân quyền
-├── scripts/               # Smoke test, alert watcher và script hỗ trợ vận hành
-├── image/                 # Hình ERD, schema minh họa
-├── media/                 # Avatar/file upload local
-├── generated_reports/     # Output report, backup/export sinh ra khi chạy job
-├── .github/workflows/     # CI/CD bằng GitHub Actions
-├── Dockerfile             # Docker image cho Django + Gunicorn
-├── docker-compose.yml     # Chạy local bằng Docker Compose
-├── requirements.txt       # Python dependencies
-└── manage.py              # Entrypoint chính của Django
-```
-
-## Chạy Local Bằng Docker
-
-Project có file `.env.docker` riêng cho container, không ghi đè `.env` local. Mặc định `docker-compose.yml` chạy đủ `web + db`.
-
-```bash
-docker compose --env-file .env.docker up --build -d
-```
-
-Nếu muốn Docker web dùng chung MySQL local trên máy Mac thay vì DB container, chỉnh `.env.docker`:
-
-```env
-DB_HOST=host.docker.internal
-DB_USER=root
-DB_PASSWORD=your_local_mysql_password
-DB_PORT=3306
-DB_NAME=pfms
-```
-
-Sau khi container chạy xong:
-
-- Web Django: http://127.0.0.1:8001
-- Django admin: http://127.0.0.1:8001/admin/
-
-Tài khoản admin demo được tạo tự động khi chạy Docker nếu `.env.docker` giữ nguyên:
-
-- Username: `admin`
-- Password: `admin12345`
-
-Nếu muốn quay lại DB container cho demo độc lập, dùng:
-
-```bash
-DB_HOST=db
-DB_USER=nufi
-DB_PASSWORD=nufi_password
-```
-
-## Biến Môi Trường
-
-Tạo file `.env` khi chạy local không dùng Docker, hoặc `.env.docker` khi chạy bằng Docker Compose. Các biến chính:
-
-- `SECRET_KEY`: khóa bí mật của Django.
-- `DEBUG`: `True` khi dev, `False` khi deploy.
-- `ALLOWED_HOSTS`: danh sách host được phép truy cập, cách nhau bằng dấu phẩy.
-- `DB_ENGINE`: `mysql` hoặc `sqlite`.
-- `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`: thông tin kết nối database.
-- `DB_UNIX_SOCKET`: dùng khi cần kết nối MySQL qua Unix socket.
-- `GS_BUCKET_NAME`: để trống nếu không dùng upload report ra storage ngoài.
-- `REPORT_OUTPUT_DIR`: thư mục lưu report/job output local, mặc định `generated_reports`.
-- `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`: dùng cho đăng nhập Google.
-
-## Đăng Nhập Google Khi Chạy Local/Docker/Kubernetes
-
-Google OAuth kiểm tra callback URL rất chặt. Port nào đang mở web thì phải thêm đúng callback URL đó trong Google Cloud Console.
-
-Authorized JavaScript origins nên thêm:
-
-```text
-http://127.0.0.1:8000
-http://127.0.0.1:8001
-http://127.0.0.1:8002
-```
-
-Authorized redirect URIs nên thêm:
-
-```text
-http://127.0.0.1:8000/accounts/google/login/callback/
-http://127.0.0.1:8001/accounts/google/login/callback/
-http://127.0.0.1:8002/accounts/google/login/callback/
-```
-
-Nếu Docker đang chạy bằng cấu hình mặc định trong repo thì callback thực tế là:
-
-```text
-http://127.0.0.1:8001/accounts/google/login/callback/
-```
-
-Nếu Kubernetes đang mở bằng port-forward `8002:80` thì callback thực tế là:
-
-```text
-http://127.0.0.1:8002/accounts/google/login/callback/
-```
-
-Lệnh cố định nên dùng để mở web trên Kubernetes:
-
-```bash
-kubectl -n nufi port-forward svc/nufi 8002:80
-```
-
-Nên mở web bằng `127.0.0.1` thay vì `localhost` khi test Google:
-
-```text
-http://127.0.0.1:8001/login/
-http://127.0.0.1:8002/login/
-```
-
-Nếu lỡ mở bằng `localhost`, nút Google trong NUFI sẽ tự chuyển sang `127.0.0.1` để tránh lỗi `redirect_uri_mismatch`.
-
-## Lệnh Django Hay Dùng
-
-```bash
-python manage.py migrate
+# Create admin account
 python manage.py createsuperuser
-python manage.py runserver
 ```
 
-Trong Docker:
-
-```bash
-docker compose --env-file .env.docker exec web python manage.py migrate
-docker compose --env-file .env.docker exec web python manage.py createsuperuser
-```
-
-## Chạy SQL Thủ Công
-
-Repo có sẵn bộ script MySQL trong thư mục [sql/](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql) để phục vụ học phần CSDL, minh họa schema, view, procedure, function, trigger và sample data.
-
-Lưu ý quan trọng:
-
-- File [schema.sql](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql/schema.sql) có `DROP DATABASE IF EXISTS pfms;`, nên sẽ xóa và tạo lại database `pfms`.
-- Chỉ chạy bộ script này khi bạn muốn dựng lại database từ đầu.
-- Ứng dụng Django hằng ngày vẫn ưu tiên chạy bằng `python manage.py migrate`.
-
-Thứ tự chạy SQL khuyến nghị:
-
-1. [schema.sql](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql/schema.sql)
-2. [functions.sql](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql/functions.sql)
-3. [triggers.sql](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql/triggers.sql)
-4. [views.sql](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql/views.sql)
-5. [procedures.sql](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql/procedures.sql)
-6. [indexes.sql](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql/indexes.sql)
-7. [sample_data.sql](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/sql/sample_data.sql)
-
-Ví dụ chạy bằng MySQL local:
+**(Optional) Load SQL scripts for DBMS demo:**
 
 ```bash
 mysql -u root -p < sql/schema.sql
@@ -338,89 +85,137 @@ mysql -u root -p < sql/indexes.sql
 mysql -u root -p < sql/sample_data.sql
 ```
 
-Nếu đang dùng MySQL container trong Docker Compose:
+> ⚠️ `schema.sql` contains `DROP DATABASE IF EXISTS pfms` — only run this when rebuilding the database from scratch.
 
-```bash
-docker compose --env-file .env.docker exec -T db mysql -unufi -pnufi_password < sql/schema.sql
-docker compose --env-file .env.docker exec -T db mysql -unufi -pnufi_password < sql/functions.sql
-docker compose --env-file .env.docker exec -T db mysql -unufi -pnufi_password < sql/triggers.sql
-docker compose --env-file .env.docker exec -T db mysql -unufi -pnufi_password < sql/views.sql
-docker compose --env-file .env.docker exec -T db mysql -unufi -pnufi_password < sql/procedures.sql
-docker compose --env-file .env.docker exec -T db mysql -unufi -pnufi_password < sql/indexes.sql
-docker compose --env-file .env.docker exec -T db mysql -unufi -pnufi_password < sql/sample_data.sql
+### 4. Google OAuth (optional)
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Create OAuth 2.0 Client ID
+2. Add authorized JavaScript origins and redirect URIs for each port you use:
+
+```text
+# Origins
+http://127.0.0.1:8000
+http://127.0.0.1:8001
+
+# Redirect URIs
+http://127.0.0.1:8000/accounts/google/login/callback/
+http://127.0.0.1:8001/accounts/google/login/callback/
 ```
 
-Nếu bạn chỉ muốn dựng web để chạy ứng dụng Django, không cần chạy toàn bộ script SQL ở trên. Chỉ cần:
+3. Copy the client ID and secret into your `.env`:
+
+```env
+GOOGLE_OAUTH_CLIENT_ID=your-client-id
+GOOGLE_OAUTH_CLIENT_SECRET=your-client-secret
+```
+
+> Always use `127.0.0.1`, not `localhost` — NUFI redirects `localhost` to `127.0.0.1` automatically to avoid `redirect_uri_mismatch` errors.
+
+---
+
+## Quick Start
+
+**Docker Compose (recommended):**
+
+```bash
+docker compose --env-file .env.docker up --build -d
+```
+
+Open: `http://127.0.0.1:8001/`
+Admin: `http://127.0.0.1:8001/admin/` — default credentials: `admin / admin12345`
+
+**Local with MySQL:**
 
 ```bash
 python manage.py migrate
+python manage.py runserver 127.0.0.1:8000
 ```
 
-## Tài Liệu Database
+Open: `http://127.0.0.1:8000/`
 
-Nếu bạn đọc repo theo hướng học phần DBMS, nên đi theo thứ tự này:
+---
 
-1. Xem tổng quan bài toán và phạm vi dữ liệu:
+## Running Locally
+
+```bash
+python manage.py migrate
+python manage.py runserver 127.0.0.1:8000
+```
+
+---
+
+## Project Structure
 
 ```text
-docs/specifications/project-overview.md
+PERSONAL-FINANCE-MANAGEMENT-SYSTEM/
+├── apps/                  # Django apps: accounts, incomes, expenses, budgets, debts...
+├── config/                # Django settings, URLs, wsgi/asgi
+├── templates/             # HTML templates
+├── sql/                   # Schema, views, functions, procedures, triggers, sample data
+├── docker/                # Container entrypoint scripts
+├── deploy/                # Helm chart, monitoring config, version registry
+├── docs/
+│   ├── architecture/      # System flow diagrams
+│   ├── deployment/        # Kubernetes/Cloudflare deployment guides
+│   ├── operations/        # Backup/restore, demo checklist
+│   └── specifications/    # Business rules, schema, modules, roles
+├── scripts/               # Smoke tests, alert watcher, demo helpers
+├── image/                 # ERD and schema diagrams
+├── generated_reports/     # Job output — not committed to Git
+├── .github/workflows/     # CI/CD pipelines
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── manage.py
 ```
 
-2. Xem các luật nghiệp vụ chi phối dữ liệu:
+---
 
-```text
-docs/specifications/business-rules.md
-```
+## Environment Variables
 
-3. Xem module nghiệp vụ để hiểu dữ liệu được dùng ở đâu:
+| Variable | Default | Description |
+|---|---|---|
+| `SECRET_KEY` | — | Django secret key (**required**) |
+| `DEBUG` | `True` | Set `False` in production |
+| `ALLOWED_HOSTS` | `127.0.0.1,localhost` | Comma-separated allowed hosts |
+| `TUNNEL_ALLOWED_HOSTS` | `.trycloudflare.com` | Additional wildcard hosts (e.g. `.up.railway.app`) |
+| `DB_ENGINE` | `mysql` | Database engine (`mysql`) |
+| `DB_NAME` | `pfms` | Database name |
+| `DB_USER` | — | Database user |
+| `DB_PASSWORD` | — | Database password |
+| `DB_HOST` | `127.0.0.1` | Database host |
+| `DB_PORT` | `3306` | Database port |
+| `DB_UNIX_SOCKET` | — | MySQL Unix socket path (optional) |
+| `REPORT_OUTPUT_DIR` | `generated_reports` | Local output directory for job files |
+| `GS_BUCKET_NAME` | — | Google Cloud Storage bucket (optional) |
+| `GOOGLE_OAUTH_CLIENT_ID` | — | Google OAuth client ID (optional) |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | — | Google OAuth client secret (optional) |
+| `DJANGO_SUPERUSER_USERNAME` | — | Auto-create superuser on Docker start |
+| `DJANGO_SUPERUSER_PASSWORD` | — | Auto-create superuser on Docker start |
 
-```text
-docs/specifications/modules.md
-```
+---
 
-4. Xem lược đồ quan hệ, chuẩn hóa, ERD rút gọn, PK/FK và các SQL object:
+## SQL Scripts
 
-```text
-docs/specifications/relational-schema.md
-```
+Located in [`sql/`](sql/). Run in this order when rebuilding the database from scratch:
 
-5. Xem yêu cầu chức năng và phi chức năng gắn với dữ liệu:
+| Order | File | Contents |
+|---|---|---|
+| 1 | `schema.sql` | Tables, PK, FK, constraints |
+| 2 | `functions.sql` | Stored functions |
+| 3 | `triggers.sql` | Triggers |
+| 4 | `views.sql` | Views |
+| 5 | `procedures.sql` | Stored procedures |
+| 6 | `indexes.sql` | Additional indexes |
+| 7 | `sample_data.sql` | Demo data |
 
-```text
-docs/specifications/system-requirements.md
-```
+For day-to-day Django use, `python manage.py migrate` is sufficient — the SQL scripts are for DBMS demonstration only.
 
-6. Sau đó mới đi vào phần script SQL thực thi:
+---
 
-```text
-sql/schema.sql
-sql/functions.sql
-sql/triggers.sql
-sql/views.sql
-sql/procedures.sql
-sql/indexes.sql
-sql/sample_data.sql
-```
+## Scheduled Tasks
 
-Nếu cần viết bài luận hoặc báo cáo môn DBMS, 2 tài liệu quan trọng nhất để bắt đầu là:
-
-- [relational-schema.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/relational-schema.md)
-- [system-requirements.md](/Users/thuytrangneee/DBMS/PERSONAL-FINANCE-MANAGEMENT-SYSTEM/docs/specifications/system-requirements.md)
-
-## Kiểm Tra Luồng Chính
-
-Sau khi web lên, kiểm tra nhanh:
-
-1. Đăng nhập hoặc tạo tài khoản mới.
-2. Tạo tài khoản tiền ở trang Tài khoản.
-3. Thêm khoản thu ở trang Thu nhập.
-4. Thêm khoản chi ở trang Chi tiêu.
-5. Tạo ngân sách và nhập chi tiêu vượt ngưỡng để kiểm tra cảnh báo.
-6. Vào Báo cáo để xem và xuất Excel/PDF.
-
-## Tác Vụ Định Kỳ
-
-Project không dùng Airflow. Các tác vụ định kỳ được tách thành Django management commands để chạy local hoặc trong Docker:
+Implemented as Django management commands — no Airflow required.
 
 ```bash
 python manage.py daily_summary
@@ -428,7 +223,7 @@ python manage.py budget_alert_check
 python manage.py backup_and_export
 ```
 
-Trong Docker:
+In Docker:
 
 ```bash
 docker compose --env-file .env.docker exec web python manage.py daily_summary
@@ -436,421 +231,262 @@ docker compose --env-file .env.docker exec web python manage.py budget_alert_che
 docker compose --env-file .env.docker exec web python manage.py backup_and_export
 ```
 
-Output mặc định được lưu ở `generated_reports/` và không commit lên Git.
+Output is saved to `generated_reports/` and not committed to Git. In Kubernetes, these run as CronJobs defined in the Helm chart.
 
-## CI/CD Không Dùng Cloud
+---
 
-Repo có sẵn:
+## Default Ports
 
-- `.github/workflows/ci.yml`: chạy trên GitHub runner, bật MySQL service, cài dependencies, chạy `check`, `migrate`, 3 job định kỳ và build Docker image.
-- `.github/workflows/cd.yml`: build image, push lên GitHub Container Registry; nếu bật biến repo `ENABLE_K8S_DEPLOY=true` thì deploy tiếp bằng Helm trên self-hosted runner.
-- `.github/workflows/cd-local.yml`: chạy trên self-hosted runner, dùng Docker Compose để deploy lại web trên máy local/VPS.
-- `.github/workflows/cd-kubernetes.yml`: chạy trên self-hosted runner có `kubectl` và `helm`, build image rồi deploy NUFI lên Kubernetes bằng Helm chart.
-- `.github/workflows/daily-smoke.yml`: kiểm tra health/route hằng ngày khi có secret `SMOKE_BASE_URL`.
+| Port | Used for |
+|---|---|
+| `8000` | Local Django dev server (`runserver`) |
+| `8001` | Docker Compose |
+| `8002` | Kubernetes (`kubectl port-forward svc/nufi 8002:80`) |
+| `3000` | Grafana |
+| `9090` | Prometheus |
+| `9093` | Alertmanager |
 
-Luồng đề xuất nếu chỉ dùng branch `main`:
+Keep ports consistent to avoid Google OAuth callback mismatches and smoke test failures.
 
-1. Push code lên `main` để chạy CI.
-2. Nếu CI thành công, chạy workflow `CD Local` bằng nút `Run workflow`, hoặc để workflow tự chạy khi push lên `main`.
-3. CD local cần GitHub self-hosted runner đang chạy trên máy muốn deploy.
-4. Thêm GitHub Secrets cho CD local: `SECRET_KEY`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`.
+---
 
-Nếu chưa cài self-hosted runner, vào GitHub repo:
+## Deployment
 
-```text
-Settings -> Actions -> Runners -> New self-hosted runner
+| Target | How |
+|---|---|
+| **Docker Compose** | `docker compose --env-file .env.docker up --build -d` |
+| **Kubernetes** | See [docs/deployment/kubernetes.md](docs/deployment/kubernetes.md) |
+| **CI/CD** | See [.github/workflows/](.github/workflows/) |
+
+---
+
+## CI/CD
+
+The repo has 5 GitHub Actions workflows. Each targets a different deployment scenario.
+
+```
+Push to main
+    │
+    ├── ci.yml ──────────────────────────────── Always runs
+    │       Django check → migrate → jobs → Docker build
+    │
+    └── cd.yml ──────────────────────────────── Always runs after CI
+            Build image → push to GHCR
+                │
+                └── ENABLE_K8S_DEPLOY=true? ── Helm deploy to Kubernetes
+                                                (self-hosted runner only)
 ```
 
-Sau đó làm theo hướng dẫn GitHub đưa ra cho macOS.
+### Workflow reference
 
-## Kubernetes Và Monitoring
+| File | Trigger | Runner | What it does |
+|---|---|---|---|
+| `ci.yml` | push to `main` | GitHub | Django check, migrate, run 3 scheduled jobs, build Docker image |
+| `cd.yml` | push to `main` / manual | GitHub + self-hosted | Build & push image to GHCR; optionally deploy via Helm if `ENABLE_K8S_DEPLOY=true` |
+| `cd-local.yml` | push to `main` / manual | self-hosted | Docker Compose redeploy on local machine or VPS |
+| `cd-kubernetes.yml` | manual only | self-hosted | Build image locally, deploy Helm chart to local Kubernetes cluster |
+| `daily-smoke.yml` | daily 00:00 UTC / manual | GitHub | HTTP smoke test against `SMOKE_BASE_URL` |
 
-Repo có Helm chart tại:
+### Which workflow to use
 
-```text
-deploy/helm/nufi
-```
+- **Just want CI on every push** → `ci.yml` runs automatically, no setup needed.
+- **Deploy via Docker Compose on your machine** → add a self-hosted runner, use `cd-local.yml`.
+- **Deploy to Kubernetes with GHCR image** → set repo variable `ENABLE_K8S_DEPLOY=true`, `cd.yml` handles the Helm deploy.
+- **Deploy to local Kubernetes without pushing to GHCR** → trigger `cd-kubernetes.yml` manually, it builds the image directly on the runner.
+- **Monitor a live deployment daily** → set `SMOKE_BASE_URL` secret, `daily-smoke.yml` runs every night.
 
-Chart này gồm:
+### Required secrets
 
-- `Deployment` cho Django + Gunicorn.
-- `Service` và `Ingress` tùy chọn.
-- `Job` chạy migration.
-- `CronJob` cho `daily_summary`, `budget_alert_check`, `backup_and_export`.
-- `CronJob` tùy chọn để dump MySQL ra file `.sql.gz`.
-- `ServiceMonitor`, `PrometheusRule`, Grafana dashboard cho monitoring.
-- PVC lưu `media/` và `generated_reports/`.
+| Secret | Used by |
+|---|---|
+| `SECRET_KEY` | `cd.yml`, `cd-local.yml`, `cd-kubernetes.yml` |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | All CD workflows |
+| `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | All CD workflows |
+| `SMOKE_BASE_URL` | `daily-smoke.yml` |
+| `SMOKE_USERNAME`, `SMOKE_PASSWORD` | `daily-smoke.yml` (optional) |
 
-Khi chạy Kubernetes bằng Docker Desktop và muốn avatar dùng chung với local/Docker Compose, deploy thêm file local:
+Add secrets at: **GitHub repo → Settings → Secrets and variables → Actions**.
 
-```bash
-helm upgrade --install nufi deploy/helm/nufi \
-  --namespace nufi \
-  --reuse-values \
-  -f deploy/helm/nufi/values-local.yaml
-```
+---
 
-Để tránh mỗi lần đổi sang cổng khác, giữ cố định lệnh mở web Kubernetes:
+## Kubernetes
+
+Kubernetes is the production-like deployment target for NUFI. The repo includes a Helm chart at `deploy/helm/nufi/` that packages the entire application stack.
+
+**What the Helm chart provisions:**
+
+| Resource | Purpose |
+|---|---|
+| `Deployment` | Runs Django + Gunicorn as pods |
+| `Service` | Internal load balancer for the web pods |
+| `Ingress` | Optional external HTTP routing |
+| `Job` | Runs `migrate` once on deploy |
+| `CronJob` | Runs `daily_summary`, `budget_alert_check`, `backup_and_export` on schedule |
+| `CronJob` (optional) | Runs `mysqldump` to `.sql.gz` |
+| `ServiceMonitor` | Tells Prometheus to scrape `/metrics` |
+| `PrometheusRule` | Defines alert conditions |
+| `ConfigMap` | Grafana dashboard definition |
+| `PVC` | Persists `media/` and `generated_reports/` |
+
+**Open the app after deploying:**
 
 ```bash
 kubectl -n nufi port-forward svc/nufi 8002:80
 ```
 
-Sau đó luôn truy cập:
+Always use port `8002` to keep Google OAuth callbacks and smoke test URLs consistent. Full deployment steps: [docs/deployment/kubernetes.md](docs/deployment/kubernetes.md).
 
-```text
-http://127.0.0.1:8002/
-```
+---
 
-Nếu báo cổng đang bận thì tắt terminal đang chạy port-forward cũ bằng `Ctrl + C`, rồi chạy lại đúng lệnh trên.
+## Monitoring
 
-Tài liệu triển khai chi tiết nằm ở:
+When the Kubernetes monitoring stack is installed, NUFI exposes a `/metrics` endpoint that Prometheus scrapes automatically via `ServiceMonitor`.
 
-```text
-docs/deployment/kubernetes.md
-```
+**Three components work together:**
 
-### Cách Mở Monitoring
+| Component | Role |
+|---|---|
+| **Prometheus** | Scrapes `/metrics` every 30s, stores time-series data, evaluates alert rules |
+| **Grafana** | Reads from Prometheus, displays the NUFI dashboard with charts and status panels |
+| **Alertmanager** | Receives firing alerts from Prometheus, deduplicates and groups them, exposes an API for the local watcher script |
 
-Sau khi stack `monitoring` đã được cài trên Kubernetes, có thể mở các dịch vụ giám sát như sau:
-
-1. Mở Grafana:
+**Open each component:**
 
 ```bash
+# Grafana — dashboards and charts
 kubectl -n monitoring port-forward svc/monitoring-grafana 3000:80
-```
 
-Truy cập:
-
-```text
-http://127.0.0.1:3000/
-```
-
-2. Mở Prometheus:
-
-```bash
+# Prometheus — raw metrics and PromQL queries
 kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090
-```
 
-Truy cập:
-
-```text
-http://127.0.0.1:9090/
-```
-
-3. Mở Alertmanager:
-
-```bash
+# Alertmanager — active alerts
 kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-alertmanager 9093:9093
 ```
 
-Truy cập:
-
-```text
-http://127.0.0.1:9093/
-```
-
-4. Kiểm tra target của ứng dụng NUFI trong Prometheus:
+**Verify NUFI is being scraped:**
 
 ```promql
 up{job="nufi"}
 ```
 
-Nếu target hoạt động đúng, giá trị sẽ là `1`.
+A result of `1` means the target is up. The NUFI dashboard is available at `http://127.0.0.1:3000/d/nufi-monitoring`.
 
-5. Kiểm tra nhanh các metric của ứng dụng:
-
-```promql
-nufi_active_income_total
-```
-
-```promql
-nufi_active_expenses_total
-```
-
-```promql
-nufi_unread_alerts_total
-```
-
-6. Nếu muốn máy local nhận thông báo khi có alert mới:
+**Receive desktop notifications for new alerts:**
 
 ```bash
 .venv/bin/python scripts/alert_watcher.py
 ```
 
-Hoặc chỉ kiểm tra một lần:
+The watcher script polls Alertmanager and triggers a desktop notification (macOS Notification Center / Linux `notify-send`) when a new alert fires.
+
+---
+
+## Public Demo via Cloudflare Tunnel
+
+The app runs locally or on Kubernetes and has no public IP by default. **Cloudflare Tunnel** creates a temporary public HTTPS URL pointing to your local port — useful for sharing a demo link without deploying to a cloud provider.
+
+**When to use:** sharing a demo link with others, presenting to reviewers, or testing Google OAuth on a public URL.
+
+### Quick tunnel (temporary URL)
+
+1. Install `cloudflared`:
 
 ```bash
-.venv/bin/python scripts/alert_watcher.py --once
+brew install cloudflared
 ```
 
-### Dashboard Monitoring Của NUFI
+2. Start the app (Docker or Kubernetes), then in another terminal:
 
-Sau khi Grafana mở ở `3000`, bạn có thể:
+```bash
+# If running Docker Compose on port 8001
+cloudflared tunnel --url http://127.0.0.1:8001
 
-- vào `Dashboards`
-- tìm dashboard `NUFI Monitoring` hoặc `NUFI Monitoring Tổng Quan`
+# If running Kubernetes on port 8002
+cloudflared tunnel --url http://127.0.0.1:8002
+```
 
-Dashboard này lấy dữ liệu trực tiếp từ Prometheus thông qua `ServiceMonitor` và `PrometheusRule` đã cấu hình trong Helm chart của dự án.
+3. Cloudflare prints a public URL:
 
-### Vai Trò Của Từng Thành Phần Monitoring
+```text
+https://random-name.trycloudflare.com
+```
 
-#### Prometheus
+Share this link — it works as long as both the app and the tunnel terminal are running.
 
-Prometheus là thành phần thu thập và lưu trữ metrics của hệ thống.
+### One-command demo (Kubernetes)
 
-Trong dự án này, Prometheus có nhiệm vụ:
-
-- scrape metrics từ ứng dụng NUFI qua endpoint `/metrics`
-- lưu dữ liệu chuỗi thời gian để phục vụ query và biểu đồ
-- đánh giá các `PrometheusRule`
-- phát hiện các tình huống như:
-  - app `DOWN`
-  - scrape lỗi
-  - chỉ số nghiệp vụ vượt ngưỡng
-  - CPU hoặc RAM cao
-
-Prometheus phù hợp nhất khi bạn cần:
-
-- kiểm tra target có đang `UP` không
-- query nhanh bằng `PromQL`
-- xác minh dữ liệu monitoring của ứng dụng
-
-#### Grafana
-
-Grafana là thành phần hiển thị dữ liệu monitoring theo dạng trực quan.
-
-Trong dự án này, Grafana có nhiệm vụ:
-
-- kết nối Prometheus làm data source
-- hiển thị dashboard cho NUFI
-- trực quan hóa các metric như:
-  - trạng thái ứng dụng
-  - số lượng thu nhập / chi tiêu / ngân sách / cảnh báo
-  - CPU / RAM
-  - các biểu đồ xu hướng theo thời gian
-
-Grafana phù hợp nhất khi bạn cần:
-
-- xem nhanh tình trạng hệ thống
-- trình bày dashboard khi demo
-- theo dõi biến động dữ liệu mà không cần viết query nhiều
-
-#### Alertmanager
-
-Alertmanager là thành phần tiếp nhận và điều phối cảnh báo từ Prometheus.
-
-Trong dự án này, Alertmanager có nhiệm vụ:
-
-- nhận các alert đang firing từ Prometheus
-- group alert lại để giảm spam
-- deduplicate các alert trùng nhau
-- áp dụng rule inhibit giữa `warning` và `critical`
-- cung cấp API để `scripts/alert_watcher.py` đọc và bật thông báo trên máy local
-
-Alertmanager phù hợp nhất khi bạn cần:
-
-- kiểm tra hệ thống đang có alert nào
-- xem luồng cảnh báo vận hành
-- nối alert từ cluster về máy local để demo
-
-#### Luồng hoạt động chung
-
-Ba thành phần trên phối hợp với nhau theo luồng:
-
-1. Ứng dụng NUFI expose `/metrics`
-2. Prometheus scrape metrics từ ứng dụng
-3. Prometheus đánh giá rule và phát hiện bất thường
-4. Alertmanager nhận và quản lý cảnh báo
-5. Grafana đọc dữ liệu từ Prometheus để hiển thị dashboard
-
-Nói ngắn gọn:
-
-- `Prometheus`: thu thập và phân tích số liệu
-- `Grafana`: hiển thị số liệu cho người dùng
-- `Alertmanager`: quản lý và điều phối cảnh báo
-
-## Public Demo Bằng Cloudflare Tunnel
-
-Khi cần chia sẻ nhanh web ra Internet để demo, có thể dùng `Cloudflare Tunnel`. Trong dự án này, Cloudflare chỉ đóng vai trò mở đường public tạm thời cho bản đang chạy trên máy local hoặc Kubernetes, không phải nền tảng deploy chính.
-
-Nếu muốn mở `port-forward` và Cloudflare cùng lúc bằng một lệnh:
+The repo includes a script that starts port-forward and tunnel together:
 
 ```bash
 chmod +x scripts/run_public_demo.sh
 ./scripts/run_public_demo.sh
 ```
 
-Script này sẽ:
+Press `Ctrl + C` to stop both.
 
-- giữ cổng `8002` bằng `kubectl port-forward`
-- tự đợi web phản hồi rồi mới mở Cloudflare
-- dừng cả `port-forward` và `cloudflared` khi bạn nhấn `Ctrl + C`
+### Limitations
 
-Luồng chạy:
+| | Quick Tunnel | Named Tunnel |
+|---|---|---|
+| URL | Random, changes every run | Fixed custom domain |
+| Google OAuth | ❌ Callback URL changes | ✅ Works with fixed domain |
+| Setup | Zero config | Requires Cloudflare account + domain |
+| Cost | Free | Free (domain cost only) |
 
-1. Mở web Kubernetes bằng cổng cố định:
+For a demo that doesn't need Google OAuth, the quick tunnel is sufficient. For a stable URL across multiple demo sessions, set up a named tunnel with a custom domain on Cloudflare.
 
-```bash
-kubectl -n nufi port-forward svc/nufi 8002:80
-```
-
-2. Ở terminal khác, chạy tunnel:
-
-```bash
-cloudflared tunnel --url http://127.0.0.1:8002
-```
-
-3. Cloudflare sẽ trả về một link dạng:
-
-```text
-https://random-name.trycloudflare.com
-```
-
-Lưu ý:
-
-- Link `trycloudflare.com` là link tạm, có thể thay đổi mỗi lần chạy lại.
-- Terminal `cloudflared` và terminal `port-forward` phải cùng còn chạy thì link public mới hoạt động.
-- Nếu cần URL cố định cho demo hoặc OAuth, nên dùng `named tunnel` với domain riêng trên Cloudflare.
-- Google OAuth không phù hợp với `Quick Tunnel` nếu callback URL thay đổi liên tục.
-
-Nếu terminal báo `helm: command not found`, cài Helm trên macOS:
-
-```bash
-brew install helm
-```
-
-## Cổng Mặc Định
-
-Các cổng thường dùng trong repo:
-
-- `8000`: Django local chạy trực tiếp bằng `runserver`
-- `8001`: Docker Compose
-- `8002`: Kubernetes qua `kubectl port-forward svc/nufi 8002:80`
-- `3000`: Grafana
-- `9090`: Prometheus
-- `9093`: Alertmanager
-
-Nên giữ đúng các cổng trên khi demo để:
-
-- Google OAuth callback không bị lệch
-- smoke test và checklist demo không phải sửa lại
-- Cloudflare Tunnel luôn trỏ đúng vào bản Kubernetes ở `8002`
+---
 
 ## Troubleshooting
 
-### Web không lên ở `8000`
-
-- Kiểm tra môi trường ảo đã activate chưa.
-- Nếu dùng SQLite, chạy lại:
+**Web not responding on port `8000`**
 
 ```bash
-DB_ENGINE=sqlite python manage.py migrate
-DB_ENGINE=sqlite python manage.py runserver 127.0.0.1:8000
+python manage.py migrate
+python manage.py runserver 127.0.0.1:8000
 ```
 
-### Web không lên ở `8001`
-
-- Kiểm tra container:
+**Web not responding on port `8001` (Docker)**
 
 ```bash
 docker compose --env-file .env.docker ps
-```
-
-- Xem log web:
-
-```bash
 docker compose --env-file .env.docker logs -f web
 ```
 
-### Web không lên ở `8002`
-
-- Chạy lại port-forward:
+**Web not responding on port `8002` (Kubernetes)**
 
 ```bash
 kubectl -n nufi port-forward svc/nufi 8002:80
 ```
 
-- Nếu cổng đang bận, dừng terminal `port-forward` cũ hoặc kill tiến trình cũ.
+**Prometheus target `nufi` is DOWN**
 
-### Prometheus target `nufi` bị `DOWN`
-
-- Mở Prometheus ở `9090`.
-- Kiểm tra query:
-
-```promql
+```bash
+# Check in Prometheus at http://127.0.0.1:9090
 up{job="nufi"}
+# Then verify pod is running and ServiceMonitor is applied
+kubectl -n nufi get pods
 ```
 
-- Nếu bằng `0`, kiểm tra:
-  - pod `nufi` còn chạy không
-  - `ServiceMonitor` đã apply chưa
-  - `ALLOWED_HOSTS` có chặn pod IP hoặc tunnel host không
-
-### Alertmanager / watcher không báo
-
-- Kiểm tra Alertmanager đang mở ở `9093`.
-- Chạy thử một lần:
+**Alertmanager / watcher not sending notifications**
 
 ```bash
 .venv/bin/python scripts/alert_watcher.py --once
 ```
 
-- Nếu cổng `9093` đang bận, đổi sang cổng khác:
+---
 
-```bash
-kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-alertmanager 9094:9093
-.venv/bin/python scripts/alert_watcher.py --url http://127.0.0.1:9094/api/v2/alerts
-```
+## Documentation
 
-### Cloudflare trả `502` hoặc `Bad Request`
-
-- Kiểm tra terminal `cloudflared` còn chạy không.
-- Kiểm tra terminal `kubectl -n nufi port-forward svc/nufi 8002:80` còn chạy không.
-- Refresh lại link sau khi `8002` hoạt động lại.
-
-## Tài Liệu Quan Trọng
-
-File quản lý version app, data model và pipeline:
-
-```text
-deploy/versions/pipeline.yaml
-```
-
-Tài liệu backup/restore:
-
-```text
-docs/operations/backup-restore.md
-```
-
-Sơ đồ luồng chạy hệ thống:
-
-```text
-docs/architecture/system-flow.md
-```
-
-Checklist ảnh chụp/video để demo:
-
-```text
-docs/operations/demo-evidence-checklist.md
-```
-
-Tài liệu phân tích và thiết kế:
-
-```text
-docs/specifications/project-overview.md
-docs/specifications/business-rules.md
-docs/specifications/modules.md
-docs/specifications/relational-schema.md
-docs/specifications/roles-permissions.md
-docs/specifications/system-requirements.md
-```
-
-## Lệnh Hữu Ích
-
-```bash
-docker compose --env-file .env.docker ps
-docker compose --env-file .env.docker logs -f web
-docker compose --env-file .env.docker down
-docker compose --env-file .env.docker down -v
-```
+| Document | Description |
+|---|---|
+| [docs/specifications/project-overview.md](docs/specifications/project-overview.md) | Problem context, objectives, tech stack |
+| [docs/specifications/business-rules.md](docs/specifications/business-rules.md) | 56 business rules (BR-01 – BR-56) |
+| [docs/specifications/relational-schema.md](docs/specifications/relational-schema.md) | All 12 tables, PK/FK, indexes, views, triggers |
+| [docs/specifications/system-requirements.md](docs/specifications/system-requirements.md) | FR/NFR requirements (FR-01 – FR-50) |
+| [docs/specifications/modules.md](docs/specifications/modules.md) | 12 business modules and dependencies |
+| [docs/specifications/roles-permissions.md](docs/specifications/roles-permissions.md) | 3-actor permission model |
+| [docs/architecture/system-flow.md](docs/architecture/system-flow.md) | System flow diagrams (Mermaid) |
+| [docs/deployment/kubernetes.md](docs/deployment/kubernetes.md) | Kubernetes + Helm deployment guide |
+| [docs/operations/backup-restore.md](docs/operations/backup-restore.md) | Backup and restore procedures |
+| [docs/operations/demo-evidence-checklist.md](docs/operations/demo-evidence-checklist.md) | Demo screenshot/video checklist |
