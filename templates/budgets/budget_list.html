@@ -43,7 +43,7 @@
                   <td>Tháng {{ budget.period_month }}/{{ budget.period_year }}</td>
                   <td>
                     {{ budget.used_amount }}
-                    <div class="mini-progress"><span style="width: {{ budget.usage_percent }}%;"></span></div>
+                    <div class="mini-progress"><span class="{{ budget.progress_class }}" style="width: {{ budget.usage_percent }}%;"></span></div>
                   </td>
                   <td>{{ budget.remaining_amount }}</td>
                   <td>

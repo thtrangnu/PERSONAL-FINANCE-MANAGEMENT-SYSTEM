@@ -159,7 +159,6 @@ def _create_budget_alerts(expense):
         already_exists = Alert.objects.filter(
             user=expense.user,
             related_budget=budget,
-            related_expense=expense,
             alert_type=alert_type,
         ).exists()
         if already_exists:
@@ -172,7 +171,6 @@ def _create_budget_alerts(expense):
             title=title,
             message=message,
             related_budget=budget,
-            related_expense=expense,
         )
 
 

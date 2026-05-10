@@ -64,6 +64,12 @@ def _attach_usage(budgets, currency):
         budget.used_amount = _format_money(used_amount, currency)
         budget.remaining_amount = _format_money(remaining_amount, currency)
         budget.usage_percent = min(100, max(0, percent))
+        if percent >= 100:
+            budget.progress_class = 'is-exceeded'
+        elif percent >= int(budget.warning_percent):
+            budget.progress_class = 'is-warning'
+        else:
+            budget.progress_class = ''
     return budgets
 
 

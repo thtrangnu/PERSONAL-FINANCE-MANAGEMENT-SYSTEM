@@ -8,64 +8,66 @@
     <h1>{{ page_title }}</h1>
     <p class="hero-copy">Ghi nhận lần thanh toán cho khoản nợ với {{ debt.counterparty_name }} bằng một tài khoản đã thêm trong NUFI.</p>
 
-    <div class="debt-payment-summary">
-      <article>
-        <span>Khoản nợ</span>
-        <strong>{{ debt.counterparty_name }}</strong>
-        <p>{{ debt.get_debt_type_display }}</p>
-      </article>
-      <article>
-        <span>Số tiền ban đầu</span>
-        <strong>{{ formatted_original }}</strong>
-        <p>Tổng số tiền đã ghi nhận.</p>
-      </article>
-      <article>
-        <span>Đã thanh toán</span>
-        <strong>{{ formatted_paid }}</strong>
-        <p>Các lần thanh toán trước đó.</p>
-      </article>
-      <article class="is-important">
-        <span>Còn lại</span>
-        <strong>{{ formatted_remaining }}</strong>
-        <p>Đây là mức tối đa có thể thanh toán.</p>
-      </article>
-    </div>
+    <div class="debt-payment-layout">
+      <div class="debt-payment-summary" aria-label="Tóm tắt khoản nợ">
+        <article>
+          <span>Khoản nợ</span>
+          <strong>{{ debt.counterparty_name }}</strong>
+          <p>{{ debt.get_debt_type_display }}</p>
+        </article>
+        <article>
+          <span>Số tiền ban đầu</span>
+          <strong>{{ formatted_original }}</strong>
+          <p>Tổng số tiền đã ghi nhận.</p>
+        </article>
+        <article>
+          <span>Đã thanh toán</span>
+          <strong>{{ formatted_paid }}</strong>
+          <p>Các lần thanh toán trước đó.</p>
+        </article>
+        <article class="is-important">
+          <span>Còn lại</span>
+          <strong>{{ formatted_remaining }}</strong>
+          <p>Đây là mức tối đa có thể thanh toán.</p>
+        </article>
+      </div>
 
-    <form
-      class="form model-form debt-payment-form"
-      method="post"
-      data-debt-payment-form
-      data-remaining-amount="{{ remaining_amount_raw }}"
-      data-remaining-label="{{ formatted_remaining }}"
-    >
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-      <div class="payment-mode-panel">
-        <div>
-          <span class="eyebrow">Cách thanh toán</span>
-          <p data-payment-mode-copy>Chọn tất toán để tự điền toàn bộ số còn lại, hoặc thanh toán một phần để nhập số tiền nhỏ hơn. Tài khoản thanh toán là bắt buộc để hệ thống tự cập nhật số dư.</p>
-        </div>
-        <div class="payment-mode-actions">
-          <button class="payment-mode-button" type="button" data-payment-mode="payoff">Tất toán</button>
-          <button class="payment-mode-button is-active" type="button" data-payment-mode="partial">Thanh toán một phần</button>
-        </div>
-        <p class="payment-warning" data-payment-warning hidden>Số tiền đang lớn hơn khoản còn lại. Vui lòng giảm xuống không quá {{ formatted_remaining }}.</p>
-      </div>
-      <div class="form-grid">
-        {% for field in form %}
-          <div class="profile-field {% if field.name == 'note' %}profile-field-wide{% endif %}">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-            {{ field.errors }}
+      <form
+        class="form model-form debt-payment-form"
+        method="post"
+        data-debt-payment-form
+        data-remaining-amount="{{ remaining_amount_raw }}"
+        data-remaining-label="{{ formatted_remaining }}"
+      >
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="payment-mode-panel">
+          <div>
+            <span class="eyebrow">Cách thanh toán</span>
+            <p data-payment-mode-copy>Chọn tất toán để tự điền toàn bộ số còn lại, hoặc thanh toán một phần để nhập số tiền nhỏ hơn. Tài khoản thanh toán là bắt buộc để hệ thống tự cập nhật số dư.</p>
           </div>
-        {% endfor %}
-      </div>
-      <div class="form-actions">
-        <button type="submit" data-payment-submit>{{ submit_label }}</button>
-        <a class="button ghost" href="{% url 'debt_detail' debt.debt_id %}">Quay lại</a>
-      </div>
-    </form>
+          <div class="payment-mode-actions">
+            <button class="payment-mode-button" type="button" data-payment-mode="payoff">Tất toán</button>
+            <button class="payment-mode-button is-active" type="button" data-payment-mode="partial">Thanh toán một phần</button>
+          </div>
+          <p class="payment-warning" data-payment-warning hidden>Số tiền đang lớn hơn khoản còn lại. Vui lòng giảm xuống không quá {{ formatted_remaining }}.</p>
+        </div>
+        <div class="form-grid debt-payment-fields">
+          {% for field in form %}
+            <div class="profile-field debt-payment-field-{{ field.name }} {% if field.name == 'note' %}profile-field-wide{% endif %}">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+              {{ field.errors }}
+            </div>
+          {% endfor %}
+        </div>
+        <div class="form-actions">
+          <button type="submit" data-payment-submit>{{ submit_label }}</button>
+          <a class="button ghost" href="{% url 'debt_detail' debt.debt_id %}">Quay lại</a>
+        </div>
+      </form>
+    </div>
   </section>
 
   <script>

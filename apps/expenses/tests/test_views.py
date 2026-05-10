@@ -49,7 +49,11 @@ class ExpenseFlowTests(TestCase):
         self.assertEqual(expense.amount, Decimal('85'))
         self.assertEqual(self.account.current_balance, Decimal('915'))
 
-        alert = Alert.objects.get(user=self.profile, related_budget=budget, related_expense=expense)
+        alert = Alert.objects.get(
+            user=self.profile,
+            related_budget=budget,
+            related_expense__isnull=True,
+        )
         self.assertEqual(alert.alert_type, Alert.TYPE_BUDGET_WARNING)
         self.assertEqual(alert.severity, Alert.SEVERITY_WARNING)
 
