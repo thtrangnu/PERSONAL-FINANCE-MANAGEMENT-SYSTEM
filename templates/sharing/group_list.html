@@ -65,7 +65,34 @@
                   <td>{{ group.owner_user.full_name|default:group.owner_user.username }}</td>
                   <td>{{ group.active_member_count }}</td>
                   <td>{{ group.created_at|date:"d/m/Y" }}</td>
-                  <td><span class="status-pill {% if group.status != 'active' %}muted{% endif %}">{{ group.get_status_display }}</span></td>
+                  <td>
+                    {% if group.can_toggle_status and group.status != 'archived' %}
+                      <form
+                        class="status-toggle-form"
+                        method="post"
+                        action="{% url 'sharing_group_toggle_status' group.group_id %}"
+                        data-status-toggle-form
+                        data-on-label="Đang dùng"
+                        data-off-label="Tạm tắt"
+                        data-on-title="Bấm để tạm tắt nhóm"
+                        data-off-title="Bấm để bật lại nhóm"
+                      >
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button
+                          class="status-toggle {% if group.status == 'active' %}is-on{% endif %}"
+                          type="submit"
+                          aria-pressed="{% if group.status == 'active' %}true{% else %}false{% endif %}"
+                          title="{% if group.status == 'active' %}Bấm để tạm tắt nhóm{% else %}Bấm để bật lại nhóm{% endif %}"
+                        >
+                          <span class="status-toggle-knob" aria-hidden="true"></span>
+                          <span data-status-toggle-label>{{ group.get_status_display }}</span>
+                        </button>
+                      </form>
+                    {% else %}
+                      <span class="status-pill {% if group.status != 'active' %}muted{% endif %}">{{ group.get_status_display }}</span>
+                    {% endif %}
+                  </td>
                   <td>
                     <div class="table-actions">
                       <a href="{% url 'sharing_group_detail' group.group_id %}">Mở nhóm</a>

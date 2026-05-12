@@ -177,6 +177,7 @@ def dashboard(request):
         'show_admin_shortcut': _is_admin_user(request.user, user),
         'net_flow': _format_money(net_flow, currency),
         'net_flow_label': 'Dòng tiền tháng này đang dương' if net_flow >= 0 else 'Dòng tiền tháng này đang âm',
+        'net_flow_tone': 'positive' if net_flow >= 0 else 'negative',
         'budget_used_percent': budget_used_percent,
         'budget_status': budget_status,
         'alert_summary': (

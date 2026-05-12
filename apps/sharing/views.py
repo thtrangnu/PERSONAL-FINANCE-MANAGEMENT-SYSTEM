@@ -4,8 +4,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import DatabaseError, connection
 from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import UserProfile
@@ -35,6 +37,10 @@ def _member_group(profile, group_id):
         status=GroupMember.STATUS_ACTIVE,
     )
     return membership.group
+
+
+def _wants_json(request):
+    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
 
 @lru_cache(maxsize=1)
@@ -81,6 +87,8 @@ def group_list(request):
         .select_related('group', 'group__owner_user')
         .order_by('-joined_at')
     )
+    for group in groups:
+        group.can_toggle_status = group.owner_user_id == profile.user_id
     return render(
         request,
         'sharing/group_list.html',
@@ -204,6 +212,52 @@ def group_invitation_decline(request, membership_id):
     membership.status = GroupMember.STATUS_REMOVED
     membership.save(update_fields=['status'])
     messages.info(request, f'Bạn đã từ chối lời mời vào nhóm {group_name}.')
+    return redirect('sharing_group_list')
+
+
+@login_required
+@require_POST
+def group_toggle_status(request, group_id):
+    profile = _get_profile(request.user)
+    group = get_object_or_404(SharingGroup, group_id=group_id, owner_user=profile)
+
+    if group.status == SharingGroup.STATUS_ARCHIVED:
+        message = 'Nhóm đã lưu trữ nên không thể bật/tắt nhanh.'
+        if _wants_json(request):
+            return JsonResponse(
+                {
+                    'ok': False,
+                    'is_on': False,
+                    'label': group.get_status_display(),
+                    'message': message,
+                },
+                status=400,
+            )
+        messages.info(request, message)
+    elif group.status == SharingGroup.STATUS_ACTIVE:
+        group.status = SharingGroup.STATUS_INACTIVE
+        group.save(update_fields=['status', 'updated_at'])
+        message = 'Đã tạm tắt nhóm.'
+    else:
+        group.status = SharingGroup.STATUS_ACTIVE
+        group.save(update_fields=['status', 'updated_at'])
+        message = 'Đã bật lại nhóm.'
+
+    if _wants_json(request):
+        return JsonResponse(
+            {
+                'ok': True,
+                'is_on': group.status == SharingGroup.STATUS_ACTIVE,
+                'label': group.get_status_display(),
+                'message': message,
+            }
+        )
+
+    messages.success(request, message)
+
+    next_url = request.POST.get('next')
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
     return redirect('sharing_group_list')
 
 

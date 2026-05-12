@@ -13,7 +13,7 @@
           Đây là các con số quan trọng giúp bạn nhìn nhanh tình hình tiền bạc trong tháng.
         </p>
       </div>
-      <div class="dashboard-status-card">
+      <div class="dashboard-status-card is-{{ net_flow_tone }}">
         <span>Trạng thái tháng này</span>
         <strong>{{ net_flow_label }}</strong>
         <p>{{ alert_summary }}</p>
@@ -39,7 +39,7 @@
     </div>
 
     <div class="dashboard-analysis" aria-label="Phân tích nhanh">
-      <article class="analysis-card">
+      <article class="analysis-card is-{{ net_flow_tone }}">
         <span class="analysis-label">Dòng tiền ròng</span>
         <strong>{{ net_flow }}</strong>
         <p>Tiền vào tháng này trừ đi tiền ra tháng này.</p>

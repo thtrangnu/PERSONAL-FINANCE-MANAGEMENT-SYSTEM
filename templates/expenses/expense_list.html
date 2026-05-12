@@ -25,24 +25,36 @@
     </div>
 
     <form class="filter-bar" method="get">
-      <input type="date" name="start_date" value="{{ filters.start_date }}" aria-label="Từ ngày">
-      <input type="date" name="end_date" value="{{ filters.end_date }}" aria-label="Đến ngày">
-      <select name="category" aria-label="Danh mục">
-        <option value="">Tất cả danh mục</option>
-        {% for category in categories %}
-          <option value="{{ category.category_id }}" {% if filters.category == category.category_id|stringformat:"s" %}selected{% endif %}>
-            {{ category.category_name }}
-          </option>
-        {% endfor %}
-      </select>
-      <select name="bank_account" aria-label="Tài khoản">
-        <option value="">Tất cả tài khoản</option>
-        {% for account in bank_accounts %}
-          <option value="{{ account.bank_account_id }}" {% if filters.bank_account == account.bank_account_id|stringformat:"s" %}selected{% endif %}>
-            {{ account.account_name }}
-          </option>
-        {% endfor %}
-      </select>
+      <label class="filter-field">
+        <span>Từ ngày</span>
+        <input type="date" name="start_date" value="{{ filters.start_date }}">
+      </label>
+      <label class="filter-field">
+        <span>Đến ngày</span>
+        <input type="date" name="end_date" value="{{ filters.end_date }}">
+      </label>
+      <label class="filter-field">
+        <span>Danh mục</span>
+        <select name="category">
+          <option value="">Tất cả danh mục</option>
+          {% for category in categories %}
+            <option value="{{ category.category_id }}" {% if filters.category == category.category_id|stringformat:"s" %}selected{% endif %}>
+              {{ category.category_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="filter-field">
+        <span>Tài khoản</span>
+        <select name="bank_account">
+          <option value="">Tất cả tài khoản</option>
+          {% for account in bank_accounts %}
+            <option value="{{ account.bank_account_id }}" {% if filters.bank_account == account.bank_account_id|stringformat:"s" %}selected{% endif %}>
+              {{ account.account_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
       <button type="submit">Lọc</button>
       <a class="button ghost" href="{% url 'expense_list' %}">Xóa lọc</a>
     </form>
@@ -172,7 +184,7 @@
                   <td>
                     <div class="table-actions">
                       <a href="{% url 'expense_update' expense.expense_id %}">Sửa</a>
-                      <a href="{% url 'expense_delete' expense.expense_id %}">Xóa</a>
+                      <a class="is-danger" href="{% url 'expense_delete' expense.expense_id %}">Xóa</a>
                     </div>
                   </td>
                 </tr>

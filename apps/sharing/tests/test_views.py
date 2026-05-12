@@ -39,6 +39,32 @@ class SharingFlowTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_owner_can_toggle_group_status(self):
+        self.client.force_login(self.owner_auth_user)
+
+        response = self.client.post(
+            reverse('sharing_group_toggle_status', args=[self.group.group_id]),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.status, SharingGroup.STATUS_INACTIVE)
+        self.assertEqual(response.json()['label'], 'Tạm tắt')
+
+    def test_non_owner_cannot_toggle_group_status(self):
+        GroupMember.objects.create(
+            group=self.group,
+            user=self.member_profile,
+            member_role=GroupMember.ROLE_MEMBER,
+            status=GroupMember.STATUS_ACTIVE,
+        )
+        self.client.force_login(self.member_auth_user)
+
+        response = self.client.post(reverse('sharing_group_toggle_status', args=[self.group.group_id]))
+
+        self.assertEqual(response.status_code, 404)
+
     def test_active_member_can_share_own_expense_into_group(self):
         GroupMember.objects.create(
             group=self.group,

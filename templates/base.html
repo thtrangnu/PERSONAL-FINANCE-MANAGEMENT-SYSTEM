@@ -217,8 +217,13 @@
       border-radius: 13px;
       color: var(--brand-dark);
       background: rgba(217, 244, 239, 0.86);
-      font-size: 1rem;
-      font-weight: 900;
+    }
+
+    .sidebar-icon svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      stroke: currentColor;
     }
 
     .sidebar-resizer {
@@ -467,8 +472,12 @@
       border-radius: 50%;
       color: #fff;
       background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-      font-size: 0.92rem;
-      line-height: 1;
+    }
+
+    .notification-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
     }
 
     .notification-badge {
@@ -1211,6 +1220,18 @@
         linear-gradient(145deg, rgba(231, 247, 244, 0.95), rgba(255, 255, 255, 0.78));
     }
 
+    .dashboard-status-card.is-positive {
+      border-color: rgba(15, 118, 110, 0.24);
+      background:
+        linear-gradient(145deg, rgba(236, 253, 245, 0.96), rgba(255, 255, 255, 0.82));
+    }
+
+    .dashboard-status-card.is-negative {
+      border-color: rgba(185, 28, 28, 0.22);
+      background:
+        linear-gradient(145deg, rgba(254, 226, 226, 0.86), rgba(255, 255, 255, 0.82));
+    }
+
     .dashboard-status-card span,
     .analysis-label {
       color: var(--muted);
@@ -1226,6 +1247,10 @@
       color: var(--brand-dark);
       font-size: 1.2rem;
       line-height: 1.35;
+    }
+
+    .dashboard-status-card.is-negative strong {
+      color: var(--danger);
     }
 
     .dashboard-status-card p {
@@ -1331,6 +1356,19 @@
       color: var(--ink);
       font-size: clamp(1.4rem, 3vw, 2rem);
       line-height: 1.1;
+    }
+
+    .analysis-card.is-positive strong {
+      color: var(--brand-dark);
+    }
+
+    .analysis-card.is-negative {
+      border-color: rgba(185, 28, 28, 0.2);
+      background: rgba(254, 242, 242, 0.74);
+    }
+
+    .analysis-card.is-negative strong {
+      color: var(--danger);
     }
 
     .analysis-card p {
@@ -2038,7 +2076,7 @@
 
     .overview-cards {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
       margin-bottom: 20px;
     }
@@ -2358,7 +2396,34 @@
     }
 
     .table-actions a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      border: 1px solid rgba(15, 118, 110, 0.14);
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: var(--brand-dark);
+      background: rgba(231, 247, 244, 0.66);
       font-weight: 900;
+      transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+    }
+
+    .table-actions a:hover {
+      border-color: rgba(15, 118, 110, 0.26);
+      background: rgba(217, 244, 239, 0.96);
+      transform: translateY(-1px);
+    }
+
+    .table-actions a.is-danger {
+      border-color: rgba(185, 28, 28, 0.16);
+      color: var(--danger);
+      background: rgba(254, 226, 226, 0.7);
+    }
+
+    .table-actions a.is-danger:hover {
+      border-color: rgba(185, 28, 28, 0.28);
+      background: rgba(254, 202, 202, 0.88);
     }
 
     .muted-action {
@@ -2560,15 +2625,65 @@
       min-height: 310px;
     }
 
+    .chart-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 10px;
+      border: 1px dashed rgba(15, 118, 110, 0.2);
+      border-radius: 22px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.76);
+      font-weight: 900;
+    }
+
+    .chart-loading[hidden] {
+      display: none !important;
+    }
+
+    .chart-loading span {
+      width: 34px;
+      height: 34px;
+      border: 4px solid rgba(15, 118, 110, 0.16);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: chartSpin 900ms linear infinite;
+    }
+
+    @keyframes chartSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     .empty-state {
+      display: grid;
+      place-items: center;
+      text-align: center;
       border: 1px dashed rgba(15, 118, 110, 0.28);
       border-radius: 20px;
-      padding: 18px;
+      padding: 48px 24px;
       background: rgba(255, 255, 255, 0.62);
+    }
+
+    .empty-state::before {
+      content: "";
+      display: block;
+      width: 52px;
+      height: 52px;
+      margin-bottom: 16px;
+      border-radius: 16px;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%230f766e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'/%3E%3C/svg%3E") center / 28px no-repeat,
+        rgba(217, 244, 239, 0.72);
     }
 
     .empty-state strong {
       color: var(--ink);
+      font-size: 1rem;
     }
 
     .model-form {
@@ -2711,13 +2826,32 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      align-items: center;
+      align-items: flex-end;
       margin: 0 0 20px;
+    }
+
+    .filter-field {
+      display: grid;
+      gap: 6px;
+      width: min(220px, 100%);
+    }
+
+    .filter-field span {
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .filter-bar input,
     .filter-bar select {
       width: min(220px, 100%);
+    }
+
+    .filter-field input,
+    .filter-field select {
+      width: 100%;
     }
 
     .mini-progress {
@@ -2787,6 +2921,10 @@
     .auth-card h1 {
       font-size: clamp(1.9rem, 5vw, 2.8rem);
       line-height: 1.05;
+    }
+
+    .auth-form {
+      gap: 14px;
     }
 
     .form {
@@ -2941,6 +3079,17 @@
       }
     }
 
+    @media (max-width: 900px) {
+      .sidebar-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dashboard-heading,
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 760px) {
       .hero {
         grid-template-columns: 1fr;
@@ -3054,7 +3203,9 @@
         {% if request.user.is_authenticated %}
           <details class="notification-menu" data-notification-menu>
             <summary aria-label="Mở cảnh báo">
-              <span class="notification-icon">!</span>
+              <span class="notification-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" /></svg>
+              </span>
               <span>Cảnh báo</span>
               {% if nav_unread_alert_count %}
                 <span class="notification-badge">{{ nav_unread_alert_count }}</span>
@@ -3142,39 +3293,57 @@
         <aside class="sidebar-nav" aria-label="Menu chính">
           <div class="sidebar-title">Quản lý tài chính</div>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">
-            <span class="sidebar-icon">T</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>
+            </span>
             <span>Tổng quan</span>
           </a>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'income_list' or request.resolver_match.url_name == 'income_create' or request.resolver_match.url_name == 'income_update' or request.resolver_match.url_name == 'income_delete' %}is-active{% endif %}" href="{% url 'income_list' %}">
-            <span class="sidebar-icon">+</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" /></svg>
+            </span>
             <span>Thu nhập</span>
           </a>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'expense_list' or request.resolver_match.url_name == 'expense_create' or request.resolver_match.url_name == 'expense_update' or request.resolver_match.url_name == 'expense_delete' %}is-active{% endif %}" href="{% url 'expense_list' %}">
-            <span class="sidebar-icon">-</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181" /></svg>
+            </span>
             <span>Chi tiêu</span>
           </a>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'category_list' or request.resolver_match.url_name == 'category_create' or request.resolver_match.url_name == 'category_update' or request.resolver_match.url_name == 'category_delete' %}is-active{% endif %}" href="{% url 'category_list' %}">
-            <span class="sidebar-icon">D</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L9.568 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" /></svg>
+            </span>
             <span>Danh mục</span>
           </a>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'bank_account_list' or request.resolver_match.url_name == 'bank_account_detail' or request.resolver_match.url_name == 'bank_account_create' or request.resolver_match.url_name == 'bank_account_update' or request.resolver_match.url_name == 'bank_account_delete' %}is-active{% endif %}" href="{% url 'bank_account_list' %}">
-            <span class="sidebar-icon">$</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
+            </span>
             <span>Tài khoản</span>
           </a>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'budget_list' or request.resolver_match.url_name == 'budget_create' or request.resolver_match.url_name == 'budget_update' or request.resolver_match.url_name == 'budget_delete' %}is-active{% endif %}" href="{% url 'budget_list' %}">
-            <span class="sidebar-icon">N</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>
+            </span>
             <span>Ngân sách</span>
           </a>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'report_overview' or request.resolver_match.url_name == 'report_monthly' or request.resolver_match.url_name == 'report_yearly' or request.resolver_match.url_name == 'report_categories' or request.resolver_match.url_name == 'report_trends' %}is-active{% endif %}" href="{% url 'report_overview' %}">
-            <span class="sidebar-icon">B</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" /></svg>
+            </span>
             <span>Báo cáo</span>
           </a>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'debt_list' or request.resolver_match.url_name == 'debt_detail' or request.resolver_match.url_name == 'debt_create' or request.resolver_match.url_name == 'debt_payment_create' %}is-active{% endif %}" href="{% url 'debt_list' %}">
-            <span class="sidebar-icon">V</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97Zm-12.5 0L3.63 15.696c-.122.499.106 1.028.589 1.202a5.989 5.989 0 0 0 2.031.352 5.989 5.989 0 0 0 2.031-.352c.483-.174.711-.703.59-1.202L6.25 4.97Z" /></svg>
+            </span>
             <span>Vay nợ</span>
           </a>
           <a class="sidebar-link {% if request.resolver_match.url_name == 'sharing_group_list' or request.resolver_match.url_name == 'sharing_group_create' or request.resolver_match.url_name == 'sharing_group_detail' or request.resolver_match.url_name == 'sharing_member_add' or request.resolver_match.url_name == 'shared_transaction_create' %}is-active{% endif %}" href="{% url 'sharing_group_list' %}">
-            <span class="sidebar-icon">G</span>
+            <span class="sidebar-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" /></svg>
+            </span>
             <span>Chia sẻ</span>
           </a>
         </aside>

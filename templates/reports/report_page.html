@@ -30,28 +30,43 @@
 
     <form class="filter-bar" method="get">
       {% if show_date_range_filter %}
-        <input type="date" name="start_date" value="{{ selected_start_date|date:'Y-m-d' }}" aria-label="Từ ngày">
-        <input type="date" name="end_date" value="{{ selected_end_date|date:'Y-m-d' }}" aria-label="Đến ngày">
+        <label class="filter-field">
+          <span>Từ ngày</span>
+          <input type="date" name="start_date" value="{{ selected_start_date|date:'Y-m-d' }}">
+        </label>
+        <label class="filter-field">
+          <span>Đến ngày</span>
+          <input type="date" name="end_date" value="{{ selected_end_date|date:'Y-m-d' }}">
+        </label>
       {% else %}
-        <select name="year" aria-label="Năm">
-          {% for year in years %}
-            <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>Năm {{ year }}</option>
-          {% endfor %}
-        </select>
-        {% if show_month_filter %}
-          <select name="month" aria-label="Tháng">
-            {% for month in months %}
-              <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>Tháng {{ month }}</option>
+        <label class="filter-field">
+          <span>Năm</span>
+          <select name="year">
+            {% for year in years %}
+              <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>Năm {{ year }}</option>
             {% endfor %}
           </select>
+        </label>
+        {% if show_month_filter %}
+          <label class="filter-field">
+            <span>Tháng</span>
+            <select name="month">
+              {% for month in months %}
+                <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>Tháng {{ month }}</option>
+              {% endfor %}
+            </select>
+          </label>
         {% endif %}
       {% endif %}
       {% if flow_options %}
-        <select name="flow" aria-label="Loại dòng tiền">
-          {% for option in flow_options %}
-            <option value="{{ option.value }}" {% if selected_flow == option.value %}selected{% endif %}>{{ option.label }}</option>
-          {% endfor %}
-        </select>
+        <label class="filter-field">
+          <span>Loại dòng tiền</span>
+          <select name="flow">
+            {% for option in flow_options %}
+              <option value="{{ option.value }}" {% if selected_flow == option.value %}selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
       {% endif %}
       <button type="submit">Xem báo cáo</button>
     </form>
@@ -63,6 +78,10 @@
           <p>Dữ liệu bên trái được vẽ thành biểu đồ, bảng bên phải giúp đối chiếu số liệu khi demo.</p>
         </div>
         <div class="report-chart-frame">
+          <div class="chart-loading" data-chart-loading>
+            <span aria-hidden="true"></span>
+            <strong>Đang tải biểu đồ</strong>
+          </div>
           <canvas id="reportChart" height="220"></canvas>
         </div>
       </section>
@@ -108,6 +127,7 @@
     (() => {
       const canvas = document.getElementById('reportChart');
       const dataNode = document.getElementById('report-chart-data');
+      const loading = document.querySelector('[data-chart-loading]');
       if (!canvas || !dataNode || !window.Chart) {
         return;
       }
@@ -134,6 +154,9 @@
           },
         },
       });
+      if (loading) {
+        loading.hidden = true;
+      }
     })();
   </script>
 {% endblock %}

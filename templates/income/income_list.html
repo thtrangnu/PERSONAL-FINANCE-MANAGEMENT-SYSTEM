@@ -22,16 +22,25 @@
     </div>
 
     <form class="filter-bar" method="get">
-      <input type="date" name="start_date" value="{{ filters.start_date }}" aria-label="Từ ngày">
-      <input type="date" name="end_date" value="{{ filters.end_date }}" aria-label="Đến ngày">
-      <select name="bank_account" aria-label="Tài khoản">
-        <option value="">Tất cả tài khoản</option>
-        {% for account in bank_accounts %}
-          <option value="{{ account.bank_account_id }}" {% if filters.bank_account == account.bank_account_id|stringformat:"s" %}selected{% endif %}>
-            {{ account.account_name }}
-          </option>
-        {% endfor %}
-      </select>
+      <label class="filter-field">
+        <span>Từ ngày</span>
+        <input type="date" name="start_date" value="{{ filters.start_date }}">
+      </label>
+      <label class="filter-field">
+        <span>Đến ngày</span>
+        <input type="date" name="end_date" value="{{ filters.end_date }}">
+      </label>
+      <label class="filter-field">
+        <span>Tài khoản</span>
+        <select name="bank_account">
+          <option value="">Tất cả tài khoản</option>
+          {% for account in bank_accounts %}
+            <option value="{{ account.bank_account_id }}" {% if filters.bank_account == account.bank_account_id|stringformat:"s" %}selected{% endif %}>
+              {{ account.account_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
       <button type="submit">Lọc</button>
       <a class="button ghost" href="{% url 'income_list' %}">Xóa lọc</a>
     </form>
@@ -161,7 +170,7 @@
                   <td>
                     <div class="table-actions">
                       <a href="{% url 'income_update' income.income_id %}">Sửa</a>
-                      <a href="{% url 'income_delete' income.income_id %}">Xóa</a>
+                      <a class="is-danger" href="{% url 'income_delete' income.income_id %}">Xóa</a>
                     </div>
                   </td>
                 </tr>

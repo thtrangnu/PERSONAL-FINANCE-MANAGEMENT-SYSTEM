@@ -82,6 +82,7 @@
                     <div class="table-actions">
                       <a href="{% url 'budget_update' budget.budget_id %}">Sửa</a>
                       <a
+                        class="is-danger"
                         href="{% url 'budget_delete' budget.budget_id %}"
                         data-budget-close-action
                         {% if budget.status != 'active' %}hidden{% endif %}

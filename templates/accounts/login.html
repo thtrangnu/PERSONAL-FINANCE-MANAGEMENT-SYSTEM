@@ -9,9 +9,17 @@
       <a class="button google" href="{% url 'google_login_start' %}">Tiếp tục với Google</a>
       <div class="divider">hoặc</div>
     </div>
-    <form class="form" method="post">
+    <form class="form auth-form" method="post">
       {% csrf_token %}
-      {{ form.as_p }}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div class="profile-field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
       <button type="submit">Đăng nhập</button>
     </form>
     <p>Chưa có tài khoản? <a href="{% url 'register' %}">Đăng ký tại đây</a>.</p>
