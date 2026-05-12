@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+  <section class="nufi-admin-hero">
+    <div>
+      <span class="nufi-admin-kicker">NUFI system control</span>
+      <h1>Admin Console</h1>
+      <p>Quản lý dữ liệu nền của hệ thống, kiểm tra người dùng, giao dịch, ngân sách, cảnh báo và các bảng vận hành quan trọng.</p>
+    </div>
+    <div class="nufi-admin-hero-card">
+      <span>Phân hệ</span>
+      <strong>{{ app_list|length }}</strong>
+    </div>
+  </section>
+
+  {% if app_list %}
+    <div class="nufi-admin-grid">
+      {% for app in app_list %}
+        <section class="nufi-admin-app">
+          <div class="nufi-admin-app-header">
+            <h2>{{ app.name }}</h2>
+            <span class="nufi-admin-count">{{ app.models|length }}</span>
+          </div>
+          <ul class="nufi-admin-models">
+            {% for model in app.models %}
+              <li>
+                {% if model.admin_url %}
+                  <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                {% else %}
+                  <span>{{ model.name }}</span>
+                {% endif %}
+                <div class="nufi-admin-model-actions">
+                  {% if model.add_url %}
+                    <a href="{{ model.add_url }}">Thêm</a>
+                  {% endif %}
+                  {% if model.admin_url %}
+                    <a href="{{ model.admin_url }}">Xem</a>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>{% translate "You don't have permission to view or edit anything." %}</p>
+  {% endif %}
+{% endblock %}

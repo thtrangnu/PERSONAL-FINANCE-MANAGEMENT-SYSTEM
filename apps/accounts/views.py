@@ -113,6 +113,11 @@ def _get_or_create_profile(user):
 @login_required
 def profile(request):
     profile_obj = _get_or_create_profile(request.user)
+    is_admin_profile = (
+        request.user.is_staff
+        or request.user.is_superuser
+        or profile_obj.role == profile_obj.ROLE_ADMIN
+    )
 
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile_obj, user=request.user)
@@ -123,7 +128,15 @@ def profile(request):
     else:
         form = ProfileForm(instance=profile_obj, user=request.user)
 
-    return render(request, 'accounts/profile.html', {'form': form, 'profile': profile_obj})
+    return render(
+        request,
+        'accounts/profile.html',
+        {
+            'form': form,
+            'profile': profile_obj,
+            'is_admin_profile': is_admin_profile,
+        },
+    )
 
 
 @login_required
