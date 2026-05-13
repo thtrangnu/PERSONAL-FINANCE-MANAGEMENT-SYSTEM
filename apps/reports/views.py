@@ -3,7 +3,6 @@ from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 from urllib.parse import urlencode
-from zipfile import ZIP_DEFLATED, ZipFile
 from xml.sax.saxutils import escape as xml_escape
 
 from django.contrib.auth.decorators import login_required
@@ -218,64 +217,252 @@ def _render_report(request, template_context):
     return render(request, 'reports/report_page.html', context)
 
 
-def _column_name(index):
-    name = ''
-    while index:
-        index, remainder = divmod(index - 1, 26)
-        name = chr(65 + remainder) + name
-    return name
-
-
 def _xlsx_bytes(rows):
-    sheet_rows = []
-    for row_index, row in enumerate(rows, start=1):
-        cells = []
-        for column_index, value in enumerate(row, start=1):
-            cell_ref = f'{_column_name(column_index)}{row_index}'
-            safe_value = xml_escape(str(value or ''))
-            cells.append(f'<c r="{cell_ref}" t="inlineStr"><is><t>{safe_value}</t></is></c>')
-        sheet_rows.append(f'<row r="{row_index}">{"".join(cells)}</row>')
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
 
-    worksheet = (
-        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-        '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-        f'<sheetData>{"".join(sheet_rows)}</sheetData>'
-        '</worksheet>'
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = 'NUFI Report'
+    worksheet.sheet_view.showGridLines = False
+
+    brand_fill = PatternFill('solid', fgColor='1D4ED8')
+    dark_fill = PatternFill('solid', fgColor='0F172A')
+    section_fill = PatternFill('solid', fgColor='DBEAFE')
+    card_fill = PatternFill('solid', fgColor='EFF6FF')
+    card_accent_fill = PatternFill('solid', fgColor='CCFBF1')
+    header_fill = PatternFill('solid', fgColor='D9F99D')
+    zebra_fill = PatternFill('solid', fgColor='F8FAFC')
+    border_color = 'CBD5E1'
+    thin_border = Border(
+        left=Side(style='thin', color=border_color),
+        right=Side(style='thin', color=border_color),
+        top=Side(style='thin', color=border_color),
+        bottom=Side(style='thin', color=border_color),
     )
-    workbook = (
-        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-        '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
-        'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-        '<sheets><sheet name="NUFI Report" sheetId="1" r:id="rId1"/></sheets></workbook>'
-    )
-    workbook_rels = (
-        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
-        '</Relationships>'
-    )
-    root_rels = (
-        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
-        '</Relationships>'
-    )
-    content_types = (
-        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
-        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-        '<Default Extension="xml" ContentType="application/xml"/>'
-        '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-        '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-        '</Types>'
-    )
+    title_font = Font(name='Calibri', size=18, bold=True, color='FFFFFF')
+    subtitle_font = Font(name='Calibri', size=11, color='E0F2FE')
+    section_font = Font(name='Calibri', size=12, bold=True, color='1E3A8A')
+    header_font = Font(name='Calibri', size=11, bold=True, color='0F172A')
+    body_font = Font(name='Calibri', size=11, color='334155')
+    muted_font = Font(name='Calibri', size=10, color='64748B')
+    card_label_font = Font(name='Calibri', size=9, bold=True, color='64748B')
+    card_value_font = Font(name='Calibri', size=15, bold=True, color='0F172A')
+    money_positive_font = Font(name='Calibri', size=11, bold=True, color='15803D')
+    money_negative_font = Font(name='Calibri', size=11, bold=True, color='B91C1C')
+
+    def coerce_excel_value(value):
+        if isinstance(value, Decimal):
+            return float(value), '#,##0.00'
+        if hasattr(value, 'strftime'):
+            return value, 'dd/mm/yyyy'
+        text = str(value or '').strip()
+        if text.endswith('VND'):
+            number_text = text[:-3].strip().replace(' ', '').replace('+', '').replace('.', '').replace(',', '.')
+            try:
+                return float(Decimal(number_text)), '#,##0 "VND"'
+            except Exception:
+                return value, None
+        if text.endswith('%'):
+            try:
+                return float(Decimal(text[:-1].replace(',', '.')) / Decimal('100')), '0.0%'
+            except Exception:
+                return value, None
+        return value, None
+
+    def write_section_title(row_number, title_value):
+        worksheet.merge_cells(start_row=row_number, start_column=1, end_row=row_number, end_column=max_columns)
+        cell = worksheet.cell(row=row_number, column=1, value=title_value)
+        cell.fill = section_fill
+        cell.font = section_font
+        cell.alignment = Alignment(horizontal='left', vertical='center')
+        worksheet.row_dimensions[row_number].height = 25
+        for fill_column in range(2, max_columns + 1):
+            worksheet.cell(row=row_number, column=fill_column).fill = section_fill
+
+    def write_summary_cards(start_row, summary_rows):
+        if not summary_rows:
+            return start_row
+
+        write_section_title(start_row, 'Tổng quan chỉ số')
+        card_row = start_row + 2
+        for index, summary_row in enumerate(summary_rows):
+            label = summary_row[0] if summary_row else ''
+            value = summary_row[1] if len(summary_row) > 1 else ''
+            column = 1 if index % 2 == 0 else 5
+            row_number = card_row + (index // 2) * 4
+
+            worksheet.merge_cells(start_row=row_number, start_column=column, end_row=row_number, end_column=column + 2)
+            label_cell = worksheet.cell(row=row_number, column=column, value=label)
+            label_cell.fill = card_accent_fill
+            label_cell.font = card_label_font
+            label_cell.alignment = Alignment(horizontal='left', vertical='center')
+
+            worksheet.merge_cells(start_row=row_number + 1, start_column=column, end_row=row_number + 2, end_column=column + 2)
+            excel_value, number_format = coerce_excel_value(value)
+            value_cell = worksheet.cell(row=row_number + 1, column=column, value=excel_value)
+            value_cell.fill = card_fill
+            value_cell.font = card_value_font
+            value_cell.alignment = Alignment(horizontal='left', vertical='center')
+            if number_format:
+                value_cell.number_format = number_format
+
+            for merged_row in range(row_number, row_number + 3):
+                for merged_column in range(column, column + 3):
+                    cell = worksheet.cell(row=merged_row, column=merged_column)
+                    cell.border = thin_border
+                    if merged_row > row_number:
+                        cell.fill = card_fill
+
+        return card_row + ((len(summary_rows) + 1) // 2) * 4 + 1
+
+    max_columns = max((len(row) for row in rows), default=1)
+    max_columns = max(max_columns, 7)
+
+    title_row = rows[0] if rows else ['NUFI Report']
+    title = str(title_row[0] or 'NUFI Report')
+    subtitle = ' | '.join(str(value) for value in title_row[1:] if value not in (None, ''))
+
+    worksheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=max_columns)
+    title_cell = worksheet.cell(row=1, column=1, value=title)
+    title_cell.fill = brand_fill
+    title_cell.font = title_font
+    title_cell.alignment = Alignment(horizontal='center', vertical='center')
+    worksheet.row_dimensions[1].height = 31
+
+    for column_index in range(2, max_columns + 1):
+        worksheet.cell(row=1, column=column_index).fill = brand_fill
+
+    current_row = 2
+    if subtitle:
+        worksheet.merge_cells(start_row=2, start_column=1, end_row=2, end_column=max_columns)
+        subtitle_cell = worksheet.cell(row=2, column=1, value=subtitle)
+        subtitle_cell.fill = dark_fill
+        subtitle_cell.font = subtitle_font
+        subtitle_cell.alignment = Alignment(horizontal='center', vertical='center')
+        worksheet.row_dimensions[2].height = 23
+        for column_index in range(2, max_columns + 1):
+            worksheet.cell(row=2, column=column_index).fill = dark_fill
+        current_row = 3
+
+    current_row += 1
+
+    header_keywords = {
+        'Chỉ số',
+        'Khoản thu/chi',
+        'Nội dung',
+        'Tháng',
+        'Giai đoạn',
+        'Danh mục',
+        'Mô tả',
+        'Mo ta',
+        'Chi so',
+        'Khoan thu/chi',
+    }
+    last_header_row = None
+    source_rows = list(rows[1:])
+    index = 0
+
+    while index < len(source_rows):
+        source_row = source_rows[index]
+        row_values = list(source_row)
+        non_empty_values = [value for value in row_values if value not in (None, '')]
+
+        if not non_empty_values:
+            current_row += 1
+            index += 1
+            continue
+
+        is_section = len(non_empty_values) == 1 and len(row_values) == 1
+        is_header = len(row_values) > 1 and str(row_values[0]) in header_keywords
+        is_metadata = len(row_values) == 2 and not is_header and not is_section
+
+        if is_header and str(row_values[0]) in {'Chỉ số', 'Chi so'}:
+            summary_rows = []
+            index += 1
+            while index < len(source_rows):
+                candidate = list(source_rows[index])
+                candidate_values = [value for value in candidate if value not in (None, '')]
+                if not candidate_values:
+                    break
+                if len(candidate_values) == 1 or (len(candidate) > 1 and str(candidate[0]) in header_keywords):
+                    break
+                summary_rows.append(candidate)
+                index += 1
+            current_row = write_summary_cards(current_row, summary_rows)
+            continue
+
+        if is_section:
+            write_section_title(current_row, non_empty_values[0])
+            current_row += 1
+            index += 1
+            continue
+
+        for column_index in range(1, max_columns + 1):
+            value = row_values[column_index - 1] if column_index <= len(row_values) else ''
+            excel_value, number_format = coerce_excel_value(value)
+            cell = worksheet.cell(row=current_row, column=column_index, value=excel_value)
+            cell.border = thin_border
+            cell.alignment = Alignment(vertical='center', wrap_text=True)
+            if number_format:
+                cell.number_format = number_format
+
+            if is_header:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            elif is_metadata and column_index == 1:
+                cell.fill = zebra_fill
+                cell.font = header_font
+            elif is_metadata:
+                cell.font = muted_font
+            else:
+                cell.font = body_font
+                if current_row % 2 == 0:
+                    cell.fill = zebra_fill
+
+            if hasattr(value, 'strftime'):
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+
+            text_value = str(value)
+            if 'VND' in text_value or text_value.startswith(('+', '-')):
+                if text_value.strip().startswith('-'):
+                    cell.font = money_negative_font
+                else:
+                    cell.font = money_positive_font
+                cell.alignment = Alignment(horizontal='right', vertical='center', wrap_text=True)
+
+        if is_header:
+            last_header_row = current_row
+            worksheet.row_dimensions[current_row].height = 24
+
+        current_row += 1
+        index += 1
+
+    worksheet.freeze_panes = 'A4'
+    if last_header_row:
+        worksheet.auto_filter.ref = f'A{last_header_row}:{get_column_letter(max_columns)}{max(current_row - 1, last_header_row)}'
+
+    for column_index in range(1, max_columns + 1):
+        column_letter = get_column_letter(column_index)
+        max_length = 0
+        for cell in worksheet[column_letter]:
+            if cell.value is None:
+                continue
+            max_length = max(max_length, len(str(cell.value)))
+        worksheet.column_dimensions[column_letter].width = min(max(max_length + 3, 13), 38)
+
+    worksheet.page_margins.left = 0.3
+    worksheet.page_margins.right = 0.3
+    worksheet.page_margins.top = 0.55
+    worksheet.page_margins.bottom = 0.55
+    worksheet.sheet_properties.pageSetUpPr.fitToPage = True
+    worksheet.page_setup.fitToWidth = 1
+    worksheet.page_setup.fitToHeight = 0
+
     output = BytesIO()
-    with ZipFile(output, 'w', ZIP_DEFLATED) as workbook_zip:
-        workbook_zip.writestr('[Content_Types].xml', content_types)
-        workbook_zip.writestr('_rels/.rels', root_rels)
-        workbook_zip.writestr('xl/workbook.xml', workbook)
-        workbook_zip.writestr('xl/_rels/workbook.xml.rels', workbook_rels)
-        workbook_zip.writestr('xl/worksheets/sheet1.xml', worksheet)
+    workbook.save(output)
     return output.getvalue()
 
 
