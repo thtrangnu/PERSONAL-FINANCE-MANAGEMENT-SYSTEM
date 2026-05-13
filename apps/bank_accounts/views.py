@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 from apps.accounts.models import UserProfile
 from apps.bank_accounts.forms import BankAccountForm
 from apps.bank_accounts.models import BankAccount
+from apps.debts.models import Debt, DebtPayment
 from apps.expenses.models import Expense
 from apps.income.models import Income
 
@@ -112,6 +113,10 @@ def _active_account_summary(profile):
     }
 
 
+def _transaction_sort_key(item):
+    return (item['date'], item['sort_id'])
+
+
 @login_required
 def bank_account_list(request):
     profile = _get_profile(request.user)
@@ -148,26 +153,93 @@ def bank_account_detail(request, bank_account_id):
 
     total_income = income_queryset.aggregate(total=Sum('amount'))['total'] or 0
     total_expense = expense_queryset.aggregate(total=Sum('amount'))['total'] or 0
+    debt_payment_queryset = DebtPayment.objects.filter(
+        bank_account=account,
+        debt__user=profile,
+    ).select_related('debt')
+    total_debt_collected = debt_payment_queryset.filter(
+        debt__debt_type=Debt.TYPE_OWED_TO_ME,
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    total_debt_repaid = debt_payment_queryset.filter(
+        debt__debt_type=Debt.TYPE_I_OWE,
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    total_cash_in = total_income + total_debt_collected
+    total_cash_out = total_expense + total_debt_repaid
     income_breakdown = _build_category_breakdown(income_queryset, total_income, account.currency)
     expense_breakdown = _build_category_breakdown(expense_queryset, total_expense, account.currency)
     incomes = list(income_queryset.select_related('category').order_by('-income_date', '-income_id'))
     expenses = list(expense_queryset.select_related('category').order_by('-expense_date', '-expense_id'))
+    debt_payments = list(debt_payment_queryset.order_by('-payment_date', '-debt_payment_id'))
 
+    inflow_items = []
+    outflow_items = []
     for income in incomes:
         income.formatted_amount = _format_money(income.amount, account.currency)
+        inflow_items.append(
+            {
+                'amount': income.formatted_amount,
+                'date': income.income_date,
+                'date_label': income.income_date.strftime('%d/%m/%Y'),
+                'meta_label': income.category.category_name if income.category else 'Thu nhập',
+                'note': '',
+                'sort_id': income.income_id,
+                'title': income.title,
+            }
+        )
     for expense in expenses:
         expense.formatted_amount = _format_money(expense.amount, account.currency)
+        outflow_items.append(
+            {
+                'amount': expense.formatted_amount,
+                'date': expense.expense_date,
+                'date_label': expense.expense_date.strftime('%d/%m/%Y'),
+                'meta_label': expense.category.category_name if expense.category else 'Chi tiêu',
+                'note': '',
+                'sort_id': expense.expense_id,
+                'title': expense.description or 'Khoản chi',
+            }
+        )
+    for payment in debt_payments:
+        formatted_amount = _format_money(payment.amount, account.currency)
+        item = {
+            'amount': formatted_amount,
+            'date': payment.payment_date,
+            'date_label': payment.payment_date.strftime('%d/%m/%Y'),
+            'note': payment.note or '',
+            'sort_id': payment.debt_payment_id,
+        }
+        if payment.debt.debt_type == Debt.TYPE_OWED_TO_ME:
+            inflow_items.append(
+                {
+                    **item,
+                    'meta_label': 'Thu nợ',
+                    'title': f'Thu nợ từ {payment.debt.counterparty_name}',
+                }
+            )
+        else:
+            outflow_items.append(
+                {
+                    **item,
+                    'meta_label': 'Trả nợ',
+                    'title': f'Trả nợ cho {payment.debt.counterparty_name}',
+                }
+            )
+
+    inflow_items.sort(key=_transaction_sort_key, reverse=True)
+    outflow_items.sort(key=_transaction_sort_key, reverse=True)
 
     return render(
         request,
         'bank_accounts/account_detail.html',
         {
             'account': account,
-            'incomes': incomes,
-            'expenses': expenses,
+            'inflow_items': inflow_items,
+            'outflow_items': outflow_items,
             'total_income': _format_money(total_income, account.currency),
             'total_expense': _format_money(total_expense, account.currency),
-            'net_flow': _format_money(total_income - total_expense, account.currency),
+            'total_cash_in': _format_money(total_cash_in, account.currency),
+            'total_cash_out': _format_money(total_cash_out, account.currency),
+            'net_flow': _format_money(total_cash_in - total_cash_out, account.currency),
             'current_balance': _format_money(account.current_balance, account.currency),
             'opening_balance': _format_money(account.opening_balance, account.currency),
             'income_breakdown': income_breakdown,

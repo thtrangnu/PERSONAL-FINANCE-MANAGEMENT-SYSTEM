@@ -30,13 +30,19 @@ def _get_profile(user):
 
 
 def _member_group(profile, group_id):
-    membership = get_object_or_404(
-        GroupMember.objects.select_related('group'),
+    group = get_object_or_404(
+        SharingGroup.objects.select_related('owner_user'),
         group_id=group_id,
+    )
+    if group.owner_user_id == profile.user_id:
+        return group
+    get_object_or_404(
+        GroupMember,
+        group=group,
         user=profile,
         status=GroupMember.STATUS_ACTIVE,
     )
-    return membership.group
+    return group
 
 
 def _wants_json(request):
@@ -89,6 +95,14 @@ def group_list(request):
     )
     for group in groups:
         group.can_toggle_status = group.owner_user_id == profile.user_id
+        group.active_member_count = (
+            group.members.filter(status=GroupMember.STATUS_ACTIVE)
+            .exclude(user_id=group.owner_user_id)
+            .values('user_id')
+            .distinct()
+            .count()
+            + 1
+        )
     return render(
         request,
         'sharing/group_list.html',
@@ -117,7 +131,25 @@ def group_create(request):
 def group_detail(request, group_id):
     profile = _get_profile(request.user)
     group = _member_group(profile, group_id)
-    members = group.members.select_related('user').filter(status=GroupMember.STATUS_ACTIVE).order_by('member_role', 'joined_at')
+    active_memberships = list(
+        group.members.select_related('user')
+        .filter(status=GroupMember.STATUS_ACTIVE)
+        .exclude(user_id=group.owner_user_id)
+        .order_by('member_role', 'joined_at')
+    )
+    members = [
+        {
+            'name': group.owner_user.full_name or group.owner_user.username,
+            'role_label': 'Chủ nhóm',
+        }
+    ]
+    members.extend(
+        {
+            'name': membership.user.full_name or membership.user.username,
+            'role_label': membership.get_member_role_display(),
+        }
+        for membership in active_memberships
+    )
     pending_members = group.members.select_related('user').filter(status=GroupMember.STATUS_PENDING).order_by('-joined_at')
     transactions = group.shared_transactions.select_related(
         'shared_by_user',

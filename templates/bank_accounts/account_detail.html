@@ -25,19 +25,19 @@
         <p>Số tiền đang ghi nhận trong tài khoản.</p>
       </article>
       <article>
-        <span>Tổng thu</span>
-        <strong>{{ total_income }}</strong>
-        <p>Tổng tiền đã nhận qua tài khoản này.</p>
+        <span>Tổng tiền vào</span>
+        <strong>{{ total_cash_in }}</strong>
+        <p>Bao gồm thu nhập và tiền thu nợ.</p>
       </article>
       <article>
-        <span>Tổng chi</span>
-        <strong>{{ total_expense }}</strong>
-        <p>Tổng tiền đã chi từ tài khoản này.</p>
+        <span>Tổng tiền ra</span>
+        <strong>{{ total_cash_out }}</strong>
+        <p>Bao gồm chi tiêu và tiền trả nợ.</p>
       </article>
       <article>
-        <span>Chênh lệch thu - chi</span>
+        <span>Chênh lệch vào - ra</span>
         <strong>{{ net_flow }}</strong>
-        <p>Số thu trừ số chi đã ghi nhận.</p>
+        <p>Dòng tiền ròng qua tài khoản này.</p>
       </article>
     </div>
 
@@ -157,21 +157,22 @@
       <section class="management-panel transaction-column income-column">
         <div class="visual-heading">
           <h2>Thu vào</h2>
-          <p>Các khoản tiền đã cộng vào tài khoản này.</p>
+          <p>Thu nhập và các lần thu nợ đã cộng vào tài khoản này.</p>
         </div>
 
-        {% if incomes %}
+        {% if inflow_items %}
           <div class="transaction-list">
-            {% for income in incomes %}
+            {% for item in inflow_items %}
               <article class="transaction-item">
                 <div>
-                  <strong>{{ income.title }}</strong>
+                  <strong>{{ item.title }}</strong>
                   <p>
-                    {{ income.category.category_name }}
-                    <span>{{ income.income_date|date:"d/m/Y" }}</span>
+                    {{ item.meta_label }}
+                    <span>{{ item.date_label }}</span>
                   </p>
+                  {% if item.note %}<p>{{ item.note }}</p>{% endif %}
                 </div>
-                <span class="transaction-amount is-income">+ {{ income.formatted_amount }}</span>
+                <span class="transaction-amount is-income">+ {{ item.amount }}</span>
               </article>
             {% endfor %}
           </div>
@@ -186,27 +187,22 @@
       <section class="management-panel transaction-column expense-column">
         <div class="visual-heading">
           <h2>Chi ra</h2>
-          <p>Các khoản tiền đã trừ khỏi tài khoản này.</p>
+          <p>Chi tiêu và các lần trả nợ đã trừ khỏi tài khoản này.</p>
         </div>
 
-        {% if expenses %}
+        {% if outflow_items %}
           <div class="transaction-list">
-            {% for expense in expenses %}
+            {% for item in outflow_items %}
               <article class="transaction-item">
                 <div>
-                  <strong>
-                    {% if expense.description %}
-                      {{ expense.description }}
-                    {% else %}
-                      Khoản chi
-                    {% endif %}
-                  </strong>
+                  <strong>{{ item.title }}</strong>
                   <p>
-                    {{ expense.category.category_name }}
-                    <span>{{ expense.expense_date|date:"d/m/Y" }}</span>
+                    {{ item.meta_label }}
+                    <span>{{ item.date_label }}</span>
                   </p>
+                  {% if item.note %}<p>{{ item.note }}</p>{% endif %}
                 </div>
-                <span class="transaction-amount is-expense">- {{ expense.formatted_amount }}</span>
+                <span class="transaction-amount is-expense">- {{ item.amount }}</span>
               </article>
             {% endfor %}
           </div>

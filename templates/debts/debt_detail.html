@@ -8,11 +8,11 @@
       <div>
         <span class="eyebrow">Chi tiết nợ</span>
         <h1>{{ debt.counterparty_name }}</h1>
-        <p class="hero-copy">{{ debt.description|default:"Theo dõi lịch sử thanh toán và số còn lại của khoản nợ này." }}</p>
+        <p class="hero-copy">{{ debt.description|default:detail_copy }}</p>
       </div>
       <div class="form-actions">
         {% if can_add_payment %}
-          <a class="button" href="{% url 'debt_payment_create' debt.debt_id %}">Thêm thanh toán</a>
+          <a class="button" href="{% url 'debt_payment_create' debt.debt_id %}">{{ action_label }}</a>
         {% else %}
           <span class="button ghost is-disabled">Đã hoàn tất</span>
         {% endif %}
@@ -27,12 +27,12 @@
         <p>{{ debt.get_debt_type_display }}</p>
       </article>
       <article>
-        <span>Đã thanh toán</span>
+        <span>{{ progress_label }}</span>
         <strong>{{ formatted_paid }}</strong>
-        <p>Các lần thanh toán đã ghi nhận.</p>
+        <p>{{ progress_help }}</p>
       </article>
       <article>
-        <span>Còn lại</span>
+        <span>{{ remaining_label }}</span>
         <strong>{{ formatted_remaining }}</strong>
         <p>{{ debt.get_status_display }}</p>
       </article>
@@ -40,7 +40,7 @@
 
     <section class="management-panel">
       <div class="visual-heading">
-        <h2>Lịch sử thanh toán</h2>
+        <h2>{{ history_title }}</h2>
       </div>
       {% if payments %}
         <div class="table-wrap">
@@ -67,8 +67,8 @@
         </div>
       {% else %}
         <div class="empty-state">
-          <strong>Chưa có thanh toán</strong>
-          <p>Thêm lần thanh toán đầu tiên để cập nhật số còn lại.</p>
+          <strong>{{ empty_payment_title }}</strong>
+          <p>{{ empty_payment_help }}</p>
         </div>
       {% endif %}
     </section>

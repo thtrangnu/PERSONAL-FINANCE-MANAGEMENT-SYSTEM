@@ -65,6 +65,29 @@ class SharingFlowTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_member_count_includes_owner_even_when_owner_membership_is_missing(self):
+        legacy_group = SharingGroup.objects.create(
+            owner_user=self.owner_profile,
+            group_name='Nhóm legacy',
+            description='Thiếu dòng owner trong group_members',
+        )
+        GroupMember.objects.create(
+            group=legacy_group,
+            user=self.member_profile,
+            member_role=GroupMember.ROLE_MEMBER,
+            status=GroupMember.STATUS_ACTIVE,
+        )
+        self.client.force_login(self.member_auth_user)
+
+        response = self.client.get(reverse('sharing_group_list'))
+        listed_group = next(group for group in response.context['groups'] if group.group_id == legacy_group.group_id)
+
+        self.assertEqual(listed_group.active_member_count, 2)
+
+        detail_response = self.client.get(reverse('sharing_group_detail', args=[legacy_group.group_id]))
+        self.assertContains(detail_response, 'Alice - Chủ nhóm')
+        self.assertContains(detail_response, 'Member - Thành viên')
+
     def test_active_member_can_share_own_expense_into_group(self):
         GroupMember.objects.create(
             group=self.group,

@@ -15,19 +15,24 @@
 
     <div class="overview-cards">
       <article>
-        <span>Tổng nợ gốc</span>
-        <strong>{{ total_debt }}</strong>
-        <p>Tất cả khoản đang ghi nhận.</p>
+        <span>Còn phải trả</span>
+        <strong>{{ payable_remaining }}</strong>
+        <p>Các khoản mình nợ người khác.</p>
       </article>
       <article>
-        <span>Đã trả / đã nhận</span>
-        <strong>{{ total_paid }}</strong>
-        <p>Tổng tiền đã thanh toán.</p>
+        <span>Còn phải thu</span>
+        <strong>{{ receivable_remaining }}</strong>
+        <p>Các khoản người khác nợ mình.</p>
       </article>
       <article>
-        <span>Còn lại</span>
-        <strong>{{ total_remaining }}</strong>
-        <p>Số tiền vẫn cần theo dõi.</p>
+        <span>Đã trả</span>
+        <strong>{{ payable_paid }}</strong>
+        <p>Tiền đã trả cho chủ nợ.</p>
+      </article>
+      <article>
+        <span>Đã thu</span>
+        <strong>{{ receivable_collected }}</strong>
+        <p>Tiền đã nhận từ người nợ mình.</p>
       </article>
     </div>
 
@@ -43,7 +48,7 @@
                 <th>Khoản nợ</th>
                 <th>Loại</th>
                 <th>Gốc</th>
-                <th>Còn lại</th>
+                <th>Số còn lại</th>
                 <th>Hạn trả</th>
                 <th>Trạng thái</th>
                 <th>Thao tác</th>
@@ -58,14 +63,17 @@
                   </td>
                   <td>{{ debt.get_debt_type_display }}</td>
                   <td>{{ debt.formatted_original }}</td>
-                  <td>{{ debt.formatted_remaining }}</td>
+                  <td>
+                    <strong>{{ debt.formatted_remaining }}</strong>
+                    <p>{{ debt.remaining_label }}</p>
+                  </td>
                   <td>{{ debt.due_date|date:"d/m/Y"|default:"Chưa đặt" }}</td>
                   <td><span class="status-pill {% if debt.status == 'paid' %}muted{% endif %}">{{ debt.get_status_display }}</span></td>
                   <td>
                     <div class="table-actions">
                       <a href="{% url 'debt_detail' debt.debt_id %}">Chi tiết</a>
                       {% if debt.can_add_payment %}
-                        <a href="{% url 'debt_payment_create' debt.debt_id %}">Thanh toán</a>
+                        <a href="{% url 'debt_payment_create' debt.debt_id %}">{{ debt.action_label }}</a>
                       {% else %}
                         <span class="muted-action">Đã hoàn tất</span>
                       {% endif %}

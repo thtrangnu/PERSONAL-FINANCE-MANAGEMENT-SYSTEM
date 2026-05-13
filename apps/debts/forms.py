@@ -49,24 +49,35 @@ class DebtPaymentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.debt = debt
         enable_money_input(self, 'amount')
-        self.fields['bank_account'].label = 'Tài khoản thanh toán'
+        is_receivable = debt is not None and debt.debt_type == Debt.TYPE_OWED_TO_ME
+        self.fields['bank_account'].label = 'Tài khoản nhận tiền' if is_receivable else 'Tài khoản thanh toán'
         self.fields['bank_account'].empty_label = 'Chọn tài khoản đã thêm'
-        self.fields['bank_account'].error_messages['required'] = 'Vui lòng chọn tài khoản thanh toán.'
-        self.fields['bank_account'].help_text = 'Bắt buộc chọn tài khoản đang dùng để hệ thống cập nhật số dư.'
-        self.fields['payment_date'].label = 'Ngày thanh toán'
-        self.fields['amount'].label = 'Số tiền'
+        self.fields['bank_account'].error_messages['required'] = (
+            'Vui lòng chọn tài khoản nhận tiền.' if is_receivable else 'Vui lòng chọn tài khoản thanh toán.'
+        )
+        self.fields['bank_account'].help_text = (
+            'Khoản thu sẽ được cộng vào số dư tài khoản này.'
+            if is_receivable
+            else 'Khoản trả sẽ được trừ khỏi số dư tài khoản này.'
+        )
+        self.fields['payment_date'].label = 'Ngày nhận tiền' if is_receivable else 'Ngày thanh toán'
+        self.fields['amount'].label = 'Số tiền nhận được' if is_receivable else 'Số tiền thanh toán'
         self.fields['note'].label = 'Ghi chú'
         self.fields['bank_account'].required = True
         self.fields['bank_account'].queryset = BankAccount.objects.none()
         self.fields['amount'].widget.attrs.update({
             'min': '0.01',
             'step': '0.01',
-            'placeholder': 'Nhập số tiền muốn thanh toán',
+            'placeholder': 'Nhập số tiền đã nhận' if is_receivable else 'Nhập số tiền muốn thanh toán',
             'data-payment-amount': 'true',
         })
         if debt is not None:
             self.fields['amount'].widget.attrs['max'] = f'{debt.remaining_amount:.2f}'
-            self.fields['amount'].help_text = 'Số tiền không được lớn hơn khoản còn lại.'
+            self.fields['amount'].help_text = (
+                'Số tiền nhận không được lớn hơn khoản còn phải thu.'
+                if is_receivable
+                else 'Số tiền thanh toán không được lớn hơn khoản còn phải trả.'
+            )
         if user_profile is not None:
             self.fields['bank_account'].queryset = BankAccount.objects.filter(
                 user=user_profile,
@@ -75,12 +86,16 @@ class DebtPaymentForm(forms.ModelForm):
 
     def clean_bank_account(self):
         bank_account = self.cleaned_data['bank_account']
+        if bank_account is None:
+            return bank_account
         if not bank_account.is_active:
-            raise forms.ValidationError('Tài khoản thanh toán này hiện không còn được sử dụng.')
+            raise forms.ValidationError('Tài khoản này hiện không còn được sử dụng.')
         return bank_account
 
     def clean_amount(self):
         amount = self.cleaned_data['amount']
         if self.debt is not None and amount > self.debt.remaining_amount:
-            raise forms.ValidationError('Số tiền thanh toán không được lớn hơn khoản còn lại.')
+            if self.debt.debt_type == Debt.TYPE_OWED_TO_ME:
+                raise forms.ValidationError('Số tiền nhận không được lớn hơn khoản còn phải thu.')
+            raise forms.ValidationError('Số tiền thanh toán không được lớn hơn khoản còn phải trả.')
         return amount

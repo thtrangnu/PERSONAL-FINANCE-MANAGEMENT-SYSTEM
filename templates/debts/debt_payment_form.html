@@ -4,9 +4,9 @@
 
 {% block content %}
   <section class="card form-shell">
-    <span class="eyebrow">Thanh toán nợ</span>
+    <span class="eyebrow">{{ payment_eyebrow }}</span>
     <h1>{{ page_title }}</h1>
-    <p class="hero-copy">Ghi nhận lần thanh toán cho khoản nợ với {{ debt.counterparty_name }} bằng một tài khoản đã thêm trong NUFI.</p>
+    <p class="hero-copy">{{ payment_intro }}</p>
 
     <div class="debt-payment-layout">
       <div class="debt-payment-summary" aria-label="Tóm tắt khoản nợ">
@@ -21,14 +21,14 @@
           <p>Tổng số tiền đã ghi nhận.</p>
         </article>
         <article>
-          <span>Đã thanh toán</span>
+          <span>{{ progress_label }}</span>
           <strong>{{ formatted_paid }}</strong>
-          <p>Các lần thanh toán trước đó.</p>
+          <p>{{ progress_help }}</p>
         </article>
         <article class="is-important">
-          <span>Còn lại</span>
+          <span>{{ remaining_label }}</span>
           <strong>{{ formatted_remaining }}</strong>
-          <p>Đây là mức tối đa có thể thanh toán.</p>
+          <p>{{ remaining_help }}</p>
         </article>
       </div>
 
@@ -38,19 +38,23 @@
         data-debt-payment-form
         data-remaining-amount="{{ remaining_amount_raw }}"
         data-remaining-label="{{ formatted_remaining }}"
+        data-payoff-copy="{{ payoff_copy }}"
+        data-partial-copy="{{ partial_copy }}"
+        data-payoff-submit="{{ payoff_submit_label }}"
+        data-partial-submit="{{ submit_label }}"
       >
         {% csrf_token %}
         {{ form.non_field_errors }}
         <div class="payment-mode-panel">
           <div>
-            <span class="eyebrow">Cách thanh toán</span>
-            <p data-payment-mode-copy>Chọn tất toán để tự điền toàn bộ số còn lại, hoặc thanh toán một phần để nhập số tiền nhỏ hơn. Tài khoản thanh toán là bắt buộc để hệ thống tự cập nhật số dư.</p>
+            <span class="eyebrow">{{ payment_mode_label }}</span>
+            <p data-payment-mode-copy>{{ payment_mode_copy }}</p>
           </div>
           <div class="payment-mode-actions">
-            <button class="payment-mode-button" type="button" data-payment-mode="payoff">Tất toán</button>
-            <button class="payment-mode-button is-active" type="button" data-payment-mode="partial">Thanh toán một phần</button>
+            <button class="payment-mode-button" type="button" data-payment-mode="payoff">{{ payoff_button_label }}</button>
+            <button class="payment-mode-button is-active" type="button" data-payment-mode="partial">{{ partial_button_label }}</button>
           </div>
-          <p class="payment-warning" data-payment-warning hidden>Số tiền đang lớn hơn khoản còn lại. Vui lòng giảm xuống không quá {{ formatted_remaining }}.</p>
+          <p class="payment-warning" data-payment-warning hidden>{{ warning_text }}</p>
         </div>
         <div class="form-grid debt-payment-fields">
           {% for field in form %}
@@ -82,7 +86,10 @@
       const payoffButton = form.querySelector('[data-payment-mode="payoff"]');
       const partialButton = form.querySelector('[data-payment-mode="partial"]');
       const remainingAmount = Number(form.dataset.remainingAmount || 0);
-      const remainingLabel = form.dataset.remainingLabel || '';
+      const payoffCopy = form.dataset.payoffCopy || '';
+      const partialCopy = form.dataset.partialCopy || '';
+      const payoffSubmit = form.dataset.payoffSubmit || '';
+      const partialSubmit = form.dataset.partialSubmit || '';
       const normalizeMoney = (value) => String(value || '').replace(/[^\d]/g, '');
       const toMoneyNumber = (value) => Number(normalizeMoney(value) || 0);
 
@@ -95,12 +102,10 @@
         payoffButton.classList.toggle('is-active', mode === 'payoff');
         partialButton.classList.toggle('is-active', mode === 'partial');
         if (modeCopy) {
-          modeCopy.textContent = mode === 'payoff'
-            ? `Bạn đang tất toán khoản nợ. Số tiền sẽ được điền đúng bằng ${remainingLabel}.`
-            : 'Bạn đang thanh toán một phần. Hãy nhập số tiền nhỏ hơn khoản còn lại và chọn tài khoản thanh toán trong NUFI.';
+          modeCopy.textContent = mode === 'payoff' ? payoffCopy : partialCopy;
         }
         if (submitButton) {
-          submitButton.textContent = mode === 'payoff' ? 'Tất toán khoản nợ' : 'Lưu thanh toán';
+          submitButton.textContent = mode === 'payoff' ? payoffSubmit : partialSubmit;
         }
       };
 
