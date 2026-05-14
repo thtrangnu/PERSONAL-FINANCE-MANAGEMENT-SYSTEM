@@ -2,6 +2,8 @@
 
 ![System Architecture](image/system-architecture.png)
 
+**Demo web** : https://youtu.be/mVvs9yCbUUA
+
 ## Overview
 
 NUFI is a personal finance web application built with **Django 6 + MySQL 8**, containerized with Docker, and deployable to Kubernetes via Helm.
